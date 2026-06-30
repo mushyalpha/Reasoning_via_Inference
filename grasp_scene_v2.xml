@@ -1,0 +1,196 @@
+<mujoco model="panda_grasp_scene">
+  <!--
+    Panda arm with CORRECT kinematics from MuJoCo Menagerie panda.xml.
+    Geometry uses capsules/boxes (no mesh files required).
+    Actuators, tendons, and joint limits are identical to the real model.
+  -->
+  <compiler angle="radian" autolimits="true" balanceinertia="true"/>
+  <option gravity="0 0 -9.81" timestep="0.002" integrator="implicitfast"/>
+
+  <!-- Stiff contacts: high normal force, high friction multiplier -->
+  <default>
+    <geom solref="0.004 1" solimp="0.98 0.99 0.001"/>
+  </default>
+
+  <default>
+    <default class="panda">
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-2.8973 2.8973"/>
+      <general dyntype="none" biastype="affine"
+               ctrlrange="-2.8973 2.8973" forcerange="-87 87"/>
+      <default class="finger">
+        <joint axis="0 1 0" type="slide" range="0 0.04"/>
+      </default>
+    </default>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 2.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="2 2 0.05" rgba="0.85 0.85 0.85 1"/>
+
+    <!-- Table -->
+    <body name="table" pos="0.5 0 0.2">
+      <geom type="box" size="0.3 0.4 0.2" rgba="0.6 0.4 0.2 1"/>
+    </body>
+
+    <!-- Target object (cylinder = cup proxy) -->
+    <body name="target_object" pos="0.5 0 0.455">
+      <freejoint/>
+      <inertial pos="0 0 0" mass="0.15" diaginertia="0.0002 0.0002 0.0001"/>
+      <!-- radius=0.036 ensures finger inner faces (at ±0.035m from centre) -->
+      <!-- contact the cylinder when the gripper closes. Light mass (0.05kg) -->
+      <!-- so friction force from the simplified gripper can support lifting.  -->
+      <geom name="cup" type="cylinder" size="0.036 0.055"
+            rgba="0.1 0.5 0.8 1" mass="0.05" condim="4" friction="2.5 0.01 0.0001"/>
+    </body>
+
+    <!-- =====================================================
+         Panda arm - exact kinematic chain from panda.xml,
+         primitive capsule geometry instead of meshes.
+         ===================================================== -->
+    <body name="link0" pos="0 0 0" childclass="panda">
+      <inertial mass="0.629769" pos="-0.041018 -0.00014 0.049974"
+        diaginertia="0.00315 0.00388 0.004285"/>
+      <geom type="capsule" size="0.07 0.12" pos="0 0 0.06" rgba="0.95 0.95 0.95 1"/>
+
+      <body name="link1" pos="0 0 0.333">
+        <inertial mass="4.970684" pos="0.003875 0.002081 -0.04762"
+          diaginertia="0.0825 0.0775 0.0121"/>
+        <joint name="joint1"/>
+        <geom type="capsule" size="0.06 0.14" pos="0 0 -0.06" rgba="0.95 0.95 0.95 1"/>
+
+        <!-- quat "1 -1 0 0" = 90 deg rotation around -X -->
+        <body name="link2" quat="1 -1 0 0">
+          <inertial mass="0.646926" pos="-0.003141 -0.02872 0.003495"
+            diaginertia="0.0107 0.00785 0.00447"/>
+          <joint name="joint2" range="-1.7628 1.7628"/>
+          <geom type="capsule" size="0.06 0.12" pos="0 0 0" rgba="0.95 0.95 0.95 1"/>
+
+          <body name="link3" pos="0 -0.316 0" quat="1 1 0 0">
+            <inertial mass="3.228604" pos="0.02796 0.03904 -0.06654"
+              diaginertia="0.0496 0.0419 0.00847"/>
+            <joint name="joint3"/>
+            <geom type="capsule" size="0.06 0.1" pos="0 0 0" rgba="0.95 0.95 0.95 1"/>
+            <geom type="capsule" size="0.05 0.06" pos="0.05 0 0"
+                  quat="0.707107 0 0.707107 0" rgba="0.95 0.95 0.95 1"/>
+
+            <body name="link4" pos="0.0825 0 0" quat="1 1 0 0">
+              <inertial mass="3.587895" pos="-0.05317 0.1046 0.0065"
+                diaginertia="0.0486 0.0327 0.00941"/>
+              <joint name="joint4" range="-3.0718 -0.0698"/>
+              <geom type="capsule" size="0.06 0.12" pos="0 0.05 0" rgba="0.95 0.95 0.95 1"/>
+
+              <body name="link5" pos="-0.0825 0.384 0" quat="1 -1 0 0">
+                <inertial mass="1.225946" pos="-0.01156 0.04149 -0.02117"
+                  diaginertia="0.0154 0.0135 0.00434"/>
+                <joint name="joint5"/>
+                <geom type="capsule" size="0.05 0.1" pos="0 0 0" rgba="0.95 0.95 0.95 1"/>
+
+                <body name="link6" quat="1 1 0 0">
+                  <inertial mass="1.666555" pos="0.05987 0.0003 0.01014"
+                    diaginertia="0.00503 0.00475 0.00168"/>
+                  <joint name="joint6" range="-0.0175 3.7525"/>
+                  <geom type="capsule" size="0.05 0.08" pos="0.04 0 0"
+                        quat="0.707107 0 0.707107 0" rgba="0.95 0.95 0.95 1"/>
+
+                  <body name="link7" pos="0.088 0 0" quat="1 1 0 0">
+                    <inertial mass="0.735522" pos="0.01014 0.0101 -0.07091"
+                      diaginertia="0.00265 0.00244 0.000953"/>
+                    <joint name="joint7"/>
+                    <geom type="capsule" size="0.04 0.06" pos="0 0 -0.04" rgba="0.95 0.95 0.95 1"/>
+
+                    <!-- Hand: quat "0.9238795 0 0 -0.3826834" = -45 deg around Z -->
+                    <body name="hand" pos="0 0 0.107" quat="0.9238795 0 0 -0.3826834">
+                      <inertial mass="0.73" pos="-0.01 0 0.03"
+                        diaginertia="0.001 0.0025 0.0017"/>
+                      <geom type="box" size="0.04 0.06 0.03" pos="0 0 0.02"
+                            rgba="0.7 0.7 0.7 1"/>
+                      <!-- End-effector site (target for IK) -->
+                      <site name="ee_site" pos="0 0 0.09" size="0.01"
+                            rgba="1 0 0 1" type="sphere"/>
+
+                      <!-- Left finger -->
+                      <body name="left_finger" pos="0 0.04 0.0584">
+                        <inertial mass="0.015" pos="0 0 0"
+                          diaginertia="2.375e-6 2.375e-6 7.5e-7"/>
+                        <joint name="finger_joint1" class="finger"/>
+                        <geom type="box" size="0.008 0.005 0.032" pos="0 0.005 0.016"
+                              rgba="0.9 0.9 0.9 1" condim="4" friction="2.0 0.01 0.0001"/>
+                      </body>
+
+                      <!-- Right finger -->
+                      <body name="right_finger" pos="0 -0.04 0.0584" quat="0 0 0 1">
+                        <inertial mass="0.015" pos="0 0 0"
+                          diaginertia="2.375e-6 2.375e-6 7.5e-7"/>
+                        <joint name="finger_joint2" class="finger"/>
+                        <geom type="box" size="0.008 0.005 0.032" pos="0 -0.005 0.016"
+                              rgba="0.9 0.9 0.9 1" condim="4" friction="2.0 0.01 0.0001"/>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Perception camera body (position set programmatically per trial) -->
+    <body name="perception_camera_body" pos="0.5 -0.7 0.9">
+      <camera name="perception_camera" pos="0 0 0" fovy="45"/>
+      <geom type="box" size="0.02 0.03 0.02" rgba="0.2 0.8 0.2 1"
+            contype="0" conaffinity="0"/>
+    </body>
+  </worldbody>
+
+  <!-- Coupled fingers via tendon (same as panda.xml) -->
+  <tendon>
+    <fixed name="split">
+      <joint joint="finger_joint1" coef="0.5"/>
+      <joint joint="finger_joint2" coef="0.5"/>
+    </fixed>
+  </tendon>
+
+  <equality>
+    <joint joint1="finger_joint1" joint2="finger_joint2"
+           solimp="0.95 0.99 0.001" solref="0.005 1"/>
+  </equality>
+
+  <!-- Actuators - identical gain/bias to panda.xml for realistic dynamics -->
+  <actuator>
+    <general class="panda" name="actuator1" joint="joint1"
+             gainprm="4500" biasprm="0 -4500 -450"/>
+    <general class="panda" name="actuator2" joint="joint2"
+             gainprm="4500" biasprm="0 -4500 -450"
+             ctrlrange="-1.7628 1.7628"/>
+    <general class="panda" name="actuator3" joint="joint3"
+             gainprm="3500" biasprm="0 -3500 -350"/>
+    <general class="panda" name="actuator4" joint="joint4"
+             gainprm="3500" biasprm="0 -3500 -350"
+             ctrlrange="-3.0718 -0.0698"/>
+    <general class="panda" name="actuator5" joint="joint5"
+             gainprm="2000" biasprm="0 -2000 -200" forcerange="-12 12"/>
+    <general class="panda" name="actuator6" joint="joint6"
+             gainprm="2000" biasprm="0 -2000 -200" forcerange="-12 12"
+             ctrlrange="-0.0175 3.7525"/>
+    <general class="panda" name="actuator7" joint="joint7"
+             gainprm="2000" biasprm="0 -2000 -200" forcerange="-12 12"/>
+    <!-- Finger actuator via tendon. ctrl=255 → open, ctrl=0 → closed -->
+    <general class="panda" name="actuator8" tendon="split"
+             forcerange="-100 100" ctrlrange="0 255"
+             gainprm="0.01568627451 0 0" biasprm="0 -100 -10"/>
+  </actuator>
+
+  <!-- Home pose: joints at canonical Panda home, fingers open -->
+  <!--
+    qpos order (16 values):
+      [0:7]   freejoint of target_object: px py pz qw qx qy qz
+      [7:14]  arm joints 1-7
+      [14:16] finger joints 1-2
+  -->
+  <keyframe>
+    <key name="home"
+         qpos="0.5 0 0.455 1 0 0 0   0 0 0 -1.57079 0 1.57079 -0.7853   0.04 0.04"
+         ctrl="0 0 0 -1.57079 0 1.57079 -0.7853 255"/>
+  </keyframe>
+</mujoco>
