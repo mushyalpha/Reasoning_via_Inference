@@ -1,0 +1,29 @@
+<mujoco model="grasp_scene">
+  <!-- Use radian or degree depending on preference, panda.xml uses radian -->
+  <compiler angle="radian"/>
+  <option gravity="0 0 -9.81"/>
+
+  <include file="panda_no_keyframe.xml"/>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom type="plane" size="1 1 0.1" rgba="0.9 0.9 0.9 1"/>
+
+    <!-- Table -->
+    <body name="table" pos="0.5 0 0.2">
+      <geom type="box" size="0.3 0.4 0.2" rgba="0.6 0.4 0.2 1"/>
+    </body>
+
+    <!-- Graspable Object (e.g., a cup) -->
+    <body name="target_object" pos="0.5 0 0.45">
+      <freejoint/>
+      <geom type="cylinder" size="0.03 0.05" rgba="0.1 0.5 0.8 1" mass="0.1"/>
+    </body>
+
+    <!-- Virtual Camera for point cloud generation (with a visual marker so you can see it) -->
+    <body name="perception_camera_body" pos="0.5 0 1.0">
+      <camera name="perception_camera" pos="0 0 0" mode="fixed"/>
+      <geom type="box" size="0.02 0.04 0.02" rgba="0.2 0.8 0.2 1" contype="0" conaffinity="0"/>
+    </body>
+  </worldbody>
+</mujoco>

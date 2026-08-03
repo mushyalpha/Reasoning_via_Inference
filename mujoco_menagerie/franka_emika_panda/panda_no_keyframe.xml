@@ -1,0 +1,161 @@
+<mujoco model="panda">
+  <compiler angle="radian" meshdir="assets" autolimits="true"/>
+
+  <option integrator="implicitfast"/>
+
+  <default>
+    <default class="panda">
+      <material specular="0.5" shininess="0.25"/>
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-2.8973 2.8973"/>
+      <general dyntype="none" biastype="affine" ctrlrange="-2.8973 2.8973" forcerange="-87 87"/>
+      <default class="finger">
+        <joint axis="0 1 0" type="slide" range="0 0.04"/>
+      </default>
+
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+      <default class="collision">
+        <geom type="mesh" group="3"/>
+        <default class="fingertip_pad_collision_1">
+          <geom type="box" size="0.0085 0.004 0.0085" pos="0 0.0055 0.0445"/>
+        </default>
+        <default class="fingertip_pad_collision_2">
+          <geom type="box" size="0.003 0.002 0.003" pos="0.0055 0.002 0.05"/>
+        </default>
+        <default class="fingertip_pad_collision_3">
+          <geom type="box" size="0.003 0.002 0.003" pos="-0.0055 0.002 0.05"/>
+        </default>
+        <default class="fingertip_pad_collision_4">
+          <geom type="box" size="0.003 0.002 0.0035" pos="0.0055 0.002 0.0395"/>
+        </default>
+        <default class="fingertip_pad_collision_5">
+          <geom type="box" size="0.003 0.002 0.0035" pos="-0.0055 0.002 0.0395"/>
+        </default>
+      </default>
+    </default>
+  </default>
+
+  <asset>
+    <material class="panda" name="white" rgba="1 1 1 1"/>
+    <material class="panda" name="off_white" rgba="0.901961 0.921569 0.929412 1"/>
+    <material class="panda" name="black" rgba="0.25 0.25 0.25 1"/>
+    <material class="panda" name="green" rgba="0 1 0 1"/>
+    <material class="panda" name="light_blue" rgba="0.039216 0.541176 0.780392 1"/>
+
+    <mesh name="link0_c" file="link0.stl"/>
+    <mesh name="link1_c" file="link1.stl"/>
+    <mesh name="link2_c" file="link2.stl"/>
+    <mesh name="link3_c" file="link3.stl"/>
+    <mesh name="link4_c" file="link4.stl"/>
+    <mesh name="link5_c" file="link5.stl"/>
+    <mesh name="link6_c" file="link6.stl"/>
+    <mesh name="link7_c" file="link7.stl"/>
+    <mesh name="hand_c" file="hand.stl"/>
+    <mesh name="finger_c" file="finger.stl"/>
+
+    <mesh name="link0_v" file="link0.obj"/>
+    <mesh name="link1_v" file="link1.obj"/>
+    <mesh name="link2_v" file="link2.obj"/>
+    <mesh name="link3_v" file="link3.obj"/>
+    <mesh name="link4_v" file="link4.obj"/>
+    <mesh name="link5_v" file="link5.obj"/>
+    <mesh name="link6_v" file="link6.obj"/>
+    <mesh name="link7_v" file="link7.obj"/>
+    <mesh name="hand_v" file="hand.obj"/>
+    <mesh name="finger_v" file="finger.obj"/>
+  </asset>
+
+  <worldbody>
+    <body name="link0" childclass="panda">
+      <inertial pos="0.000096 -0.0001 0.06749" quat="1 -0.00130862 0 0" mass="0.629769" diaginertia="0.00315 0.00388 0.004285"/>
+      <geom class="visual" mesh="link0_v" material="white"/>
+      <geom class="collision" mesh="link0_c"/>
+      <body name="link1" pos="0 0 0.333">
+        <inertial pos="0.003875 0.002081 -0.04762" quat="0.998796 0.000279 -0.0489247 0.00181504" mass="4.970684" diaginertia="0.0824955 0.0775125 0.0120826"/>
+        <joint name="joint1"/>
+        <geom class="visual" mesh="link1_v" material="white"/>
+        <geom class="collision" mesh="link1_c"/>
+        <body name="link2" quat="0.707107 0.707107 0 0">
+          <inertial pos="-0.003141 -0.02872 0.003495" quat="0.998773 -0.00537117 -0.0491682 0.00283838" mass="0.646926" diaginertia="0.0107008 0.00784504 0.00446612"/>
+          <joint name="joint2"/>
+          <geom class="visual" mesh="link2_v" material="white"/>
+          <geom class="collision" mesh="link2_c"/>
+          <body name="link3" pos="0 -0.316 0" quat="0.707107 -0.707107 0 0">
+            <inertial pos="0.02796 0.03904 -0.06654" quat="0.926765 -0.130361 0.304582 0.193003" mass="3.228604" diaginertia="0.0496183 0.0419481 0.00847095"/>
+            <joint name="joint3"/>
+            <geom class="visual" mesh="link3_v" material="white"/>
+            <geom class="collision" mesh="link3_c"/>
+            <body name="link4" pos="0.0825 0 0" quat="0.707107 0.707107 0 0">
+              <inertial pos="-0.05317 0.1046 0.0065" quat="0.969905 -0.0182278 0.182727 0.160767" mass="3.587895" diaginertia="0.0485774 0.0326852 0.00941431"/>
+              <joint name="joint4"/>
+              <geom class="visual" mesh="link4_v" material="white"/>
+              <geom class="collision" mesh="link4_c"/>
+              <body name="link5" pos="-0.0825 0.384 0" quat="0.707107 -0.707107 0 0">
+                <inertial pos="-0.01156 0.04149 -0.02117" quat="0.971096 -0.00125764 -0.0924639 0.220042" mass="1.225946" diaginertia="0.0153707 0.0135267 0.00433926"/>
+                <joint name="joint5"/>
+                <geom class="visual" mesh="link5_v" material="white"/>
+                <geom class="collision" mesh="link5_c"/>
+                <body name="link6" quat="0.707107 0.707107 0 0">
+                  <inertial pos="0.05987 0.0003 0.01014" quat="0.463433 0.529069 -0.463273 0.537786" mass="1.666555" diaginertia="0.00503178 0.0047454 0.00168061"/>
+                  <joint name="joint6"/>
+                  <geom class="visual" mesh="link6_v" material="white"/>
+                  <geom class="collision" mesh="link6_c"/>
+                  <body name="link7" pos="0.088 0 0" quat="0.707107 -0.707107 0 0">
+                    <inertial pos="0.01014 0.0101 -0.07091" quat="0.551296 0.548829 0.444183 0.445901" mass="0.735522" diaginertia="0.00265035 0.00244097 0.000953089"/>
+                    <joint name="joint7"/>
+                    <geom class="visual" mesh="link7_v" material="white"/>
+                    <geom class="collision" mesh="link7_c"/>
+                    <body name="hand" pos="0 0 0.107" quat="0.92388 0 0 0.382683">
+                      <inertial pos="-0.01 0 0.03" quat="0.707107 0 0.707107 0" mass="0.73" diaginertia="0.001 0.0025 0.0017"/>
+                      <geom class="visual" mesh="hand_v" material="white"/>
+                      <geom class="collision" mesh="hand_c"/>
+                      <site name="attachment_site" pos="0 0 0" quat="0.707107 0 0 0.707107"/>
+                      <body name="left_finger" pos="0 0 0.0584">
+                        <inertial pos="0 0.0145644 0.0227941" quat="0.709286 0 0 0.704919" mass="0.015" diaginertia="1e-05 1e-05 3.01e-06"/>
+                        <joint name="finger_joint1" class="finger"/>
+                        <geom class="visual" mesh="finger_v" material="off_white"/>
+                        <geom class="collision" mesh="finger_c"/>
+                        <geom class="fingertip_pad_collision_1"/>
+                        <geom class="fingertip_pad_collision_2"/>
+                        <geom class="fingertip_pad_collision_3"/>
+                        <geom class="fingertip_pad_collision_4"/>
+                        <geom class="fingertip_pad_collision_5"/>
+                      </body>
+                      <body name="right_finger" pos="0 0 0.0584" quat="0 0 0 1">
+                        <inertial pos="0 0.0145644 0.0227941" quat="0.709286 0 0 0.704919" mass="0.015" diaginertia="1e-05 1e-05 3.01e-06"/>
+                        <joint name="finger_joint2" class="finger"/>
+                        <geom class="visual" mesh="finger_v" material="off_white"/>
+                        <geom class="collision" mesh="finger_c"/>
+                        <geom class="fingertip_pad_collision_1"/>
+                        <geom class="fingertip_pad_collision_2"/>
+                        <geom class="fingertip_pad_collision_3"/>
+                        <geom class="fingertip_pad_collision_4"/>
+                        <geom class="fingertip_pad_collision_5"/>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <general class="panda" name="actuator1" joint="joint1" gainprm="4500" biasprm="0 -4500 -450"/>
+    <general class="panda" name="actuator2" joint="joint2" gainprm="4500" biasprm="0 -4500 -450"/>
+    <general class="panda" name="actuator3" joint="joint3" gainprm="3500" biasprm="0 -3500 -350"/>
+    <general class="panda" name="actuator4" joint="joint4" gainprm="3500" biasprm="0 -3500 -350"/>
+    <general class="panda" name="actuator5" joint="joint5" gainprm="2000" biasprm="0 -2000 -200"/>
+    <general class="panda" name="actuator6" joint="joint6" gainprm="2000" biasprm="0 -2000 -200"/>
+    <general class="panda" name="actuator7" joint="joint7" gainprm="2000" biasprm="0 -2000 -200"/>
+    <general class="panda" name="fingers_actuator" joint="finger_joint1 finger_joint2" ctrlrange="0 255" gainprm="0 1 0" biasprm="0 -1 0"/>
+  </actuator>
+
+  <contact>
+    <exclude body1="link0" body2="link1"/>
+  </contact>
+</mujoco>
