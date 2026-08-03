@@ -1,3 +1,5 @@
+# NOTE: superseded by the inline perception pipeline in run_experiments.py
+# Kept for reference only.
 """Capture depth and point cloud from the MuJoCo perception camera."""
 
 from __future__ import annotations

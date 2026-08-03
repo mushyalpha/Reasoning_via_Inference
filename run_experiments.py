@@ -41,10 +41,11 @@ import mujoco
 
 # ── CGN imports ────────────────────────────────────────────────────────────────
 _PROJECT = os.path.dirname(os.path.abspath(__file__))
-_CGN_SRC = os.path.join(_PROJECT, 'contact_graspnet_pytorch',
-                         'contact_graspnet_pytorch')
-if _CGN_SRC not in sys.path:
-    sys.path.insert(0, _CGN_SRC)
+_CGN_REPO = os.path.join(_PROJECT, 'contact_graspnet_pytorch')
+_CGN_SRC = os.path.join(_CGN_REPO, 'contact_graspnet_pytorch')
+for _p in [_CGN_REPO, _CGN_SRC]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from contact_grasp_estimator import GraspEstimator
 import config_utils

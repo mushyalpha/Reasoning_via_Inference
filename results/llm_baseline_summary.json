@@ -1,0 +1,110 @@
+{
+  "T1": {
+    "primary_n": 95,
+    "primary_accuracy": 0.3158,
+    "primary_per_cause": {
+      "sigma_d": {
+        "n": 36,
+        "accuracy": 0.5556
+      },
+      "theta": {
+        "n": 35,
+        "accuracy": 0.0
+      },
+      "phi": {
+        "n": 23,
+        "accuracy": 0.4348
+      },
+      "rho": {
+        "n": 1,
+        "accuracy": 0.0
+      }
+    },
+    "full_n": 292,
+    "full_accuracy": 0.1027,
+    "majority_class_baseline": 0.5719,
+    "full_per_cause": {
+      "sigma_d": {
+        "n": 36,
+        "accuracy": 0.5556
+      },
+      "theta": {
+        "n": 35,
+        "accuracy": 0.0
+      },
+      "phi": {
+        "n": 23,
+        "accuracy": 0.4348
+      },
+      "rho": {
+        "n": 1,
+        "accuracy": 0.0
+      },
+      "joint": {
+        "n": 30,
+        "accuracy": 0.0
+      },
+      "none": {
+        "n": 167,
+        "accuracy": 0.0
+      }
+    },
+    "mean_agreement_rate": 0.7808,
+    "parse_failures": 1,
+    "parse_failure_rate": 0.0034
+  },
+  "T2": {
+    "primary_n": 15,
+    "primary_accuracy": 0.4,
+    "primary_per_cause": {
+      "sigma_d": {
+        "n": 0,
+        "accuracy": null
+      },
+      "theta": {
+        "n": 4,
+        "accuracy": 0.5
+      },
+      "phi": {
+        "n": 10,
+        "accuracy": 0.4
+      },
+      "rho": {
+        "n": 1,
+        "accuracy": 0.0
+      }
+    },
+    "full_n": 32,
+    "full_accuracy": 0.1875,
+    "majority_class_baseline": 0.5719,
+    "full_per_cause": {
+      "sigma_d": {
+        "n": 0,
+        "accuracy": null
+      },
+      "theta": {
+        "n": 4,
+        "accuracy": 0.5
+      },
+      "phi": {
+        "n": 10,
+        "accuracy": 0.4
+      },
+      "rho": {
+        "n": 1,
+        "accuracy": 0.0
+      },
+      "joint": {
+        "n": 3,
+        "accuracy": 0.0
+      },
+      "none": {
+        "n": 14,
+        "accuracy": 0.0
+      }
+    },
+    "mean_agreement_rate": 0.8229,
+    "parse_failures": 0,
+    "parse_failure_rate": 0.0
+  }
+}

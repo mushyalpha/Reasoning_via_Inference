@@ -27,12 +27,22 @@ import numpy as np
 import mujoco
 import mujoco.viewer
 
+try:
+    import imageio
+    _IMAGEIO_OK = True
+except ImportError:
+    _IMAGEIO_OK = False
+
 # ── CGN imports ────────────────────────────────────────────────────────────────
 _PROJECT  = os.path.dirname(os.path.abspath(__file__))
-_CGN_SRC  = os.path.join(_PROJECT, 'contact_graspnet_pytorch',
-                          'contact_graspnet_pytorch')
-if _CGN_SRC not in sys.path:
-    sys.path.insert(0, _CGN_SRC)
+_CGN_REPO = os.path.join(_PROJECT, 'contact_graspnet_pytorch')
+_CGN_SRC  = os.path.join(_CGN_REPO, 'contact_graspnet_pytorch')
+# _CGN_REPO must come first so the inner folder is found as a proper package
+# (needed for `from contact_graspnet_pytorch import config_utils` inside CGN).
+# _CGN_SRC provides flat imports like `from contact_grasp_estimator import ...`.
+for _p in [_CGN_REPO, _CGN_SRC]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from contact_grasp_estimator import GraspEstimator
 import config_utils
@@ -48,6 +58,7 @@ EE_SITE     = 'ee_site'          # site name in XML
 TARGET_BODY = 'target_object'
 CAM_NAME    = 'perception_camera'
 LIFT_HEIGHT = 0.55               # object must reach this Z to count as success
+TARGET_POS  = np.array([0.5, 0., 0.455])   # cylinder centroid (world frame)
 IMG_W, IMG_H = 640, 480
 HOME_QPOS   = np.array([0, 0, 0, -1.57079, 0, 1.57079, -0.7853, 0.04, 0.04])
 
@@ -67,6 +78,45 @@ def load_cgn():
     estimator.model.eval()
     print('[CGN] Model loaded (CPU mode).')
     return estimator
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  Video recorder (offscreen, fixed viewpoint)
+# ══════════════════════════════════════════════════════════════════════════════
+
+class VideoRecorder:
+    """Captures MuJoCo frames offscreen and writes them to an MP4."""
+
+    def __init__(self, model, output_path, fps=30, width=1280, height=720):
+        self.output_path = output_path if output_path.endswith('.mp4') else output_path + '.mp4'
+        self.fps   = fps
+        self.frames = []
+        self._renderer = mujoco.Renderer(model, height=height, width=width)
+        self._cam = mujoco.MjvCamera()
+        mujoco.mjv_defaultFreeCamera(model, self._cam)
+        # Match the initial viewer viewpoint
+        self._cam.distance  = 2.0
+        self._cam.azimuth   = 135.0
+        self._cam.elevation = -20.0
+
+    def capture(self, data):
+        self._renderer.update_scene(data, camera=self._cam)
+        self.frames.append(self._renderer.render().copy())
+
+    def save(self):
+        if not self.frames:
+            print('[Record] No frames captured.')
+            return
+        print(f'[Record] Writing {len(self.frames)} frames to {self.output_path} ...')
+        writer = imageio.get_writer(self.output_path, fps=self.fps,
+                                    codec='libx264', quality=8,
+                                    macro_block_size=None)
+        for frame in self.frames:
+            writer.append_data(frame)
+        writer.close()
+        self._renderer.close()
+        size_mb = os.path.getsize(self.output_path) / 1e6
+        print(f'[Record] Done. {self.output_path}  ({size_mb:.1f} MB)')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -209,6 +259,18 @@ def best_grasp_cam(pred_grasps, scores):
     return best_pose, best_score
 
 
+def top_n_grasps_cam(pred_grasps, scores, n=3):
+    """Return the top-n grasps across all objects, sorted by score descending."""
+    all_poses = []
+    for obj_id in pred_grasps:
+        s = scores[obj_id]
+        g = pred_grasps[obj_id]
+        for i in range(len(s)):
+            all_poses.append((float(s[i]), g[i].copy()))
+    all_poses.sort(key=lambda x: x[0], reverse=True)
+    return [(pose, score) for score, pose in all_poses[:n]]
+
+
 def cam_to_world(pose_cam, model, data):
     cam_id  = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, CAM_NAME)
     cam_rot = data.cam_xmat[cam_id].reshape(3, 3)
@@ -227,7 +289,7 @@ def cam_to_world(pose_cam, model, data):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def ik_move_to(model, data, target_pos, viewer=None,
-               max_steps=2000, tol=0.008, lam=0.01):
+               max_steps=2000, tol=0.008, lam=0.01, rec=None):
     """
     Jacobian DLS IK for the 7 Panda arm joints.
 
@@ -260,41 +322,68 @@ def ik_move_to(model, data, target_pos, viewer=None,
 
         if viewer is not None and step % 5 == 0:
             viewer.sync()
+            time.sleep(0.018)   # ~18ms per rendered frame → visibly slow
+            if rec is not None:
+                rec.capture(data)
 
     return np.linalg.norm(target_pos - data.site_xpos[site_id]) < tol * 3
 
 
-def settle(model, data, viewer=None, steps=300):
+def settle(model, data, viewer=None, steps=300, rec=None):
     """Run simulation to let physics settle."""
     for i in range(steps):
         mujoco.mj_step(model, data)
         if viewer is not None and i % 5 == 0:
             viewer.sync()
+            time.sleep(0.018)
+            if rec is not None:
+                rec.capture(data)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  Main demo
 # ══════════════════════════════════════════════════════════════════════════════
 
-def run_demo(phi=45., theta=0., sigma_d=0., rho=1.0, seed=42):
+def _reset_arm(model, data, viewer=None, rec=None):
+    """Return arm to home keyframe, keeping object in place."""
+    obj_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, TARGET_BODY)
+    obj_pos  = data.xpos[obj_id].copy()
+    obj_quat = data.xquat[obj_id].copy()
+    mujoco.mj_resetDataKeyframe(model, data, 0)
+    # restore object position so it doesn't reset too
+    data.qpos[0:3] = obj_pos
+    data.qpos[3:7] = obj_quat
+    mujoco.mj_forward(model, data)
+    settle(model, data, viewer, steps=100, rec=rec)
+
+
+def run_demo(phi=45., theta=0., sigma_d=0., rho=1.0, seed=42, n_poses=3,
+             record=None, record_fps=30):
     rng = np.random.default_rng(seed)
 
     print(f'\n{"="*60}')
-    print(f'  GRASP DEMO  phi={phi} theta={theta} '
-          f'sigma_d={sigma_d} rho={rho}')
+    print(f'  GRASP DEMO  phi={phi}  theta={theta}  '
+          f'sigma_d={sigma_d}  rho={rho}  n_poses={n_poses}')
     print(f'{"="*60}')
 
-    # Load scene
     model = mujoco.MjModel.from_xml_path(SCENE_XML)
     data  = mujoco.MjData(model)
-    mujoco.mj_resetDataKeyframe(model, data, 0)   # home keyframe
+    mujoco.mj_resetDataKeyframe(model, data, 0)
     mujoco.mj_forward(model, data)
 
-    # Load CGN (takes ~3s on CPU first time)
+    # ── Set up video recorder ────────────────────────────────────────────────
+    rec = None
+    if record:
+        if not _IMAGEIO_OK:
+            print('[Record] ERROR: imageio not installed.')
+            print('         Run:  pip install imageio[ffmpeg]')
+        else:
+            rec = VideoRecorder(model, record, fps=record_fps)
+            print(f'[Record] Will save video to: {rec.output_path}  ({record_fps} fps)')
+
     print('[CGN] Loading model...')
     estimator = load_cgn()
 
-    # Open viewer
     print('[Viewer] Opening MuJoCo viewer... (close to exit)')
     with mujoco.viewer.launch_passive(model, data) as viewer:
         viewer.cam.distance = 2.0
@@ -304,9 +393,9 @@ def run_demo(phi=45., theta=0., sigma_d=0., rho=1.0, seed=42):
         # ── Step 1: position camera ──────────────────────────────────────────
         set_camera(model, phi, theta)
         mujoco.mj_forward(model, data)
-        settle(model, data, viewer, steps=200)
+        settle(model, data, viewer, steps=200, rec=rec)
 
-        # ── Step 2: capture depth + run CGN ─────────────────────────────────
+        # ── Step 2: capture depth + run CGN (once) ───────────────────────────
         print('[Perception] Rendering depth image...')
         depth, K, seg_map = render_depth_seg(model, data,
                                               sigma_d=sigma_d, rng=rng)
@@ -315,103 +404,137 @@ def run_demo(phi=45., theta=0., sigma_d=0., rho=1.0, seed=42):
         print('[CGN] Running inference...')
         pred_grasps, scores = run_cgn(depth, K, seg_map, estimator,
                                        rho=rho, rng=rng)
-        n_grasps = sum(len(scores[k]) for k in scores)
-        print(f'  Generated {n_grasps} grasp candidates')
+        total = sum(len(scores[k]) for k in scores)
+        print(f'  Generated {total} grasp candidates')
 
-        pose_cam, cgn_score = best_grasp_cam(pred_grasps, scores)
-        if pose_cam is None:
-            print('[RESULT] No grasp found. Exiting.')
-            return {'success': False, 'reason': 'no_grasps', 'score': None}
+        grasps = top_n_grasps_cam(pred_grasps, scores, n=n_poses)
+        if not grasps:
+            print('[RESULT] No grasps found. Exiting.')
+            return []
 
-        pose_world = cam_to_world(pose_cam, model, data)
-        grasp_pos  = pose_world[:3, 3]
-        pre_grasp  = grasp_pos + np.array([0., 0., 0.12])   # 12cm above
+        print(f'  Will attempt top {len(grasps)} poses.\n')
 
-        print(f'  CGN score: {cgn_score:.4f}')
-        print(f'  Grasp world pos: {grasp_pos}')
+        CYLINDER_Z = TARGET_POS[2]
+        results = []
 
-        # Use CGN x,y but known cylinder z for descent
-        CYLINDER_Z  = TARGET_POS[2]              # 0.455
-        grasp_z     = CYLINDER_Z + 0.02
-        pre_grasp   = np.array([grasp_pos[0], grasp_pos[1], CYLINDER_Z + 0.18])
-        actual_pos  = np.array([grasp_pos[0], grasp_pos[1], grasp_z])
-        lift_target = np.array([grasp_pos[0], grasp_pos[1], CYLINDER_Z + 0.25])
+        # ── Loop: try each pose ──────────────────────────────────────────────
+        for attempt, (pose_cam, cgn_score) in enumerate(grasps, start=1):
+            if not viewer.is_running():
+                break
 
-        # ── Step 3: move to PRE-GRASP position (above object) ───────────────
-        print('[Robot] Moving to PRE-GRASP position...')
-        reached = ik_move_to(model, data, pre_grasp, viewer=viewer)
-        print(f'  Pre-grasp reached: {reached}')
-        settle(model, data, viewer, steps=150)
+            print(f'\n{"─"*60}')
+            print(f'  ATTEMPT {attempt}/{len(grasps)}   score={cgn_score:.4f}')
+            print(f'{"─"*60}')
 
-        # ── Step 4: descend to GRASP position ───────────────────────────────
-        print('[Robot] Descending to grasp...')
-        reached = ik_move_to(model, data, actual_pos, viewer=viewer,
-                              max_steps=800, tol=0.015)
-        print(f'  Grasp position reached: {reached}')
-        settle(model, data, viewer, steps=100)
+            # Reset arm to home, keep object where it is
+            _reset_arm(model, data, viewer, rec=rec)
 
-        # ── Step 5: CLOSE GRIPPER (ctrl[7]: 255=open, 0=closed) ─────────────
-        print('[Robot] Closing gripper...')
-        for t in range(300):
-            data.ctrl[7] = max(0., data.ctrl[7] - 1.0)   # ramp closed
-            mujoco.mj_step(model, data)
-            if t % 10 == 0:
-                viewer.sync()
-        settle(model, data, viewer, steps=100)
+            pose_world = cam_to_world(pose_cam, model, data)
+            grasp_pos  = pose_world[:3, 3]
+            pre_grasp  = np.array([grasp_pos[0], grasp_pos[1], CYLINDER_Z + 0.18])
+            actual_pos = np.array([grasp_pos[0], grasp_pos[1], CYLINDER_Z + 0.02])
+            lift_target = np.array([grasp_pos[0], grasp_pos[1], CYLINDER_Z + 0.25])
 
-        # ── Step 6: LIFT ─────────────────────────────────────────────────────
-        print('[Robot] Lifting...')
-        ik_move_to(model, data, lift_target, viewer=viewer, max_steps=1500)
-        settle(model, data, viewer, steps=200)
+            print(f'  Grasp XY: ({grasp_pos[0]:.3f}, {grasp_pos[1]:.3f})')
 
-        # ── Step 7: check success ─────────────────────────────────────────────
-        obj_body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY,
-                                        TARGET_BODY)
-        obj_z = data.xpos[obj_body_id][2]
-        success = bool(obj_z > LIFT_HEIGHT)
+            # Pre-grasp
+            print('[Robot] Moving to pre-grasp...')
+            ik_move_to(model, data, pre_grasp, viewer=viewer,
+                       max_steps=2000, rec=rec)
+            settle(model, data, viewer, steps=150, rec=rec)
 
-        # Intermediate variables for causal model
-        site_id   = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, EE_SITE)
-        obj_pos   = data.xpos[obj_body_id].copy()
-        ee_pos    = data.site_xpos[site_id].copy()
-        e_pose    = float(np.linalg.norm(obj_pos[:2] - grasp_pos[:2]))
+            # Descend
+            print('[Robot] Descending...')
+            ik_move_to(model, data, actual_pos, viewer=viewer,
+                       max_steps=800, tol=0.015, rec=rec)
+            settle(model, data, viewer, steps=120, rec=rec)
 
+            # Close gripper
+            print('[Robot] Closing gripper...')
+            for t in range(350):
+                data.ctrl[7] = max(0., data.ctrl[7] - 0.73)
+                mujoco.mj_step(model, data)
+                if t % 8 == 0:
+                    viewer.sync()
+                    time.sleep(0.018)
+                    if rec is not None:
+                        rec.capture(data)
+            settle(model, data, viewer, steps=120, rec=rec)
+
+            # Lift
+            print('[Robot] Lifting...')
+            ik_move_to(model, data, lift_target, viewer=viewer,
+                       max_steps=1500, rec=rec)
+            settle(model, data, viewer, steps=200, rec=rec)
+
+            # Result
+            obj_id  = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, TARGET_BODY)
+            site_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, EE_SITE)
+            obj_z   = float(data.xpos[obj_id][2])
+            e_pose  = float(np.linalg.norm(data.xpos[obj_id][:2] - grasp_pos[:2]))
+            success = obj_z > LIFT_HEIGHT
+
+            print(f'\n  RESULT attempt {attempt}: {"SUCCESS" if success else "FAILURE"}')
+            print(f'  Object Z = {obj_z:.3f}m   e_pose = {e_pose:.4f}m')
+
+            results.append({'attempt': attempt, 'score': cgn_score,
+                            'success': success, 'obj_z': obj_z, 'e_pose': e_pose})
+
+            # Pause between attempts so the professor can see the result
+            if attempt < len(grasps) and viewer.is_running():
+                print(f'\n  [Pausing 3 s before next attempt...]')
+                for _ in range(150):
+                    if not viewer.is_running():
+                        break
+                    mujoco.mj_step(model, data)
+                    viewer.sync()
+                    time.sleep(0.02)
+                    if rec is not None:
+                        rec.capture(data)
+
+        # Final summary
         print(f'\n{"="*60}')
-        print(f'  RESULT: {"✅  SUCCESS" if success else "❌  FAILURE"}')
-        print(f'  Object Z height after lift: {obj_z:.3f}m '
-              f'(threshold: {LIFT_HEIGHT}m)')
-        print(f'  CGN confidence (q_grasp):   {cgn_score:.4f}')
-        print(f'  Pose error (e_pose):         {e_pose:.4f}m')
-        print(f'  Point cloud size:            {int(seg_map.sum())} px visible')
+        print(f'  SUMMARY  ({len(results)} attempts)')
+        for r in results:
+            tag = 'SUCCESS' if r['success'] else 'FAILURE'
+            print(f'  Attempt {r["attempt"]}: {tag}  '
+                  f'score={r["score"]:.3f}  e_pose={r["e_pose"]:.3f}m')
         print(f'{"="*60}\n')
 
-        # Keep viewer open so you can inspect the result
-        print('[Viewer] Simulation paused. Close the viewer window to exit.')
+        # Save video before the idle loop so the file is written even if
+        # the user closes the viewer window early.
+        if rec is not None:
+            rec.save()
+
+        print('[Viewer] Done. Close the window to exit.')
         while viewer.is_running():
             mujoco.mj_step(model, data)
             viewer.sync()
             time.sleep(0.02)
 
-    return {
-        'phi': phi, 'theta': theta, 'sigma_d': sigma_d, 'rho': rho,
-        'success': success, 'score': cgn_score, 'e_pose': e_pose,
-        'obj_z': obj_z,
-    }
+    return results
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Demo grasp with MuJoCo viewer')
-    parser.add_argument('--phi',     type=float, default=45.,
+    parser.add_argument('--phi',        type=float, default=45.,
                         help='Camera elevation angle (deg)')
-    parser.add_argument('--theta',   type=float, default=0.,
+    parser.add_argument('--theta',      type=float, default=0.,
                         help='Camera azimuth angle (deg)')
-    parser.add_argument('--sigma_d', type=float, default=0.,
+    parser.add_argument('--sigma_d',    type=float, default=0.,
                         help='Depth noise std dev (m) — causal var')
-    parser.add_argument('--rho',     type=float, default=1.0,
+    parser.add_argument('--rho',        type=float, default=1.0,
                         help='Point cloud keep fraction — causal var')
-    parser.add_argument('--seed',    type=int,   default=42)
+    parser.add_argument('--seed',       type=int,   default=42)
+    parser.add_argument('--n_poses',    type=int,   default=3,
+                        help='Number of CGN poses to attempt (default: 3)')
+    parser.add_argument('--record',     type=str,   default=None,
+                        help='Save simulation video to this path, e.g. demo.mp4')
+    parser.add_argument('--record_fps', type=int,   default=30,
+                        help='Frames per second for the output video (default: 30)')
     args = parser.parse_args()
 
     run_demo(phi=args.phi, theta=args.theta,
              sigma_d=args.sigma_d, rho=args.rho,
-             seed=args.seed)
+             seed=args.seed, n_poses=args.n_poses,
+             record=args.record, record_fps=args.record_fps)
