@@ -113,21 +113,22 @@ It exists so that, as you read more papers or receive criticisms, you can test e
 - **Assumption(s):** IK reliably reaches the requested pose; controller error is negligible relative to perception error.
 - **Strength:** Standard, well-derived; closed-form per-timestep.
 - **Weakness / risk:** If IK fails or stalls near joint limits, the outcome `Y` is contaminated by *control* failure mis-attributed to *perception*.
-- **Holds?** open
-- **Severity** med
-- **Disposition** fix-now — verify IK reach success per trial and exclude/report any IK-failed trials before attribution.
-- **Evidence / notes:** `msc_report.tex:852`-`928`; not currently logged as a separate variable.
+- **Holds?** partial (upgraded from open) — indirect check 3 Aug: thresholding the pre-execution `e_pose` (CGN proposal vs. true centroid) at D_τ=0.065 agrees with the logged post-IK `success` on 97.9% of trials with a proposed grasp (279/285); all 6 disagreements are cases where e_pose ≥ D_τ but execution still succeeded (never the reverse). This means IK/execution noise never *destroys* a good proposal — it occasionally rescues a marginal one. Not a per-trial IK-convergence log, but strong indirect evidence that control failure is not contaminating the outcome.
+- **Severity** low (downgraded from med)
+- **Disposition** keep-for-MSc. A true per-trial IK-convergence flag remains a cheap `future-work` addition if time allows before freeze, but is no longer blocking.
+- **Evidence / notes:** `msc_report.tex:852`-`928`; agreement check in `success_threshold_sensitivity.py` session notes, 3 Aug.
 
 ## Stage 10 — Success criterion (proximity, EE within D_τ of centroid)
 
 - **Design choice:** Proximity fallback replaces physical lift.
 - **Assumption(s):** Proximity is a causally-valid proxy for graspability; threshold D_τ is well-calibrated.
 - **Strength:** Stable, repeatable, removes contact-tuning variance; measures exactly what the SCM models (perception-derived pose close enough for contact).
-- **Weakness / risk:** A grasp that is *close* but not *successful* overstates success; conversely a good grasp with a bad proximity score understates it. Threshold sensitivity untested.
-- **Holds?** partial
-- **Severity** med
-- **Disposition** keep-for-MSc (defended in thesis); `future-work` physical lift. Threshold sensitivity is a cheap `fix-now` check — sweep D_τ and confirm ranking stability.
-- **Evidence / notes:** `msc_report.tex:944`-`972`; Limitations §7.4 item 3.
+- **Weakness / risk:** A grasp that is *close* but not *successful* overstates success; conversely a good grasp with a bad proximity score understates it.
+- **Holds?** yes — threshold sensitivity swept 3 Aug (`success_threshold_sensitivity.py`, D_τ ∈ [0.03, 0.12] m): σ_d ranking is perfectly rank-stable across the *entire* range (σ_d=0.04 pins at 0% for every threshold tested); φ=60° is the worst level at every threshold (dead-zone claim robust); θ=90° is the worst level at every threshold. ρ's ranking is *not* stable across thresholds — but this corroborates, not contradicts, the existing finding that ρ is statistically non-significant in Eq2A (Stage 12), so the instability is a real property of the data, not an artefact of D_τ=0.065.
+- **Severity** low (downgraded from med — the headline claim, σ_d dominance, is now shown threshold-robust)
+- **Disposition** keep-for-MSc, closed. Add one paragraph + figure (`results/figures/success_threshold_sensitivity.png`) to §5 reporting this check.
+- **Evidence / notes:** `msc_report.tex:944`-`972`; Limitations §7.4 item 3; `results/success_threshold_sensitivity.csv`.
+- **New issue surfaced:** the calibration text at `msc_report.tex:978` claims ~85% success under clean conditions (σ_d=0, ρ=1.0); the actual full-grid value is **51.9%** (14/27), because that cell includes φ=60° trials (0% success there) dragging the average down. The ~85%/89% figures in the text match σ_d=0 restricted to φ∈{30°,45°} only (`msc_report.tex:1665`), not the literal "σ_d=0, ρ=1.0" cell. **Action:** reword §5 calibration paragraph to state the correct scope (either report 51.9% honestly, or restate the constraint as "≈85% at favourable viewpoints (φ=30°/45°)" — do not leave the current wording, since it is checkable against your own CSV and currently wrong).
 
 ## Stage 11 — Experimental grid (432 trials, 3 seeds)
 
@@ -246,15 +247,15 @@ Filtering `Disposition = redesign-candidate`:
 2. **Stage 14 — Held-out L2 interventional check** of the fitted SCM vs re-simulated rates. *(high; highest-value test available)*
 3. **Stage 15 — Name and defend the NPSEM-ie assumption** at `msc_report.tex:1009`. *(med)*
 4. **Stage 16 — Reframe the fitted SCM as a surrogate** in §4.10, citing Rubenstein et al. *(high)*
-5. **Stage 9 — Log IK reach success per trial**; exclude or report IK-failed trials. *(med)*
-6. **Stage 10 — Threshold sensitivity sweep** on D_τ to confirm attribution ranking stability. *(low–med)*
+5. ~~Stage 9 — Log IK reach success per trial~~ — **closed 3 Aug** via indirect agreement check (97.9% e_pose/success agreement, all disagreements non-harmful direction).
+6. ~~Stage 10 — Threshold sensitivity sweep~~ — **closed 3 Aug**, see `success_threshold_sensitivity.py`; σ_d ranking is threshold-robust. Surfaced a new item: **fix the 85% clean-condition calibration claim at `msc_report.tex:978`** — actual value is 51.9% for the literal (σ_d=0, ρ=1.0) cell; the 85%/89% figures apply only when restricted to φ∈{30°,45°}. *(med — checkable inconsistency, fix before freeze)*
 7. **Stage 18 — Finalise LLM prompt/rubric** with "none/joint" category, before any LLM trials. *(med)*
 
-## Counts at last review
+## Counts at last review (updated 3 Aug — Stage 9 & 10 closed)
 
 - Total tracked stages: 19
-- `Holds? = yes`: 1 · `partial`: 11 · `open`: 5 · `challenged`: 2
-- `Disposition`: keep-for-MSc: 8 · fix-now: 7 · future-work: 3 · redesign-candidate: 5
-- `Severity high`: 5 · `med`: 10 · `low`/`low–med`: 4
+- `Holds? = yes`: 2 · `partial`: 11 · `open`: 4 · `challenged`: 2
+- `Disposition`: keep-for-MSc: 9 · fix-now: 6 · future-work: 3 · redesign-candidate: 5
+- `Severity high`: 5 · `med`: 8 · `low`/`low–med`: 6
 
 *Update these counts whenever you edit a row.*
