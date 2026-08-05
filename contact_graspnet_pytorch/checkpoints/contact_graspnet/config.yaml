@@ -51,7 +51,7 @@ DATA:
   scene_contacts_path: scene_contacts
   train_and_test: false
   train_on_scenes: true
-  use_farthest_point: true
+  use_farthest_point: false
   use_uniform_quaternions: false
   view_sphere:
     distance_range:
