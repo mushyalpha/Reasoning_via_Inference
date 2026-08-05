@@ -8,21 +8,42 @@ a moderator, Marker A & B).
 Three objects, spanning the shape categories markers asked for:
   cylinder  - rotationally symmetric curved surface (original object, kept
               for continuity with the existing 432-trial dataset)
-  box       - flat faces + edges (YCB GelatinBox mesh)
+  box       - flat faces + edges (YCB SugarBox mesh; see note below on the
+              earlier GelatinBox attempt)
   mustard   - irregular / asymmetric curved surface, shifting cross-section
               (YCB MustardBottle mesh)
 
-Meshes are real YCB geometry (visual .obj) via the pre-processed mirror at
-github.com/eleramp/pybullet-object-models (see assets/ycb/README.md for
-attribution). Collision uses the same V-HACD decomposition mesh, but loaded
-as a single MuJoCo mesh geom -- MuJoCo always collapses a mesh geom to its
-convex hull for collision, so the 4-piece decomposition for the mustard
-bottle is merged into one enclosing convex hull. This is a deliberate
-simplification: the success criterion in this study is proximity-based
-(end-effector within a radius of the object centroid), not a physical
-lift, so exact collision fidelity on the target object is not load-bearing
-for the causal claim -- only the *visual/depth* mesh (which keeps full
-YCB geometry) matters for what CGN perceives. Logged in RIGOUR_LEDGER.md.
+Meshes are real YCB geometry (visual .obj). The cylinder-category-2 objects
+(mustard, and the original gelatin box) came via the pre-processed mirror at
+github.com/eleramp/pybullet-object-models; the sugar box comes directly from
+the official YCB Benchmarks mesh release (google_16k scan) since that mirror
+does not carry 004_sugar_box (see assets/ycb/README.md for attribution and
+exact sources). Collision for the two non-cylinder objects is a simple
+axis-aligned box primitive fit to the mesh's own bounding box, not a mesh --
+see the box-category note below and the mustard bottle's own docstring for
+why. This is a deliberate simplification: the outcome criterion is now the
+physically-grounded floating-gripper shake test (RIGOUR_LEDGER.md Stage 21),
+not a proximity threshold, but exact concave-mesh collision fidelity is
+still not required for that test to be valid -- a box primitive is exact
+for a box-shaped object, and conservative (slightly larger than the true
+concave hull) for the mustard bottle. Only the *visual/depth* mesh (which
+keeps full YCB geometry) matters for what CGN perceives. Logged in
+RIGOUR_LEDGER.md.
+
+Box category note: the original choice, YcbGelatinBox, turned out to be a
+pathological case for a parallel-jaw gripper -- at ~2.8cm thick it is thin
+enough that the fingertip pads struggle to seat flush against its faces
+before contact-closing, producing a high failure rate that was hard to
+distinguish from a genuine "thin objects are hard" finding vs. a smoke-test
+artifact (see the implementation write-up in RIGOUR_LEDGER.md Stage 21).
+It was replaced with YcbSugarBox: still squarely in the box/cuboid category
+(flat faces, sharp edges) that Marker A asked for, but ~4.95cm across its
+thinnest axis (measured from the mesh's own bounding box, not the nominal
+factory dimensions) -- comfortably thicker than the gelatin box, still well
+under the Panda gripper's 8cm max opening, and, being an almost-perfect
+rectangular prism, exactly suited to a clean `type="box"` collision
+primitive (the collision.obj V-HACD mesh is dropped entirely for this
+object, not just approximated).
 
 Physical parameters (mass, friction) are kept in the same light / high-
 friction regime as the original cylinder (not the real YCB inertial
@@ -73,30 +94,43 @@ OBJECT_SPECS = {
     ),
 
     # ------------------------------------------------------------------
-    # Box: YCB GelatinBox mesh. Flat faces + edges (Marker A category 1).
-    # Footprint (~7.2x6.7cm) chosen close to the cylinder's own diameter
-    # (7.2cm) so grasp-width feasibility stays comparable across objects.
+    # Box: YCB SugarBox mesh. Flat faces + edges (Marker A category 1).
+    # Replaces the original YcbGelatinBox (see module docstring): the
+    # gelatin box's ~2.8cm thickness was a pathological case for the
+    # parallel-jaw gripper. All geometry fields below were measured
+    # directly from the mesh's own vertex bounding box (google_16k scan;
+    # object rests with its tall axis vertical, footprint ~4.95x9.42cm,
+    # height ~17.6cm), not from nominal YCB factory dimensions, following
+    # the same empirical convention used for the mustard bottle. The
+    # mesh's own origin already sits at its base (min z ~ 0), unlike the
+    # pybullet-mirror meshes (gelatin/mustard) whose origin sits near the
+    # centroid -- hence bottom_local_z ~ 0 here.
+    # Collision: a `type="box"` primitive fit to the same bounding box --
+    # this object is an almost-perfect rectangular prism, so (unlike the
+    # mustard bottle, where the box primitive is a conservative proxy for
+    # a genuinely irregular shape) the primitive is essentially exact.
+    # No collision.obj/V-HACD mesh is used at all for this object.
     # ------------------------------------------------------------------
     'box': dict(
-        label='Box (flat faces, edges) - YCB GelatinBox',
+        label='Box (flat faces, edges) - YCB SugarBox',
         kind='mesh',
         body_name='target_object',
-        geom_name='box_target',
-        visual_mesh='ycb_box_visual',
-        visual_mesh_file=os.path.join('assets', 'ycb', 'gelatin_box', 'visual.obj'),
-        collision_mesh='ycb_box_collision',
-        collision_mesh_file=os.path.join('assets', 'ycb', 'gelatin_box', 'collision.obj'),
-        bottom_local_z=-0.014,
-        centroid_local_offset=(-0.0007, 0.0023, 0.0306),
-        footprint_radius=0.036,   # ~ half of 7.2cm short axis
-        half_height=0.0446,
+        geom_name='sugarbox_target',
+        visual_mesh='ycb_sugarbox_visual',
+        visual_mesh_file=os.path.join('assets', 'ycb', 'sugar_box', 'visual.obj'),
+        collision_kind='box',
+        collision_half_size=(0.024748, 0.047081, 0.088008),
+        bottom_local_z=0.0,
+        centroid_local_offset=(-0.007467, -0.016712, 0.088039),
+        footprint_radius=0.024748,   # half of the 4.95cm graspable (thin) axis
+        half_height=0.088008,
         mass=0.06,
         friction=(2.0, 0.01, 0.0001),
-        color=(0.75, 0.75, 0.2, 1.0),
+        color=(0.8, 0.72, 0.2, 1.0),
         spawn_xy=(0.5, 0.0),
         spawn_quat=(1.0, 0.0, 0.0, 0.0),
         inertial_mass=0.06,
-        inertial_diaginertia=(0.0003, 0.0003, 0.0002),
+        inertial_diaginertia=(0.0002, 0.000167, 0.0000566),
     ),
 
     # ------------------------------------------------------------------

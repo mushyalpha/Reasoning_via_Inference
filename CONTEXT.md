@@ -23,7 +23,7 @@
 | Grasp algorithm | Contact-GraspNet (PyTorch port, local) | Pre-trained, 6-DoF, point-cloud-driven |
 | Robot | Franka Panda | Standard manipulation benchmark |
 | Scene geometry | Reverting to Menagerie mesh files (STL collision + OBJ visual) | Capsule approach was overly cautious; CGN authors used full mesh URDF; Menagerie already has simplified collision meshes |
-| Success criterion | Proximity fallback: EE XY within 0.065 m of object centroid after approach | Physical lift unreliable with primitive gripper; preserves causal signal |
+| Success criterion | **Superseded 4 Aug — see below.** Was: proximity fallback (EE XY within 0.065 m of object centroid). Now: floating-gripper shake test (RIGOUR_LEDGER.md Stage 21) | Markers flagged the proximity metric as circular w.r.t. the SCM and not physically grounded (localization accuracy, not grasp success) |
 | Causal variables | sigma_d (depth noise), rho (point cloud sparsity), phi (camera elevation), theta (camera azimuth) | All directly controllable; no confounders |
 
 ---
@@ -132,6 +132,36 @@ moderator; analyse `collision_with_neighbor` vs. σ_d/ρ; update DAG,
 methods chapter, limitations section; update this file's "Current status"
 and the experimental grid table above (still describes the *original*
 432-trial single-cylinder grid, now superseded for the multi-object work).
+
+### Outcome-variable redesign (4 Aug 2026) — second round of marker feedback
+Marker B independently flagged that the proximity success criterion had
+become a deterministic function of a mediator (`e_pose`), making it
+circular w.r.t. the SCM, and Marker A recommended the ACRONYM/6-DOF-GraspNet
+floating-gripper shake test as the fix. Implemented in
+`sim_common.run_floating_gripper_test`: teleport a free Panda gripper (no
+arm) to CGN's full 6-DoF predicted pose, check pre-grasp collision, close
+fingers, apply gravity + a lift/shake disturbance; success = object stays
+gripped through the disturbance. Went through 3 implementation attempts
+before landing on a working one (mocap hand → doesn't transmit friction,
+silently broken; hand-rolled PD via `xfrc_applied` → numerically unstable;
+weld-constrained dynamic hand → works, validated). Full account:
+`RIGOUR_LEDGER.md` Stage 21.
+
+### Box object replaced: GelatinBox → SugarBox (5 Aug 2026)
+The gelatin box (~2.8cm thick) turned out to be a pathological case for the
+parallel-jaw gripper. Root-caused by extending `smoke_test_floating_gripper.py`
+to the box object with a hand-tuned side-grasp: replaced with the YCB
+SugarBox (~4.95cm thick, mesh-measured), sourced directly from the official
+YCB Benchmarks release (the usual pybullet-object-models mirror doesn't
+carry this object), with a `type="box"` collision primitive fit to its own
+bounding box (no V-HACD mesh needed — it's an almost-exact rectangular
+prism). The new box now passes the same 3-pose smoke test as the cylinder
+(full 15cm lift on the known-good pose). **Open follow-up:** a small
+(8-trial) real-CGN `--test` batch still shows 0/8 successes for the box,
+but this now looks like a CGN top-1 grasp-*selection* issue for this
+object's taller proportions (or just small-sample noise), not a mechanism
+or geometry-pathology bug — see `RIGOUR_LEDGER.md` Stage 22 for the planned
+follow-up before trusting full-grid box numbers at face value.
 
 ---
 

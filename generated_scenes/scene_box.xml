@@ -9,12 +9,11 @@
     Custom scene elements added on top:
       - Table surface
       - Target object(s) — injected at build time by object_specs.build_scene_xml()
-        via the     <mesh name="ycb_box_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/gelatin_box/visual.obj"/>
-    <mesh name="ycb_box_collision" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/gelatin_box/collision.obj"/> and     <body name="target_object" pos="0.5 0.0 0.41400000000000003">
+        via the     <mesh name="ycb_sugarbox_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/sugar_box/visual.obj"/> and     <body name="target_object" pos="0.5 0.0 0.4">
       <freejoint/>
-      <inertial pos="0 0 0" mass="0.06" diaginertia="0.0003 0.0003 0.0002"/>
-      <geom name="box_target_vis" type="mesh" mesh="ycb_box_visual" rgba="0.75 0.75 0.2 1.0" contype="0" conaffinity="0" group="2"/>
-      <geom name="box_target_col" type="mesh" mesh="ycb_box_collision" mass="0.06" condim="4" friction="2.0 0.01 0.0001" group="3" rgba="0.75 0.75 0.2 0"/>
+      <inertial pos="0 0 0" mass="0.06" diaginertia="0.0002 0.000167 5.66e-05"/>
+      <geom name="sugarbox_target_vis" type="mesh" mesh="ycb_sugarbox_visual" rgba="0.8 0.72 0.2 1.0" contype="0" conaffinity="0" group="2"/>
+      <geom name="sugarbox_target_col" type="box" pos="-0.007467 -0.016712 0.088039" size="0.024748 0.047081 0.088008" mass="0.06" condim="4" friction="2.0 0.01 0.0001" group="3" rgba="0.8 0.72 0.2 0"/>
     </body> markers below.
         Supports 1 object (Experiment A, isolated) or N objects (Experiment B, clutter).
       - Perception camera (position set programmatically per trial)
@@ -165,8 +164,7 @@
     <mesh file="finger_0.obj"/>
     <mesh file="finger_1.obj"/>
 
-        <mesh name="ycb_box_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/gelatin_box/visual.obj"/>
-    <mesh name="ycb_box_collision" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/gelatin_box/collision.obj"/>
+        <mesh name="ycb_sugarbox_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/sugar_box/visual.obj"/>
   </asset>
 
   <worldbody>
@@ -178,11 +176,11 @@
       <geom type="box" size="0.3 0.4 0.2" rgba="0.6 0.4 0.2 1"/>
     </body>
 
-        <body name="target_object" pos="0.5 0.0 0.41400000000000003">
+        <body name="target_object" pos="0.5 0.0 0.4">
       <freejoint/>
-      <inertial pos="0 0 0" mass="0.06" diaginertia="0.0003 0.0003 0.0002"/>
-      <geom name="box_target_vis" type="mesh" mesh="ycb_box_visual" rgba="0.75 0.75 0.2 1.0" contype="0" conaffinity="0" group="2"/>
-      <geom name="box_target_col" type="mesh" mesh="ycb_box_collision" mass="0.06" condim="4" friction="2.0 0.01 0.0001" group="3" rgba="0.75 0.75 0.2 0"/>
+      <inertial pos="0 0 0" mass="0.06" diaginertia="0.0002 0.000167 5.66e-05"/>
+      <geom name="sugarbox_target_vis" type="mesh" mesh="ycb_sugarbox_visual" rgba="0.8 0.72 0.2 1.0" contype="0" conaffinity="0" group="2"/>
+      <geom name="sugarbox_target_col" type="box" pos="-0.007467 -0.016712 0.088039" size="0.024748 0.047081 0.088008" mass="0.06" condim="4" friction="2.0 0.01 0.0001" group="3" rgba="0.8 0.72 0.2 0"/>
     </body>
 
     <!-- =====================================================

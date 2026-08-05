@@ -130,8 +130,7 @@
     <mesh file="finger_0.obj"/>
     <mesh file="finger_1.obj"/>
 
-        <mesh name="ycb_box_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/gelatin_box/visual.obj"/>
-    <mesh name="ycb_box_collision" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/gelatin_box/collision.obj"/>
+        <mesh name="ycb_sugarbox_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/sugar_box/visual.obj"/>
     <mesh name="ycb_mustard_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/mustard_bottle/visual.obj"/>
   </asset>
 
@@ -151,11 +150,11 @@
       <inertial pos="0 0 0" mass="0.05" diaginertia="0.0002 0.0002 0.0001"/>
       <geom name="cup" type="cylinder" size="0.036 0.055" rgba="0.1 0.5 0.8 1.0" mass="0.05" condim="4" friction="2.5 0.01 0.0001"/>
     </body>
-    <body name="obj_box" pos="0.40473720558371173 -0.055000000000000014 0.41400000000000003">
+    <body name="obj_box" pos="0.40473720558371173 -0.055000000000000014 0.4">
       <freejoint/>
-      <inertial pos="0 0 0" mass="0.06" diaginertia="0.0003 0.0003 0.0002"/>
-      <geom name="box_target_vis" type="mesh" mesh="ycb_box_visual" rgba="0.75 0.75 0.2 1.0" contype="0" conaffinity="0" group="2"/>
-      <geom name="box_target_col" type="mesh" mesh="ycb_box_collision" mass="0.06" condim="4" friction="2.0 0.01 0.0001" group="3" rgba="0.75 0.75 0.2 0"/>
+      <inertial pos="0 0 0" mass="0.06" diaginertia="0.0002 0.000167 5.66e-05"/>
+      <geom name="sugarbox_target_vis" type="mesh" mesh="ycb_sugarbox_visual" rgba="0.8 0.72 0.2 1.0" contype="0" conaffinity="0" group="2"/>
+      <geom name="sugarbox_target_col" type="box" pos="-0.007467 -0.016712 0.088039" size="0.024748 0.047081 0.088008" mass="0.06" condim="4" friction="2.0 0.01 0.0001" group="3" rgba="0.8 0.72 0.2 0"/>
     </body>
     <body name="obj_mustard" pos="0.5952627944162883 -0.05500000000000005 0.48397300000000004">
       <freejoint/>
