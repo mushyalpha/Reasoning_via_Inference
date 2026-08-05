@@ -1,7 +1,32 @@
 """
 run_experiments.py
 ==================
-Batch experiment runner for the MSc thesis.
+DEPRECATED for anything past the original 432-trial dataset -- see
+run_experiments_v2.py instead.
+
+This file's `execute_grasp()` still implements the OLD full-arm IK +
+proximity criterion (`success = xy_dist < GRASP_RADIUS`, with
+`obj_z_final` a HARDCODED constant on success, not a measured physical
+outcome) -- exactly the circularity flagged by preliminary marking
+feedback (Marker B) and superseded by the floating-gripper shake-test
+protocol in run_experiments_v2.py / sim_common.run_floating_gripper_test.
+
+This file is kept ONLY so `results/experiment_results.csv` (the
+original 432-trial dataset already referenced throughout the fitted
+SCM, counterfactual ground truth, and LLM baseline) remains exactly
+reproducible via `--original`. Do not use it for new data collection.
+
+INCIDENT (5 Aug): run_experiments_v2.py was accidentally deleted in a
+same-day refactor commit and not restored before a RunPod batch run.
+`python run_experiments_v2.py --test` correctly failed with "No such
+file or directory"; the natural fallback to `python run_experiments.py
+--test` succeeded and silently ran this deprecated proximity-based
+script for an entire 1296-trial pilot, whose `success`/`obj_z_final`
+columns were mistaken for the floating-gripper outcome during review
+before being traced back to this file. run_experiments_v2.py has since
+been restored (see its own module docstring) -- if you are about to run
+a new batch and this file is what's available, stop and confirm
+run_experiments_v2.py exists first.
 
 ORIGINAL grid (4 x 4 x 3 x 3 x 3 = 432 trials), preserved in
 `results/experiment_results.csv` and referenced throughout the fitted SCM,
