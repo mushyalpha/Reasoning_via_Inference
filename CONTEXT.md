@@ -94,9 +94,44 @@
   - Compare SCM ΔP ranking against ground truth from `counterfactual_groundtruth.csv`
 
 ### Hard deadlines
-- Experiment freeze: 27 July 2026
-- Report submission: 14 August 2026
+- Experiment freeze: 27 July 2026 (superseded — see below)
+- Report submission: 14 August 2026 → **extended** (preliminary marking response in progress; confirm new date)
 - Poster: 19 August 2026
+
+### Preliminary marking response (4 Aug 2026) — multi-object redesign in progress
+Both markers flagged the single-cylinder scene as a validity problem, not
+just a scope compromise: geometry must be a variable (Marker A: shape-
+specific conclusions + rotational symmetry muddies pose-error evaluation;
+Marker B: object geometry is a potential *moderator* of the degradation→
+failure relationship, and scene clutter changes the causal mechanism
+entirely — occlusion/collision vs. missed/slipped grasps). Full feedback
+text: `MARKER_FEEDBACK.md`. Full response record: `RIGOUR_LEDGER.md` Stage 20.
+
+**What was built this session (not yet run):**
+- 2 new objects added to the existing cylinder: box (YCB GelatinBox mesh)
+  and mustard bottle (YCB MustardBottle mesh, irregular/asymmetric) — real
+  YCB visual meshes, simplified collision primitives. See `object_specs.py`.
+- `sim_common.py` — object-agnostic simulation helpers, generalizing the
+  original hardcoded single-cylinder qpos slicing to name-based joint
+  lookup (needed for the clutter scene's 3 freejoints).
+- `run_experiments_v2.py` (Experiment A) — same 3 objects, densified grid
+  (σ_d and φ densified around known collapse/pathological regions,
+  deterministic ρ downsampling, 5 seeds) → 7560 trials.
+- `run_clutter_experiments.py` (Experiment B) — all 3 objects together in
+  a fixed clutter arrangement, rotating grasp target, new
+  `collision_with_neighbor` outcome variable → 504 trials.
+- Local validation only (no GL rendering available in the dev sandbox):
+  physics stability, CGN-determinism (bit-exact, see Stage 20), synthetic-
+  input pipeline checks. **Trial batches have not been run.**
+- Handoff: `RUNPOD_SETUP.md` — user is running the actual batches on a
+  rented RunPod GPU pod (Linux + CUDA sidesteps the macOS rendering
+  sandbox issue entirely).
+
+**Next steps once data lands:** refit SCM with object identity as a
+moderator; analyse `collision_with_neighbor` vs. σ_d/ρ; update DAG,
+methods chapter, limitations section; update this file's "Current status"
+and the experimental grid table above (still describes the *original*
+432-trial single-cylinder grid, now superseded for the multi-object work).
 
 ---
 

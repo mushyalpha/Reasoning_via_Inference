@@ -38,6 +38,37 @@ see RIGOUR_LEDGER.md Stage 8/11 and this session's design notes):
 Full grid per object: 7 x 4 x 6 x 3 x 5 = 2520 trials.
 Full Experiment A (3 objects):                     7560 trials.
 
+Outcome-variable fix (response to a second round of preliminary marking
+feedback, 4 Aug -- see RIGOUR_LEDGER.md and MARKER_FEEDBACK.md):
+
+  Marker B pointed out that `success = 1 if e_pose < GRASP_RADIUS`
+  (i) is not grasp success (it measures localisation accuracy only),
+  (ii) is circular w.r.t. the SCM (success is a deterministic function
+  of a mediator -- e_pose -- already in the model, so q_grasp/n_grasps
+  become decorative and any SCM-vs-LLM comparison is rigged in the
+  SCM's favour), and (iii) the 6.5cm threshold was tuned for a nice
+  success-rate spread, not physics (real gripper tolerance ~4mm).
+
+  Marker A independently recommended the fix: the ACRONYM / 6-DOF-
+  GraspNet floating-gripper protocol. Teleport a free Panda gripper
+  (no arm) directly to CGN's predicted 6-DoF pose (position AND
+  orientation -- the orientation was previously being discarded after
+  cam_to_world, despite being available), check collision-free with
+  fingers open, close the fingers, then apply a fixed lift+shake
+  disturbance under gravity. Success = the object is still held
+  (within footprint_radius of the gripper) after the disturbance.
+
+  This is implemented in sim_common.run_floating_gripper_test(), run in
+  a separate arm-free scene (floating_gripper_template.xml, built via
+  object_specs.FLOATING_GRIPPER_TEMPLATE) -- the object's settled pose
+  from the perception scene is carried over via sim_common.set_object_pose(),
+  and the gripper is a MuJoCo *mocap* body (kinematically teleported,
+  immune to contact reaction forces) so "close fingers while held in
+  place" and "shake while gravity + friction act on the object" both
+  fall out of the same primitive with no custom PD controller needed.
+  `success` is now a genuinely physical, independent outcome -- no
+  longer a function of e_pose/q_grasp/n_grasps by construction.
+
 Usage:
     python run_experiments_v2.py --object cylinder box mustard   # full grid, all objects (default)
     python run_experiments_v2.py --object box                    # one object only
@@ -70,7 +101,8 @@ from data import load_available_input_data
 import torch
 
 import sim_common as sc
-from object_specs import OBJECT_SPECS, OBJECT_NAMES, build_scene_xml, spawn_pos, centroid_world
+from object_specs import (OBJECT_SPECS, OBJECT_NAMES, build_scene_xml, spawn_pos,
+                           centroid_world, FLOATING_GRIPPER_TEMPLATE)
 
 RESULTS_DIR = os.path.join(_PROJECT, 'results')
 SCENES_DIR = os.path.join(_PROJECT, 'generated_scenes')
@@ -88,12 +120,14 @@ CAM_RADIUS = 0.8
 # object is allowed to settle, with arm collision disabled during that
 # transient move so it doesn't fight residual overlap from the raw home pose.
 PARK_POS = np.array([0.5, -0.35, 0.75])
-GRASP_RADIUS = 0.065   # unchanged from run_experiments.py; see RIGOUR_LEDGER
-                        # Stage 10 -- shown threshold-robust over [0.03, 0.12] m.
-                        # Kept identical across objects (not per-object tuned);
-                        # a documented scope simplification, not re-derived here.
-PRE_GRASP_CLEARANCE = 0.18
-DESCEND_CLEARANCE = 0.02
+
+# Floating-gripper shake-test parameters (Marker A's fix; see module
+# docstring). Fixed, deterministic -- no RNG, so this introduces no new
+# stochastic dimension into the grid.
+CLOSE_STEPS = 400
+SHAKE_STEPS = 600
+LIFT_HEIGHT = 0.15
+SHAKE_AMPLITUDE = 0.03
 
 # ── Expanded experimental grid ──────────────────────────────────────────
 SIGMA_D_VALS = [0.000, 0.0025, 0.005, 0.010, 0.015, 0.020, 0.040]
@@ -109,7 +143,8 @@ LEAN_N_REPEATS = 3
 CSV_FIELDS = [
     'trial_id', 'object', 'sigma_d', 'rho', 'phi', 'theta', 'seed',
     'C_pc', 'q_grasp', 'e_pose', 'n_grasps',
-    'success', 'obj_z_final', 'error'
+    'collision_free', 'success', 'final_xy_offset', 'final_lift',
+    'obj_z_final', 'error'
 ]
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -154,32 +189,30 @@ def run_cgn(depth, K, seg_map, estimator, rho=1.0, rng=None):
     return pred_grasps, scores
 
 
-def execute_grasp(model, data, grasp_pos, target_body, center_z, half_height, footprint_radius):
-    pre_grasp = np.array([grasp_pos[0], grasp_pos[1], center_z + PRE_GRASP_CLEARANCE])
-    actual_pos = np.array([grasp_pos[0], grasp_pos[1], center_z + DESCEND_CLEARANCE])
+def execute_grasp_floating(fg_scene_xml, spec, obj_pos, obj_quat, grasp_pos, grasp_quat):
+    """
+    Marker A's fix: floating-gripper shake test instead of full-arm IK.
 
-    sc.ik_move_to(model, data, pre_grasp, max_steps=2000)
-    sc.settle(model, data, 150)
-    sc.ik_move_to(model, data, actual_pos, max_steps=1000, tol=0.015)
-    sc.settle(model, data, 100)
+    Loads a fresh arm-free scene, re-seeds the target object at the
+    exact pose it settled to in the perception scene (obj_pos/obj_quat),
+    teleports the mocap gripper to CGN's full 6-DoF predicted pose, and
+    runs sim_common.run_floating_gripper_test() (collision check ->
+    close fingers -> lift+shake -> check still held).
+    """
+    fg_model = mujoco.MjModel.from_xml_path(fg_scene_xml)
+    fg_data = mujoco.MjData(fg_model)
+    sc.set_object_pose(fg_model, fg_data, spec['body_name'], obj_pos, obj_quat)
+    mujoco.mj_forward(fg_model, fg_data)
+    sc.settle(fg_model, fg_data, 30)
 
-    for _ in range(300):
-        data.ctrl[7] = max(0., data.ctrl[7] - 1.0)
-        mujoco.mj_step(model, data)
-    sc.settle(model, data, 100)
-
-    site_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, 'ee_site')
-    obj_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, target_body)
-    ee_pos = data.site_xpos[site_id]
-    obj_pos = data.xpos[obj_id]
-    xy_dist = float(np.linalg.norm(ee_pos[:2] - obj_pos[:2]))
-
-    success = xy_dist < GRASP_RADIUS
-    obj_z = float(center_z + half_height + 0.15) if success else float(obj_pos[2])
-    return success, obj_z
+    return sc.run_floating_gripper_test(
+        fg_model, fg_data, spec['body_name'], grasp_pos, grasp_quat,
+        footprint_radius=spec['footprint_radius'],
+        close_steps=CLOSE_STEPS, shake_steps=SHAKE_STEPS,
+        lift_height=LIFT_HEIGHT, shake_amplitude=SHAKE_AMPLITUDE)
 
 
-def run_trial(trial_id, object_name, scene_xml, sigma_d, rho, phi, theta, seed, estimator):
+def run_trial(trial_id, object_name, scene_xml, fg_scene_xml, sigma_d, rho, phi, theta, seed, estimator):
     spec = OBJECT_SPECS[object_name]
     rng = np.random.default_rng(seed)
     sc.seed_cgn_global_random(seed)
@@ -219,24 +252,31 @@ def run_trial(trial_id, object_name, scene_xml, sigma_d, rho, phi, theta, seed, 
 
     if n_grasps == 0:
         return {**row_base, 'C_pc': C_pc, 'q_grasp': None, 'e_pose': None,
-                'n_grasps': 0, 'success': 0, 'obj_z_final': None, 'error': 'no_grasps'}
+                'n_grasps': 0, 'collision_free': None, 'success': 0,
+                'final_xy_offset': None, 'final_lift': None,
+                'obj_z_final': None, 'error': 'no_grasps'}
 
     pose_cam, q_grasp, _ = sc.best_grasp_overall(pred_grasps, scores)
     pose_world = sc.cam_to_world(pose_cam, model, data)
     grasp_pos = pose_world[:3, 3]
+    # Full 6-DoF pose used now, not just position (previously discarded --
+    # see module docstring / Marker B's "you'd been dropping it" note).
+    grasp_quat = sc.rot_matrix_to_quat(pose_world[:3, :3])
 
     obj_pos = data.xpos[obj_id].copy()
+    obj_quat = data.xquat[obj_id].copy()
     centroid_now = centroid_world(spec, obj_pos)
     e_pose = float(np.linalg.norm(np.array(centroid_now[:2]) - grasp_pos[:2]))
 
-    success, obj_z = execute_grasp(model, data, grasp_pos, spec['body_name'],
-                                    center_z=centroid_now[2],
-                                    half_height=spec['half_height'],
-                                    footprint_radius=spec['footprint_radius'])
+    result = execute_grasp_floating(fg_scene_xml, spec, obj_pos, obj_quat, grasp_pos, grasp_quat)
 
     return {**row_base, 'C_pc': round(C_pc, 5), 'q_grasp': round(q_grasp, 5),
             'e_pose': round(e_pose, 5), 'n_grasps': n_grasps,
-            'success': int(success), 'obj_z_final': round(obj_z, 4), 'error': ''}
+            'collision_free': int(result['collision_free']),
+            'success': int(result['success']),
+            'final_xy_offset': result['final_xy_offset'],
+            'final_lift': result['final_lift'],
+            'obj_z_final': result['obj_z_final'], 'error': ''}
 
 
 def load_completed(csv_path):
@@ -283,6 +323,7 @@ def main():
           f'  Objects: {args.object}\n  Trials/object: {len(trials)}   Total: {len(trials)*len(args.object)}\n'
           f'  Output: {OUTPUT_CSV}\n{"="*70}\n')
 
+    sc.configure_determinism()
     print('Loading Contact-GraspNet...')
     estimator = load_cgn()
     print('CGN ready.\n')
@@ -302,8 +343,11 @@ def main():
     for object_name in args.object:
         scene_xml = os.path.join(SCENES_DIR, f'scene_{object_name}.xml')
         build_scene_xml(object_name, scene_xml)
+        fg_scene_xml = os.path.join(SCENES_DIR, f'scene_{object_name}_floating_gripper.xml')
+        build_scene_xml(object_name, fg_scene_xml, template_path=FLOATING_GRIPPER_TEMPLATE)
         print(f'--- Object: {object_name} ({OBJECT_SPECS[object_name]["label"]}) ---')
-        print(f'    Scene: {scene_xml}')
+        print(f'    Perception scene: {scene_xml}')
+        print(f'    Floating-gripper scene: {fg_scene_xml}')
 
         for trial_id, sigma_d, rho, phi, theta, seed in trials:
             if (object_name, trial_id) in completed:
@@ -313,7 +357,8 @@ def main():
                   f'sigma_d={sigma_d:.4f} rho={rho:.2f} phi={phi:.0f} theta={theta:.0f} seed={seed}',
                   end='  ... ', flush=True)
             try:
-                row = run_trial(trial_id, object_name, scene_xml, sigma_d, rho, phi, theta, seed, estimator)
+                row = run_trial(trial_id, object_name, scene_xml, fg_scene_xml,
+                                 sigma_d, rho, phi, theta, seed, estimator)
             except Exception as e:
                 row = {f: '' for f in CSV_FIELDS}
                 row.update(trial_id=trial_id, object=object_name, sigma_d=sigma_d, rho=rho,

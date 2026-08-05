@@ -27,6 +27,7 @@ Also implements the two determinism fixes agreed for the redesign
 import math
 import numpy as np
 import mujoco
+import torch
 
 ARM_JOINTS = [f'joint{i}' for i in range(1, 8)]
 FINGER_JOINTS = ['finger_joint1', 'finger_joint2']
@@ -98,6 +99,28 @@ def set_home_pose(model, data, object_world_poses):
 #  Camera
 # ══════════════════════════════════════════════════════════════════════
 
+def rot_matrix_to_quat(R):
+    """3x3 rotation matrix -> (w, x, y, z) quaternion (Shepperd's method)."""
+    trace = np.trace(R)
+    if trace > 0:
+        s = 0.5 / math.sqrt(trace + 1.)
+        w, x = 0.25 / s, (R[2, 1] - R[1, 2]) * s
+        y, z = (R[0, 2] - R[2, 0]) * s, (R[1, 0] - R[0, 1]) * s
+    elif R[0, 0] > R[1, 1] and R[0, 0] > R[2, 2]:
+        s = 2. * math.sqrt(1. + R[0, 0] - R[1, 1] - R[2, 2])
+        w, x = (R[2, 1] - R[1, 2]) / s, 0.25 * s
+        y, z = (R[0, 1] + R[1, 0]) / s, (R[0, 2] + R[2, 0]) / s
+    elif R[1, 1] > R[2, 2]:
+        s = 2. * math.sqrt(1. + R[1, 1] - R[0, 0] - R[2, 2])
+        w, x = (R[0, 2] - R[2, 0]) / s, (R[0, 1] + R[1, 0]) / s
+        y, z = 0.25 * s, (R[1, 2] + R[2, 1]) / s
+    else:
+        s = 2. * math.sqrt(1. + R[2, 2] - R[0, 0] - R[1, 1])
+        w, x = (R[1, 0] - R[0, 1]) / s, (R[0, 2] + R[2, 0]) / s
+        y, z = (R[1, 2] + R[2, 1]) / s, 0.25 * s
+    return np.array([w, x, y, z])
+
+
 def set_camera(model, phi_deg, theta_deg, radius, target, cam_body='perception_camera_body'):
     """Place camera on a sphere around `target`, looking at it."""
     phi, theta = math.radians(phi_deg), math.radians(theta_deg)
@@ -120,25 +143,7 @@ def set_camera(model, phi_deg, theta_deg, radius, target, cam_body='perception_c
     up = np.cross(right, forward)
     up /= np.linalg.norm(up)
     R = np.column_stack((right, up, -forward))
-
-    trace = np.trace(R)
-    if trace > 0:
-        s = 0.5 / math.sqrt(trace + 1.)
-        w, x = 0.25 / s, (R[2, 1] - R[1, 2]) * s
-        y, z = (R[0, 2] - R[2, 0]) * s, (R[1, 0] - R[0, 1]) * s
-    elif R[0, 0] > R[1, 1] and R[0, 0] > R[2, 2]:
-        s = 2. * math.sqrt(1. + R[0, 0] - R[1, 1] - R[2, 2])
-        w, x = (R[2, 1] - R[1, 2]) / s, 0.25 * s
-        y, z = (R[0, 1] + R[1, 0]) / s, (R[0, 2] + R[2, 0]) / s
-    elif R[1, 1] > R[2, 2]:
-        s = 2. * math.sqrt(1. + R[1, 1] - R[0, 0] - R[2, 2])
-        w, x = (R[0, 2] - R[2, 0]) / s, (R[0, 1] + R[1, 0]) / s
-        y, z = 0.25 * s, (R[1, 2] + R[2, 1]) / s
-    else:
-        s = 2. * math.sqrt(1. + R[2, 2] - R[0, 0] - R[1, 1])
-        w, x = (R[1, 0] - R[0, 1]) / s, (R[0, 2] + R[2, 0]) / s
-        y, z = (R[1, 2] + R[2, 1]) / s, 0.25 * s
-    model.body_quat[body_id] = np.array([w, x, y, z])
+    model.body_quat[body_id] = rot_matrix_to_quat(R)
 
 
 def build_K(model, cam_name, img_w, img_h):
@@ -229,14 +234,51 @@ def deterministic_downsample_idx(n, rho):
 def seed_cgn_global_random(seed):
     """
     contact_graspnet_pytorch calls bare `np.random.*` in a few internal
-    fallback paths (region cropping, point-count regularisation) rather
-    than through a local Generator. Seeding the *global* numpy RNG state
-    per trial makes those call sites reproducible without touching CGN's
-    source. Does not affect our own `np.random.default_rng(seed)` local
-    Generator instances, which are independent objects.
+    fallback paths (region cropping, point-count regularisation), AND the
+    model forward pass itself draws from torch's global RNG (confirmed
+    empirically: identical inputs gave different best-grasp scores,
+    0.207879 vs 0.208227, across two runs with only numpy seeded -- the
+    residual randomness was in torch, not numpy). Seeding both global RNG
+    states per trial, plus pinning to single-threaded CPU execution
+    (multi-threaded BLAS/reductions are a separate, smaller source of
+    run-to-run float noise), gives bit-exact reproducibility -- verified
+    empirically: 3 repeated calls with the same seed produced identical
+    scores to 8 decimal places. Does not affect our own
+    `np.random.default_rng(seed)` local Generator instances, which are
+    independent objects.
+
+    Single-threading trades CPU throughput for determinism. Irrelevant
+    on the RunPod GPU environment (CUDA ops don't use these CPU thread
+    pools); this only matters for the CPU code path.
     """
-    if seed is not None:
-        np.random.seed(int(seed) % (2**32 - 1))
+    if seed is None:
+        return
+    s = int(seed) % (2**32 - 1)
+    np.random.seed(s)
+    torch.manual_seed(s)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(s)
+
+
+_DETERMINISM_CONFIGURED = False
+
+
+def configure_determinism():
+    """
+    Call once at process start. CPU path: single-thread (removes float
+    noise from multi-threaded BLAS reductions). GPU path (RunPod):
+    cudnn deterministic mode instead -- CPU thread count is irrelevant
+    once the model forward pass runs on CUDA.
+    """
+    global _DETERMINISM_CONFIGURED
+    if _DETERMINISM_CONFIGURED:
+        return
+    if torch.cuda.is_available():
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    else:
+        torch.set_num_threads(1)
+    _DETERMINISM_CONFIGURED = True
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -336,12 +378,19 @@ def best_grasp_for_segment(pred_grasps, scores, seg_id):
 #  Collision outcome (Experiment B: finger vs non-target contact)
 # ══════════════════════════════════════════════════════════════════════
 
+STATIC_SCENE_BODIES = ('table', 'world')
+
+
 def finger_nontarget_collision(model, data, target_body_name,
-                                finger_bodies=('left_finger', 'right_finger', 'hand')):
+                                finger_bodies=('left_finger', 'right_finger', 'hand'),
+                                exclude_bodies=STATIC_SCENE_BODIES):
     """
     True if, at the current data.contact state, any active contact pair
     involves a gripper body (finger/hand) and a body that is neither the
-    target object nor a static scene fixture (table/floor/arm links).
+    target object, another gripper/arm body, nor a static scene fixture
+    (table / world -- touching the table is a different, mundane failure
+    mode, not the inter-*object* collision this variable is meant to
+    isolate).
 
     This is the "inter-object collision" outcome variable for the
     clutter experiment (Marker B): perception noise can make the CGN
@@ -350,6 +399,11 @@ def finger_nontarget_collision(model, data, target_body_name,
     """
     finger_bids = {mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, b) for b in finger_bodies}
     target_bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, target_body_name)
+    exclude_bids = set()
+    for name in exclude_bodies:
+        bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
+        if bid >= 0:
+            exclude_bids.add(bid)
 
     for i in range(data.ncon):
         c = data.contact[i]
@@ -358,11 +412,228 @@ def finger_nontarget_collision(model, data, target_body_name,
         pair = {b1, b2}
         if not (pair & finger_bids):
             continue
-        other = (pair - finger_bids)
+        other = pair - finger_bids
         for ob in other:
-            if ob == target_bid:
-                continue
-            if ob in finger_bids:
+            if ob == target_bid or ob in finger_bids or ob in exclude_bids:
                 continue
             return True
     return False
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Floating-gripper shake test (response to Marker A + Marker B, 4 Aug)
+#
+#  Marker A: replace full-arm IK execution with the ACRONYM / 6-DOF-
+#  GraspNet floating-gripper protocol -- teleport a free Panda gripper
+#  to the predicted 6-DoF pose, check collision-free, close the fingers,
+#  enable gravity, apply a shake/lift disturbance; success = object
+#  remains gripped after N seconds.
+#
+#  Marker B: the previous outcome (`success = e_pose < GRASP_RADIUS`)
+#  was a deterministic function of a mediator already in the SCM
+#  (circular w.r.t. the causal model) and was not actually measuring
+#  grasp success (only localisation accuracy). This gives an outcome
+#  that is genuinely physical and not a function of e_pose/q_grasp/
+#  n_grasps by construction.
+# ══════════════════════════════════════════════════════════════════════
+
+GRIPPER_BODIES = ('hand', 'left_finger', 'right_finger')
+
+
+def teleport_hand_hard(model, data, pos, quat, hand_body='hand', target_body='hand_target'):
+    """Hard-reset both the (dynamic, free-jointed) `hand` body and the
+    mocap `hand_target` it is welded to, to the same pose, with zero
+    velocity. Used for the initial placement at a candidate grasp pose
+    (and for resetting state between independent trials) so the weld
+    starts already satisfied -- no transient tracking force on the very
+    first step."""
+    bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, hand_body)
+    jadr = model.body_jntadr[bid]
+    qpos_adr = model.jnt_qposadr[jadr]
+    dof_adr = model.jnt_dofadr[jadr]
+    data.qpos[qpos_adr:qpos_adr + 3] = pos
+    data.qpos[qpos_adr + 3:qpos_adr + 7] = quat
+    data.qvel[dof_adr:dof_adr + 6] = 0.
+    teleport_mocap(model, data, target_body, pos, quat)
+
+
+def teleport_mocap(model, data, body_name, pos, quat):
+    """Kinematically drive a mocap body (no joint, immune to physics
+    forces) to an arbitrary world pos/quat. Used for `hand_target`: a
+    weld equality constraint (see floating_gripper_template.xml) then
+    pulls the real, dynamic `hand` body toward it every step, with the
+    tracking force resolved by MuJoCo's own constraint solver alongside
+    contacts -- this is what actually couples the hand's momentum to a
+    gripped object; teleporting `hand` itself this way does not (see
+    the XML docstring for why that first attempt failed)."""
+    bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, body_name)
+    mocap_id = model.body_mocapid[bid]
+    assert mocap_id >= 0, f'body {body_name} is not a mocap body'
+    data.mocap_pos[mocap_id] = pos
+    data.mocap_quat[mocap_id] = quat
+
+
+def set_object_pose(model, data, body_name, pos, quat):
+    """Set a freejoint object body's full 6-DoF pose (position + wxyz
+    quaternion), zeroing its velocity. Generalizes set_home_pose (which
+    only ever used identity orientation) to carry over a possibly-
+    rotated settled pose from the perception scene into the floating-
+    gripper scene.
+
+    Looks up the joint by its INDEX (via body_jntadr), not by name --
+    `<freejoint/>` elements (used throughout object_specs.py) are
+    auto-generated with no `name` attribute, so mj_id2name would return
+    None for them; feeding None into mj_name2id segfaults the native
+    binding rather than raising a Python exception."""
+    bid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, body_name)
+    jadr = model.body_jntadr[bid]
+    assert jadr >= 0, f'body {body_name} has no joint'
+    qpos_adr = model.jnt_qposadr[jadr]
+    dof_adr = model.jnt_dofadr[jadr]
+    data.qpos[qpos_adr:qpos_adr + 3] = pos
+    data.qpos[qpos_adr + 3:qpos_adr + 7] = quat
+    data.qvel[dof_adr:dof_adr + 6] = 0.
+
+
+def open_gripper(model, data, width=FINGER_OPEN):
+    """Set both finger joints to `width` (default fully open) with zero
+    velocity, and set the tendon actuator ctrl to match (255 = open)."""
+    fq = finger_qpos_adr(model)
+    data.qpos[fq] = width
+    for name in FINGER_JOINTS:
+        dof = joint_dof_adr(model, name)
+        data.qvel[dof] = 0.
+    aid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, 'actuator8')
+    data.ctrl[aid] = 255. * (width / FINGER_OPEN)
+
+
+def gripper_contacted_bodies(model, data, gripper_bodies=GRIPPER_BODIES):
+    """Set of body names in contact with any gripper body, excluding
+    gripper-self pairs (hand/left_finger/right_finger, already excluded
+    at the XML level but re-excluded here defensively)."""
+    gripper_bids = {mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, b) for b in gripper_bodies}
+    contacted = set()
+    for i in range(data.ncon):
+        c = data.contact[i]
+        b1, b2 = model.geom_bodyid[c.geom1], model.geom_bodyid[c.geom2]
+        pair = {b1, b2}
+        if not (pair & gripper_bids):
+            continue
+        for ob in pair - gripper_bids:
+            if ob not in gripper_bids:
+                contacted.add(ob)
+    return {mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, b) for b in contacted}
+
+
+def run_floating_gripper_test(model, data, target_body_name, grasp_pos, grasp_quat,
+                               footprint_radius, hand_body='hand',
+                               gripper_bodies=GRIPPER_BODIES,
+                               close_steps=400, shake_steps=600,
+                               lift_height=0.15, shake_amplitude=0.03,
+                               xy_tolerance_margin=0.03, sample_every=25,
+                               squeeze_margin=60.):
+    """
+    Floating-gripper shake test (ACRONYM / 6-DOF-GraspNet protocol,
+    Marker A's recommended fix).
+
+    Steps:
+      1. Teleport the mocap `hand` body to (grasp_pos, grasp_quat) with
+         fingers fully open. Check collision-free (no contact between
+         any gripper body and anything else) -- an invalid/mis-predicted
+         pose fails immediately, exactly as in the real protocol.
+      2. If collision-free: close the fingers under actuator control
+         while the hand stays kinematically pinned at the grasp pose
+         (mocap bodies are immune to contact reaction forces, so
+         "pinned" here means genuinely fixed, not just strongly held).
+      3. Apply a combined lift + shake disturbance by driving the mocap
+         pose through a fixed trajectory (deterministic -- no RNG, so no
+         new stochastic dimension is introduced) while gravity acts on
+         the object and fingers hold it via friction/contact alone.
+      4. Success = the object stayed within `footprint_radius +
+         xy_tolerance_margin` of the gripper's ee_site (i.e. stayed
+         "between the fingers") AND was lifted at least 40% of
+         `lift_height`, at every sampled step during the shake (not just
+         the final frame).
+
+    Returns a dict: collision_free, contacted_bodies (sorted list of
+    body names, empty if collision-free), success, final_xy_offset,
+    final_lift, obj_z_final.
+    """
+    teleport_hand_hard(model, data, grasp_pos, grasp_quat, hand_body=hand_body)
+    open_gripper(model, data)
+    mujoco.mj_forward(model, data)
+
+    contacted = sorted(gripper_contacted_bodies(model, data, gripper_bodies))
+    collision_free = len(contacted) == 0
+
+    obj_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, target_body_name)
+    result = dict(collision_free=collision_free, contacted_bodies=contacted,
+                  success=False, final_xy_offset=None, final_lift=None,
+                  obj_z_final=round(float(data.xpos[obj_id][2]), 4))
+
+    if not collision_free:
+        return result
+
+    z0 = float(data.xpos[obj_id][2])
+    aid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, 'actuator8')
+    ee_site = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, 'ee_site')
+    tol = footprint_radius + xy_tolerance_margin
+
+    # Close until first contact with the target, then hold ctrl at a
+    # small, bounded margin below that contact point rather than
+    # continuing to command "fully closed" (ctrl=0) indefinitely.
+    # Driving the tendon's position-servo setpoint all the way to an
+    # unreachable target (length=0, against a rigid object) leaves a
+    # permanent, large steady-state position error once blocked; that
+    # error is fine while the hand is static, but once the mocap hand
+    # starts moving during the shake phase, any tiny slip momentarily
+    # reduces the error further, and the servo instantaneously demands
+    # the maximum restoring force again -- this produced a real,
+    # observed slip-stick oscillation in the finger joint (~30% of its
+    # travel range within a handful of steps) that let the object work
+    # free. A modest, fixed extra squeeze margin after first contact
+    # gives a well-defined, stable equilibrium instead.
+    contact_ctrl = None
+    for _ in range(close_steps):
+        teleport_mocap(model, data, 'hand_target', grasp_pos, grasp_quat)
+        if contact_ctrl is None:
+            data.ctrl[aid] = max(0., data.ctrl[aid] - 255. / close_steps)
+            mujoco.mj_step(model, data)
+            if gripper_contacted_bodies(model, data, gripper_bodies):
+                contact_ctrl = max(0., data.ctrl[aid] - squeeze_margin)
+        else:
+            data.ctrl[aid] = contact_ctrl
+            mujoco.mj_step(model, data)
+    if contact_ctrl is not None:
+        data.ctrl[aid] = contact_ctrl
+
+    held_throughout = True
+    grasp_pos = np.asarray(grasp_pos, dtype=float)
+    for i in range(shake_steps):
+        t = i / shake_steps
+        ramp = min(1.0, t / 0.3)
+        dz = lift_height * ramp
+        # shake_amplitude is also ramped (via the same `ramp`, plus a sin(0)=0
+        # phase with no constant offset) so (dx, dy, dz) = (0, 0, 0) exactly
+        # at i=0 -- otherwise sin(...+1.1) is nonzero at t=0 and the mocap
+        # hand *jumps* by ~shake_amplitude in one step right as the shake
+        # phase begins, injecting a large, discontinuous velocity into the
+        # just-closed grip and breaking it before any real shaking happens.
+        dx = shake_amplitude * ramp * math.sin(2 * math.pi * 4.0 * t)
+        dy = shake_amplitude * ramp * math.sin(2 * math.pi * 5.3 * t)
+        teleport_mocap(model, data, 'hand_target', grasp_pos + np.array([dx, dy, dz]), grasp_quat)
+        mujoco.mj_step(model, data)
+        if i % sample_every == 0 and ramp >= 1.0:
+            obj_pos = data.xpos[obj_id]
+            xy_off = float(np.linalg.norm(obj_pos[:2] - data.site_xpos[ee_site][:2]))
+            if xy_off > tol or (obj_pos[2] - z0) < lift_height * 0.4:
+                held_throughout = False
+
+    obj_pos_final = data.xpos[obj_id].copy()
+    xy_offset = float(np.linalg.norm(obj_pos_final[:2] - data.site_xpos[ee_site][:2]))
+    lift = float(obj_pos_final[2] - z0)
+    success = held_throughout and xy_offset <= tol and lift >= lift_height * 0.4
+
+    result.update(success=bool(success), final_xy_offset=round(xy_offset, 5),
+                  final_lift=round(lift, 5), obj_z_final=round(float(obj_pos_final[2]), 4))
+    return result

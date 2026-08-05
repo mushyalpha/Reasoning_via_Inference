@@ -1,0 +1,272 @@
+<mujoco model="floating_gripper_scene_template">
+  <!--
+    floating_gripper_template.xml
+    ===============================
+    Response to preliminary marking (Marker A + Marker B, 4 Aug):
+
+    Marker A: use a floating-gripper simulation test (the ACRONYM / 6-DOF
+    GraspNet standard) instead of full-arm IK -- teleport a free Panda
+    gripper directly to the predicted 6-DoF pose, check collision-free,
+    close the fingers, enable gravity, apply a shake/lift disturbance.
+    Success = object remains between the fingers after N seconds.
+
+    Marker B: the old `success = e_pose < GRASP_RADIUS` outcome was a
+    deterministic function of a mediator already in the SCM (circular),
+    and not actually "grasp success" (it measured localisation accuracy,
+    not whether anything was held). This scene gives a genuinely physical,
+    independent outcome instead.
+
+    Design: the Panda `hand` body has NO arm above it. It started life as
+    a MuJoCo *mocap* body (kinematic, pose set directly each step,
+    immune to forces) but that was found empirically to break the whole
+    point of the test: mocap bodies contribute no rows to the contact
+    Jacobian, so MuJoCo's constraint solver has no notion of "the mocap
+    body is moving" -- teleporting it between steps changes *where*
+    contacts are detected but not the *relative velocity* the friction
+    constraint reacts to (which is derived purely from real dof
+    velocities). Net effect: an object squeezed by a teleported mocap
+    hand never actually got dragged upward by friction -- it just sat
+    on the table while the fingers slid past it, however strong the
+    squeeze. This is a known MuJoCo mocap limitation (mocap teleportation
+    does not impart momentum through contact), not a friction/stiffness
+    tuning problem, and was confirmed directly by tracing contact forces
+    and object height during a slow lift (obj height frozen at the
+    resting value for seconds of sim time despite ample squeeze force).
+
+    Fix: `hand` is now a genuine dynamic free body (`<freejoint>`, real
+    mass/inertia, `gravcomp="1"` so gravity is exactly cancelled for the
+    hand itself -- only the grasped object should feel gravity). It is
+    driven by a `weld` equality constraint to a separate, invisible
+    mocap body (`hand_target`), which *is* teleported directly each step
+    (sim_common.teleport_mocap on `hand_target`, unchanged from before).
+    The weld is a genuine MuJoCo constraint, solved by the same
+    Newton/constraint solver that handles contacts -- so, unlike a
+    hand-rolled PD force fed in through xfrc_applied (tried first; blew
+    up numerically the moment the finger-closing reaction force hit the
+    tiny 0.73 kg hand), the tracking force here is computed implicitly,
+    consistently, and stably alongside the contact forces every step.
+    Because `hand` is a real dof-carrying body, its momentum genuinely
+    couples through contact/friction to whatever is gripped, exactly
+    like a real (if idealised, momentumless-net-gravity) floating
+    gripper. left_finger / right_finger remain ordinary dynamic bodies
+    (slide joints, real mass/inertia, real contact) as before.
+
+    Geometry/mesh assets, finger joint/tendon/actuator wiring, and
+    fingertip pad collision primitives are copied verbatim from
+    mujoco_menagerie's panda.xml / grasp_scene_template.xml so the
+    gripper here is physically identical to the one used during
+    perception-scene grasp *proposal* (Experiment A/B loading, IK/arm
+    scenes) -- only the arm and its home-pose/park logic are removed.
+  -->
+  <compiler angle="radian" autolimits="true" balanceinertia="true"
+            meshdir="/Users/bonolomasima/Desktop/Reasoning_via_Inference/mujoco_menagerie/franka_emika_panda/assets"/>
+  <!-- noslip_iterations: a dedicated post-pass specifically for
+       friction/no-slip accuracy. Without it, the default (Newton)
+       solver's soft-constraint formulation let a squeezed object
+       slowly creep/slide out of the closed fingers even while nominally
+       within the friction cone (observed empirically -- an object held
+       under a large, steady normal force still failed to track a slow
+       vertical lift). This is the standard MuJoCo fix for exactly that
+       symptom (see MuJoCo docs, Solver options). -->
+  <option gravity="0 0 -9.81" timestep="0.002" integrator="implicitfast"
+          noslip_iterations="5" noslip_tolerance="1e-6"/>
+
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+
+  <default>
+    <geom solref="0.004 1" solimp="0.98 0.99 0.001"/>
+  </default>
+
+  <default>
+    <default class="panda">
+      <material specular="0.5" shininess="0.25"/>
+      <default class="finger">
+        <joint axis="0 1 0" type="slide" range="0 0.04"/>
+      </default>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+      <default class="collision">
+        <geom type="mesh" group="3"/>
+        <!-- Fingertip contact pads (box primitives on finger tips).
+             friction="5 0.02 0.0002" -- explicit high-friction rubberized
+             pad (real Franka fingertip pads are rubberized specifically
+             to secure a grip); set directly here rather than relying on
+             MuJoCo's default geom-geom friction combination rule, so the
+             floating-gripper shake test isn't sensitive to that
+             ambiguity. -->
+        <default class="fingertip_pad_collision_1">
+          <geom type="box" size="0.0085 0.004 0.0085" pos="0 0.0055 0.0445" friction="5 0.02 0.0002"/>
+        </default>
+        <default class="fingertip_pad_collision_2">
+          <geom type="box" size="0.003 0.002 0.003" pos="0.0055 0.002 0.05" friction="5 0.02 0.0002"/>
+        </default>
+        <default class="fingertip_pad_collision_3">
+          <geom type="box" size="0.003 0.002 0.003" pos="-0.0055 0.002 0.05" friction="5 0.02 0.0002"/>
+        </default>
+        <default class="fingertip_pad_collision_4">
+          <geom type="box" size="0.003 0.002 0.0035" pos="0.0055 0.002 0.0395" friction="5 0.02 0.0002"/>
+        </default>
+        <default class="fingertip_pad_collision_5">
+          <geom type="box" size="0.003 0.002 0.0035" pos="-0.0055 0.002 0.0395" friction="5 0.02 0.0002"/>
+        </default>
+      </default>
+    </default>
+  </default>
+
+  <asset>
+    <material class="panda" name="white"     rgba="1 1 1 1"/>
+    <material class="panda" name="off_white" rgba="0.901961 0.921569 0.929412 1"/>
+    <material class="panda" name="black"     rgba="0.25 0.25 0.25 1"/>
+
+    <mesh name="hand_c" file="hand.stl"/>
+    <mesh file="hand_0.obj"/>
+    <mesh file="hand_1.obj"/>
+    <mesh file="hand_2.obj"/>
+    <mesh file="hand_3.obj"/>
+    <mesh file="hand_4.obj"/>
+    <mesh file="finger_0.obj"/>
+    <mesh file="finger_1.obj"/>
+
+        <mesh name="ycb_mustard_visual" file="/Users/bonolomasima/Desktop/Reasoning_via_Inference/assets/ycb/mustard_bottle/visual.obj"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 2.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="2 2 0.05" rgba="0.85 0.85 0.85 1"/>
+
+    <!-- Table (kept for visual/context parity with the perception scenes;
+         the object is re-seeded here at its settled pose from the
+         perception scene, not dropped onto this table from scratch). -->
+    <body name="table" pos="0.5 0 0.2">
+      <geom type="box" size="0.3 0.4 0.2" rgba="0.6 0.4 0.2 1"/>
+    </body>
+
+        <body name="target_object" pos="0.5 0.0 0.48397300000000004">
+      <freejoint/>
+      <inertial pos="0 0 0" mass="0.08" diaginertia="0.001 0.001 0.0003"/>
+      <geom name="mustard_target_vis" type="mesh" mesh="ycb_mustard_visual" rgba="0.85 0.75 0.1 1.0" contype="0" conaffinity="0" group="2"/>
+      <geom name="mustard_target_col" type="box" pos="0.0053 -0.0076 0.0118" size="0.0482 0.0291 0.0958" mass="0.08" condim="4" friction="2.0 0.01 0.0001" group="3" rgba="0.85 0.75 0.1 0"/>
+    </body>
+
+    <!-- Invisible mocap target that `hand` is welded to (see docstring
+         above). No collision geoms -- it must never itself interact
+         with contacts, only pull `hand` toward it via the weld below. -->
+    <body name="hand_target" mocap="true" pos="0 0 1.2" quat="1 0 0 0">
+      <geom type="sphere" size="0.005" contype="0" conaffinity="0" rgba="1 0 1 0.3"/>
+    </body>
+
+    <!-- =====================================================
+         Free-floating Panda gripper -- dynamic base (freejoint,
+         gravity-compensated, weld-servoed to hand_target), dynamic
+         fingers. Nominal pos/quat below are placeholders; both are
+         overwritten every trial via sim_common.teleport_hand_hard()
+         (hard reset) then tracked via sim_common.teleport_mocap() on
+         `hand_target` (soft, constraint-mediated tracking) thereafter.
+         ===================================================== -->
+    <body name="hand" pos="0 0 1.2" quat="1 0 0 0" childclass="panda" gravcomp="1">
+      <freejoint name="hand_freejoint"/>
+      <inertial mass="0.73" pos="-0.01 0 0.03" diaginertia="0.001 0.0025 0.0017"/>
+      <geom mesh="hand_0" material="off_white" class="visual"/>
+      <geom mesh="hand_1" material="black"     class="visual"/>
+      <geom mesh="hand_2" material="black"     class="visual"/>
+      <geom mesh="hand_3" material="white"     class="visual"/>
+      <geom mesh="hand_4" material="off_white" class="visual"/>
+      <geom mesh="hand_c" class="collision"/>
+      <!-- Grasp-frame marker (matches CGN's build_6d_grasp origin / the
+           ACRONYM PandaGripper convention: this body's own frame IS the
+           gripper base frame, no extra offset needed). -->
+      <site name="ee_site" pos="0 0 0.09" size="0.01" rgba="1 0 0 1" type="sphere"/>
+
+      <body name="left_finger" pos="0 0 0.0584">
+        <inertial mass="0.015" pos="0 0 0" diaginertia="2.375e-6 2.375e-6 7.5e-7"/>
+        <joint name="finger_joint1" class="finger"/>
+        <geom mesh="finger_0" material="off_white" class="visual"/>
+        <geom mesh="finger_1" material="black"     class="visual"/>
+        <geom mesh="finger_0" class="collision"/>
+        <geom class="fingertip_pad_collision_1"/>
+        <geom class="fingertip_pad_collision_2"/>
+        <geom class="fingertip_pad_collision_3"/>
+        <geom class="fingertip_pad_collision_4"/>
+        <geom class="fingertip_pad_collision_5"/>
+      </body>
+
+      <body name="right_finger" pos="0 0 0.0584" quat="0 0 0 1">
+        <inertial mass="0.015" pos="0 0 0" diaginertia="2.375e-6 2.375e-6 7.5e-7"/>
+        <joint name="finger_joint2" class="finger"/>
+        <geom mesh="finger_0" material="off_white" class="visual"/>
+        <geom mesh="finger_1" material="black"     class="visual"/>
+        <geom mesh="finger_0" class="collision"/>
+        <geom class="fingertip_pad_collision_1"/>
+        <geom class="fingertip_pad_collision_2"/>
+        <geom class="fingertip_pad_collision_3"/>
+        <geom class="fingertip_pad_collision_4"/>
+        <geom class="fingertip_pad_collision_5"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <tendon>
+    <fixed name="split">
+      <joint joint="finger_joint1" coef="0.5"/>
+      <joint joint="finger_joint2" coef="0.5"/>
+    </fixed>
+  </tendon>
+
+  <equality>
+    <joint joint1="finger_joint1" joint2="finger_joint2"
+           solimp="0.95 0.99 0.001" solref="0.005 1"/>
+    <!-- Tracks hand_target's pose. solref="0.02 1" is deliberately
+         softer/slower than the default geom solref (0.004s) used
+         elsewhere in this file: a weld this stiff acting on a 0.73 kg
+         body reacting to a ~70N finger-closing spike is exactly what
+         caused the earlier PD-force approach to diverge; 0.02s gives a
+         ~5x softer (slower) but still very firm response that stays
+         numerically stable through closing, lifting, and shaking. -->
+    <weld body1="hand" body2="hand_target" solref="0.02 1" solimp="0.9 0.95 0.001"/>
+  </equality>
+
+  <actuator>
+    <!-- ctrl=255 -> open (0.04 m), ctrl=0 -> closed.
+         dyntype/biastype set explicitly here (not inherited from a
+         "panda" default <general> block, unlike grasp_scene_template.xml,
+         since that block also carried arm-only ctrlrange/forcerange
+         that don't apply here) -- biastype="affine" is required for
+         gainprm/biasprm to act as a position servo; without it MuJoCo's
+         default biastype="none" makes this a near-inert force actuator
+         and the fingers never actually close.
+
+         kp=2000, kv=100 (vs. grasp_scene_template.xml's kp=100, kv=10):
+         the original gain was tuned only to close the fingers and check
+         XY proximity -- it never needed to hold a grasped object's
+         weight against gravity or a moving base. Empirically (this
+         session's smoke tests), kp=100 gives a real but very weak grip
+         (an object would slowly creep/slip out even under a slow,
+         steady lift); kp=2000 matches the stiffness already used for
+         the arm's own joint actuators (actuator5/6/7 in
+         grasp_scene_template.xml) and gives a firm, stable hold through
+         the full lift+shake sequence. gainprm scaled to preserve the
+         same ctrl(0-255) -> open-width(0-0.04m) mapping. -->
+    <!-- forcerange capped at +-70N/finger (Franka Hand's real rated max
+         grasp force is ~70N total, so this is already generous) -- with
+         a free-floating dynamic hand (0.73 kg) rather than a rigid mocap
+         anchor, letting the tendon's *commanded* force run unbounded
+         (previously +-300N/600N) fed enormous Newton's-third-law
+         reaction spikes into the hand's PD servo during closing and blew
+         the simulation up (NaN qacc). Capping at a realistic value is
+         both the physically-correct choice and the numerically stable
+         one -- 70N is still >>140x the ~0.5N needed to hold any of the
+         (<0.5kg) test objects against gravity+shake via friction. -->
+    <general class="panda" name="actuator8" tendon="split"
+             dyntype="none" biastype="affine"
+             forcerange="-70 70" ctrlrange="0 255"
+             gainprm="0.31372549 0 0" biasprm="0 -2000 -100"/>
+  </actuator>
+
+  <contact>
+    <exclude body1="hand" body2="left_finger"/>
+    <exclude body1="hand" body2="right_finger"/>
+  </contact>
+</mujoco>

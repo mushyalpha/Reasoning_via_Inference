@@ -211,6 +211,48 @@ def _body_xml(spec, body_name_override=None, xy_override=None, suffix_geom_names
     )
 
 
+# ══════════════════════════════════════════════════════════════════════
+# Experiment B (clutter): all 3 objects together in a fixed triangular
+# arrangement, ~0.11 m from the cluster centre -- close enough to create
+# genuine visual occlusion / boundary ambiguity between objects (Marker
+# B's causal story) without objects overlapping at spawn (largest
+# footprint radius among the three is ~0.048 m, well under half the
+# 0.11 m spacing).
+# ══════════════════════════════════════════════════════════════════════
+CLUTTER_CENTER_XY = (0.5, 0.0)
+CLUTTER_RADIUS = 0.11
+CLUTTER_BODY_NAMES = {'cylinder': 'obj_cylinder', 'box': 'obj_box', 'mustard': 'obj_mustard'}
+
+
+def clutter_layout():
+    """Returns the (spec_key, body_name, (x, y)) list for build_scene_xml,
+    and a dict {spec_key: (x, y)} for convenience."""
+    angles_deg = {'cylinder': 90., 'box': 210., 'mustard': 330.}
+    cx, cy = CLUTTER_CENTER_XY
+    xy = {}
+    for key, ang in angles_deg.items():
+        a = math.radians(ang)
+        xy[key] = (cx + CLUTTER_RADIUS * math.cos(a), cy + CLUTTER_RADIUS * math.sin(a))
+    objects = [(key, CLUTTER_BODY_NAMES[key], xy[key]) for key in ['cylinder', 'box', 'mustard']]
+    return objects, xy
+
+
+def clutter_spawn_positions():
+    """dict {body_name: (x, y, z)} resting position for each object in
+    the fixed clutter arrangement."""
+    _, xy = clutter_layout()
+    out = {}
+    for key, body_name in CLUTTER_BODY_NAMES.items():
+        spec = OBJECT_SPECS[key]
+        x, y = xy[key]
+        z = TABLE_TOP_Z - spec['bottom_local_z']
+        out[body_name] = (x, y, z)
+    return out
+
+
+FLOATING_GRIPPER_TEMPLATE = os.path.join(_PROJECT_DIR, 'floating_gripper_template.xml')
+
+
 def build_scene_xml(objects, out_path, template_path=None):
     """
     Build a scene XML for one or more objects and write it to out_path.
@@ -221,7 +263,11 @@ def build_scene_xml(objects, out_path, template_path=None):
               or a single spec_key string for the isolated-object case
               (uses the default body name 'target_object' and spawn_xy).
     out_path : destination .xml path
-    template_path : defaults to grasp_scene_template.xml
+    template_path : defaults to grasp_scene_template.xml. Pass
+              FLOATING_GRIPPER_TEMPLATE to build the arm-free floating-
+              gripper scene instead (same OBJECT_ASSETS/OBJECT_BODIES
+              placeholders, so this function works unchanged for both --
+              see run_experiments_v2.execute_grasp / sim_common.run_floating_gripper_test).
 
     Returns
     -------
