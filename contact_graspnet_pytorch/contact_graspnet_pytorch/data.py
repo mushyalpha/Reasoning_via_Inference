@@ -16,7 +16,17 @@ import trimesh.transformations as tra
 from scipy.spatial import cKDTree
 
 import provider
-from contact_graspnet_pytorch.scene_renderer import SceneRenderer
+# NOTE: SceneRenderer (contact_graspnet_pytorch.scene_renderer) is only used
+# by PointCloudReader below, a training-data-generation helper that is never
+# instantiated by the MuJoCo-based inference pipeline (run_experiments.py,
+# demo_grasp.py). It is intentionally imported lazily, inside
+# PointCloudReader.__init__, rather than here at module scope: it pulls in
+# `pyrender`, which eagerly loads OpenGL/EGL bindings the moment it is
+# imported. That import used to be unconditional here, which meant simply
+# importing GraspEstimator (which only needs the plain numpy helpers below)
+# would crash with an EGL "shared object file not found" error on any
+# container missing libEGL -- even though nothing in the inference path
+# ever touches pyrender or SceneRenderer.
 
 def load_scene_contacts(dataset_folder, test_split_only=False, num_test=None, scene_contacts_path='scene_contacts_new'):
     """
@@ -465,6 +475,7 @@ class PointCloudReader:
         self._current_pc = None
         self._cache = {}
 
+        from contact_graspnet_pytorch.scene_renderer import SceneRenderer
         self._renderer = SceneRenderer(caching=True, intrinsics=intrinsics)
 
         if use_uniform_quaternions:

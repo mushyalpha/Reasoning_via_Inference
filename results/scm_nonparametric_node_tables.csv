@@ -1,0 +1,625 @@
+node,parents,phi,theta,stat,value,ci_lo,ci_hi,n,sigma_d,rho
+C_pc,"phi,theta",30.0,0.0,mean,0.010799484592013875,0.010799197348596959,0.010799771835430792,48,,
+C_pc,"phi,theta",30.0,45.0,mean,0.014790253623188402,0.01479007871020157,0.014790428536175234,46,,
+C_pc,"phi,theta",30.0,90.0,mean,0.014879276494565219,0.014878847875761774,0.014879705113368663,46,,
+C_pc,"phi,theta",45.0,0.0,mean,0.004860837765957446,0.004860424296662484,0.004861251235252407,47,,
+C_pc,"phi,theta",45.0,45.0,mean,0.012160425347222212,0.01216023583981751,0.012160614854626913,48,,
+C_pc,"phi,theta",45.0,90.0,mean,0.013821826171874977,0.01382115215127953,0.013822500192470423,48,,
+C_pc,"phi,theta",60.0,0.0,mean,4.9072265624999996e-05,4.8936202953832756e-05,4.9208328296167236e-05,48,,
+C_pc,"phi,theta",60.0,45.0,mean,0.007089957682291666,0.007089937830869314,0.007089977533714018,48,,
+C_pc,"phi,theta",60.0,90.0,mean,0.01009048758865247,0.010090323870200481,0.010090651307104457,47,,
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.34237195288961925,1.0,2,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.34237195288961925,1.0,2,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.20654329147389294,1.0,1,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.6576280471103807,2,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+has_grasps,"sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",30.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+has_grasps,"sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.6576280471103807,2,0.04,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,50.666666666666664,43.30397392253803,58.0293594107953,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,4.666666666666667,2.938109143437801,6.395224189895533,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,6.333333333333333,2.876218286875601,9.790448379791066,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,35.333333333333336,26.543632289245178,44.12303437742149,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,15.333333333333334,11.049140164122694,19.617526502543974,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,7.333333333333333,6.68,7.986666666666666,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,24.666666666666668,18.434263884075957,30.89906944925738,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,10.666666666666666,6.692595146871829,14.640738186461503,3,0.0,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,102.33333333333333,99.48551935688675,105.1811473097799,3,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,8.0,6.868393472388333,9.131606527611666,3,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,9.0,4.91993464104638,13.08006535895362,3,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,57.5,52.6,62.4,2,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,34.333333333333336,30.3592618135385,38.307404853128176,3,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,14.666666666666666,9.44,19.89333333333333,3,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,1.0,1.0,1.0,1,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,39.0,36.00605054596218,41.99394945403782,3,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,19.333333333333332,16.97770650003019,21.688960166636473,3,0.0,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,144.0,136.16,151.84,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,10.333333333333334,9.68,10.986666666666668,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,12.333333333333334,3.256936593559459,21.40973007310721,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,94.66666666666667,81.64909222115477,107.68424111217857,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,44.666666666666664,42.9381091434378,46.39522418989553,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,20.666666666666668,17.818852690220094,23.51448064311324,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,1.0,1.0,1.0,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,76.33333333333333,70.10093055074262,82.56573611592404,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,21.333333333333332,15.637705380440185,27.02896128622648,3,0.0,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,90.66666666666667,79.05275929470764,102.2805740386257,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,17.0,12.067441502289777,21.932558497710225,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,9.666666666666666,3.8597129806871475,15.473620352646185,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,121.66666666666667,115.85971298068715,127.4736203526462,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,58.333333333333336,52.63770538044019,64.02896128622649,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,27.333333333333332,21.985569522376665,32.68109714429,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,41.333333333333336,40.68,41.98666666666667,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,7.333333333333333,6.68,7.986666666666666,3,0.0,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,30.333333333333332,24.637705380440185,36.028961286226476,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,4.666666666666667,2.938109143437801,6.395224189895533,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,6.0,3.7367869447766666,8.263213055223334,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,19.333333333333332,11.970640589204697,26.696026077461966,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,12.333333333333334,8.359261813538497,16.307404853128173,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,7.333333333333333,3.695727282951052,10.970939383715614,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,1.0,1.0,1.0,1,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,15.0,12.736786944776666,17.263213055223332,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,7.333333333333333,4.72,9.946666666666665,3,0.005,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,57.333333333333336,50.89874623615988,63.76792043050679,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,14.666666666666666,12.9381091434378,16.395224189895533,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,14.0,8.814327430313401,19.1856725696866,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,44.666666666666664,41.02906061628438,48.304272717048946,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,22.0,20.868393472388334,23.131606527611666,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,12.666666666666666,7.955413000060386,17.377920333272947,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,1.0,1.0,1.0,1,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,24.666666666666668,20.69259514687183,28.640738186461505,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,15.333333333333334,12.977706500030195,17.688960166636473,3,0.005,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,81.66666666666667,79.31103983336354,84.0222934999698,3,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,18.333333333333332,16.604775810104467,20.061890856562197,3,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,13.0,13.0,13.0,2,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,66.33333333333333,63.485519356886755,69.1811473097799,3,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,29.333333333333332,28.68,29.986666666666665,3,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,19.333333333333332,13.751250886392544,24.91541578027412,3,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,1.0,1.0,1.0,2,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,30.0,24.012101091924368,35.98789890807563,3,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,21.666666666666668,20.36,22.973333333333336,3,0.005,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,65.0,60.91993464104638,69.08006535895362,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,23.0,18.473573889553332,27.526426110446668,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,21.333333333333332,15.100930550742621,27.565736115924043,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,55.666666666666664,50.95541300006038,60.37792033327295,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,36.333333333333336,34.60477581010447,38.0618908565622,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,27.0,20.11670621480288,33.883293785197125,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,25.333333333333332,16.76494699491205,33.90171967175461,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,30.0,25.919934641046382,34.08006535895362,3,0.005,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,8.333333333333334,7.026666666666667,9.64,3,0.02,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,2.0,2.0,2.0,2,0.02,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,1.5,0.52,2.48,2,0.02,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,3.3333333333333335,2.68,3.986666666666667,3,0.02,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,1.0,1.0,1.0,2,0.02,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,2.0,2.0,2.0,1,0.02,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,2.0,2.0,2.0,2,0.02,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,6.0,2.605180417165,9.394819582835,3,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,1.5,0.52,2.48,2,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,2.6666666666666665,2.013333333333333,3.32,3,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,6.333333333333333,1.7599999999999998,10.906666666666666,3,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,1.0,1.0,1.0,3,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,1.0,1.0,1.0,2,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,1.0,1.0,1.0,1,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,3.0,3.0,3.0,3,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,3.0,3.0,3.0,1,0.02,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,9.0,4.91993464104638,13.08006535895362,3,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,2.0,0.8683934723883333,3.131606527611667,3,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,6.666666666666667,4.938109143437801,8.395224189895533,3,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,6.0,1.4735738895533332,10.526426110446668,3,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,1.6666666666666667,1.0133333333333334,2.3200000000000003,3,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,1.5,0.52,2.48,2,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,6.333333333333333,0.9855695223766645,11.681097144290002,3,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,2.0,2.0,2.0,1,0.02,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,16.0,8.93311950009058,23.06688049990942,3,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,2.6666666666666665,1.3599999999999999,3.973333333333333,3,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,7.333333333333333,3.876218286875601,10.790448379791066,3,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,9.666666666666666,1.0982803282453855,18.23505300508795,3,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,3.5,2.52,4.48,2,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,1.0,1.0,1.0,1,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,1.0,1.0,1.0,1,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,5.333333333333333,1.3592618135384957,9.30740485312817,3,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,2.0,2.0,2.0,1,0.02,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,1.0,1.0,1.0,1,0.04,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,1.0,1.0,1.0,1,0.04,0.25
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,1.0,1.0,1.0,1,0.04,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,1.0,1.0,1.0,2,0.04,0.5
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,2.0,2.0,2.0,1,0.04,0.75
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,1.3333333333333333,0.6799999999999999,1.9866666666666666,3,0.04,1.0
+n_grasps,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,1.0,1.0,1.0,1,0.04,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.29209999999999997,0.29098257078374806,0.2932174292162519,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.21015666666666666,0.1823852894819144,0.2379280438514189,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.19006,0.17634205815437318,0.20377794184562684,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.29385,0.29385,0.29385,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.28021,0.26369967461818716,0.29672032538181287,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.2326666666666667,0.2076052624130251,0.2577280709203083,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.29383333333333334,0.29380066666666665,0.293866,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.21364666666666668,0.2006998796153898,0.22659345371794357,3,0.0,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.28975666666666666,0.284430797681755,0.2950825356515783,3,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.20705333333333334,0.19388337135447992,0.22022329531218676,3,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.18716666666666668,0.16732721163338066,0.2070061216999527,3,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.29385,0.29385,0.29385,2,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.2814,0.25867710705389824,0.30412289294610173,3,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.23553333333333334,0.2273997951402849,0.24366687152638178,3,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.24084,0.24084,0.24084,1,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.29381666666666667,0.2937820955162021,0.29385123781713124,3,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.2065233333333333,0.19652232356475938,0.21652434310190724,3,0.0,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.29364666666666667,0.2932481333333333,0.2940452,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.19647666666666666,0.19457091449903194,0.19838241883430138,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.1914733333333333,0.16071905472772932,0.22222761193893728,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.29385,0.29385,0.29385,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.2827266666666667,0.2700162904071778,0.2954370429261556,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.22397666666666669,0.20456420047769994,0.24338913285563343,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.24053333333333335,0.22956880571783111,0.2514978609488356,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.2937766666666667,0.2937103605751081,0.2938429727582253,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.19992666666666667,0.1956065175992797,0.20424681573405365,3,0.0,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.21145333333333335,0.202758865727372,0.2201478009392947,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.21181333333333333,0.1823015897649766,0.24132507690169006,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.17388666666666666,0.15167998391714782,0.1960933494161855,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.27797,0.2742845745211713,0.2816554254788287,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.28109999999999996,0.26281260829824726,0.29938739170175266,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.23818666666666666,0.22047291312153178,0.25590042021180154,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.19412,0.19137964241749364,0.19686035758250633,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.18387666666666666,0.18164394839116083,0.1861093849421725,3,0.0,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.29307,0.29206694713997716,0.29407305286002283,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.19683666666666666,0.18084984830597406,0.21282348502735926,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.18913999999999997,0.18260328001109627,0.19567671998890368,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.29385,0.29385,0.29385,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.23849666666666666,0.209333341240981,0.2676599920923523,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.21352333333333337,0.18559823643816675,0.2414484302285,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.17648,0.17648,0.17648,1,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.2931566666666667,0.2917977333333333,0.29451560000000004,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.22089666666666666,0.20794850982005547,0.23384482351327784,3,0.005,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.29352,0.2929774185652519,0.2940625814347481,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.22145333333333336,0.20714910466750017,0.23575756199916656,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.21746333333333334,0.19380644367321295,0.24112022299345373,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.29385,0.29385,0.29385,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.24729,0.24423206497561945,0.2503479350243806,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.21020000000000003,0.18480986364642105,0.235590136353579,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.17255,0.17255,0.17255,1,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.29385,0.29385,0.29385,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.22197999999999998,0.2056026508013863,0.23835734919861368,3,0.005,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.29341,0.2925476,0.2942724,3,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.24230333333333334,0.22239178367948223,0.26221488298718443,3,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.18495,0.1777176,0.1921824,2,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.29385,0.29385,0.29385,3,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.26420333333333335,0.25573028005812937,0.2726763866085373,3,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.22082000000000002,0.2161767714450683,0.22546322855493173,3,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.197955,0.1883412,0.2075688,2,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.29349333333333333,0.2929435619707551,0.29404310469591155,3,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.21880666666666668,0.21283383844844003,0.22477949488489332,3,0.005,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.22481666666666666,0.21642413271055755,0.23320920062277578,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.22952000000000003,0.20121919265792348,0.2578208073420766,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.21459333333333333,0.20430663578920166,0.224880030877465,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.25636333333333333,0.24646531823983547,0.2662613484268312,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.27241333333333334,0.25928886182634386,0.2855378048403228,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.22285666666666668,0.1877024172830652,0.25801091605026816,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.23476333333333332,0.17695169180565792,0.2925749748610087,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.22591999999999998,0.2151966443361542,0.23664335566384576,3,0.005,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.2728566666666667,0.25625725115192305,0.28945608218141033,3,0.02,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.17164000000000001,0.16448600000000002,0.178794,2,0.02,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.16341,0.15376679999999998,0.17305320000000002,2,0.02,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.20965,0.1928953013778224,0.2264046986221776,3,0.02,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.15748,0.1486992,0.16626080000000001,2,0.02,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.18274,0.18274,0.18274,1,0.02,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.200515,0.1291416,0.27188840000000003,2,0.02,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.23408666666666667,0.20640696881057646,0.26176636452275687,3,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.183515,0.12525400000000003,0.241776,2,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.22905333333333333,0.2127642933381573,0.24534237332850936,3,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.2023633333333333,0.19676893418974534,0.2079577324769213,3,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.15794,0.15261394267648823,0.16326605732351177,3,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.15837,0.1507064,0.16603360000000003,2,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.15796,0.15796,0.15796,1,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.22964666666666667,0.1818032629436408,0.27749007038969253,3,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.18464,0.18464,0.18464,1,0.02,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.23667000000000002,0.2013542680577999,0.2719857319422001,3,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.1738333333333333,0.15782565469865578,0.18984101196801084,3,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.21204,0.2025946232741445,0.22148537672585553,3,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.19045666666666664,0.1563978661081554,0.22451546722517787,3,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.19838666666666668,0.17396205361907788,0.2228112797142555,3,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.2044,0.1990688,0.2097312,2,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.23077999999999999,0.1986260979479421,0.2629339020520579,3,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.16792,0.16792,0.16792,1,0.02,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.23617,0.21532781366426895,0.25701218633573103,3,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.18036333333333335,0.15212705348929031,0.20859961317737638,3,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.2049133333333333,0.1928307303768324,0.2169959362898342,3,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.19320666666666667,0.154638286657937,0.23177504667539633,3,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.21582,0.2138992,0.2177408,2,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.15828,0.15828,0.15828,1,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.20595,0.20595,0.20595,1,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.21835333333333332,0.1665169958648054,0.27018967080186124,3,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.1618,0.1618,0.1618,1,0.02,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.15522,0.15522,0.15522,1,0.04,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.16946,0.16946,0.16946,1,0.04,0.25
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.1686,0.1686,0.1686,1,0.04,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.169375,0.1600748,0.1786752,2,0.04,0.5
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.15587,0.15587,0.15587,1,0.04,0.75
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.16233,0.15113635208462703,0.17352364791537297,3,0.04,1.0
+q_grasp,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.15355,0.15355,0.15355,1,0.04,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.031773333333333334,0.027623061937655964,0.035923604729010704,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.0348,0.03262339962939143,0.03697660037060856,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.053193333333333336,0.025383607723915486,0.08100305894275119,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.036763333333333335,0.015411347455564387,0.05811531921110229,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.029896666666666665,0.020651819931082324,0.039141513402251006,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.05835666666666667,0.00605378684520963,0.1106595464881237,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.02312,0.011845887590886221,0.03439411240911378,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.11752999999999998,0.1083863881768016,0.12667361182319836,3,0.0,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.03407,0.0299138755745286,0.03822612442547141,3,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.03274666666666667,0.027184658461790384,0.03830867487154295,3,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.04258666666666666,0.03228449490252985,0.05288883843080347,3,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.044075,0.0286988,0.05945120000000001,2,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.02774,0.023816946855657786,0.031663053144342215,3,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.04751666666666666,-0.003990090175950062,0.09902342350928338,3,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.06871,0.06871,0.06871,1,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.026160000000000003,0.015541315227706718,0.03677868477229329,3,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.10308333333333335,0.09488359395427717,0.11128307271238952,3,0.0,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.018269999999999998,0.005314395057993882,0.031225604942006116,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.03289333333333334,0.022978404268310007,0.04280826239835667,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.04604666666666666,0.015454793251366023,0.0766385400819673,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.039470000000000005,0.029733296812575628,0.049206703187424386,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.03025,0.021854737847253766,0.03864526215274623,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.05933666666666667,0.0032342942313488346,0.1154390391019845,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.06893333333333333,0.0684049405333151,0.06946172613335157,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.03348,0.026516995977788515,0.04044300402221149,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.08099666666666666,0.06322700524902063,0.0987663280843127,3,0.0,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.06556333333333333,0.06452494431609986,0.06660172235056681,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.03287,0.02533491941560455,0.04040508058439546,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.04021333333333333,0.025593772587841995,0.05483289407882466,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.009279999999999998,0.0016200100574478536,0.016939989942552143,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.02104666666666667,0.018380914546824233,0.023712418786509103,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.09474,0.058966046209381145,0.13051395379061886,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.10349333333333333,0.10208884900408251,0.10489781766258414,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.12703,0.12600098444456204,0.12805901555543797,3,0.0,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.041839999999999995,0.028404904103059028,0.05527509589694096,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.09706666666666665,0.06868733234294126,0.12544600099039205,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.11507333333333332,0.11351679494604211,0.11662987172062453,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.03660666666666667,0.025013788111660967,0.04819954522167237,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.08352666666666668,0.0300982430471071,0.13695509028622627,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.11669666666666667,0.11079531602201666,0.12259801731131668,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.06657,0.06657,0.06657,1,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.08794,0.06123589849829557,0.11464410150170444,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.11952,0.10822380054000462,0.1308161994599954,3,0.005,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.033133333333333334,0.014088797782040818,0.05217786888462585,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.06816666666666667,0.030382844368874833,0.1059504889644585,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.09008333333333333,0.044338270904063684,0.13582839576260297,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.056076666666666664,0.04722021099536238,0.06493312233797094,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.09019666666666666,0.0542855434336379,0.12610778989969543,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.10879666666666665,0.10216966026223,0.11542367307110331,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.06444,0.06444,0.06444,1,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.07609333333333333,0.04565719361986477,0.1065294730468019,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.11416666666666668,0.11122483064736778,0.11710850268596558,3,0.005,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.034326666666666665,0.019066356500603704,0.049586976832729626,3,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.04420333333333334,0.030833488010202463,0.05757317865646421,3,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.10630999999999999,0.08908159999999998,0.12353839999999999,2,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.03002,0.015899504686685623,0.044140495313314376,3,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.05590333333333333,0.038009229854129786,0.07379743681253688,3,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.09822666666666667,0.07505144141631702,0.12140189191701632,3,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.068305,0.06668800000000001,0.069922,2,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.0696,0.024929587583726064,0.11427041241627392,3,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.09198666666666666,0.041863934803192004,0.14210939853014132,3,0.005,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.045610000000000005,0.03747687378187207,0.05374312621812794,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.07600333333333333,0.038859576212773875,0.11314709045389278,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.06633,0.03671341850291744,0.09594658149708256,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.055206666666666675,0.026878036147153183,0.08353529718618016,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.06375666666666667,0.03879995930977005,0.08871337402356329,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.07246999999999999,0.024947262657965492,0.1199927373420345,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.09249333333333333,0.07144802455526014,0.11353864211140652,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.11206333333333333,0.10134744771161369,0.12277921895505298,3,0.005,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.06961,0.050874159845543804,0.0883458401544562,3,0.02,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.153385,0.13250119999999999,0.1742688,2,0.02,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.13461499999999998,0.07888239999999999,0.19034759999999998,2,0.02,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.04805333333333334,0.03519864013210221,0.060908026534564466,3,0.02,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.13698,0.1299632,0.14399679999999998,2,0.02,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.15737,0.15737,0.15737,1,0.02,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.109175,0.10702879999999998,0.11132120000000001,2,0.02,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.11749666666666665,0.09025081875171923,0.14474251458161408,3,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.14478000000000002,0.13903720000000003,0.1505228,2,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.13435333333333332,0.11355215724564273,0.1551545094210239,3,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.03459,0.01625160134217458,0.05292839865782542,3,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.11087999999999999,0.10366021732921735,0.11809978267078264,3,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.136025,0.1350744,0.1369756,2,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.04139,0.04139,0.04139,1,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.10809,0.09860286435359263,0.11757713564640739,3,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.13045,0.13045,0.13045,1,0.02,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.08178333333333333,0.07552649742867851,0.08804016923798816,3,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.15442999999999998,0.1440991760922309,0.16476082390776906,3,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.13402,0.09138185288578626,0.17665814711421374,3,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.06260666666666666,0.05599591146892681,0.0692174218644065,3,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.13481666666666667,0.119837814856049,0.14979551847728434,3,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.11824,0.05016920000000001,0.1863108,2,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.10438666666666667,0.09419834651901175,0.11457498681432159,3,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.12508,0.12508,0.12508,1,0.02,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.11392666666666666,0.10336819358177203,0.1244851397515613,3,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.1517,0.11642934390403263,0.18697065609596736,3,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.15414666666666668,0.14215942068363213,0.16613391264970123,3,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,0.0,mean,0.08187333333333334,0.04351148928357762,0.12023517738308906,3,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,45.0,mean,0.138105,0.13311680000000004,0.14309319999999998,2,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",45.0,90.0,mean,0.14344,0.14344,0.14344,1,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,0.0,mean,0.0046,0.0046,0.0046,1,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,45.0,mean,0.10203666666666666,0.095366229318353,0.10870710401498034,3,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",60.0,90.0,mean,0.11832,0.11832,0.11832,1,0.02,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.15481,0.15481,0.15481,1,0.04,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.20263,0.20263,0.20263,1,0.04,0.25
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,0.0,mean,0.14461,0.14461,0.14461,1,0.04,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.1537,0.13905879999999998,0.16834120000000002,2,0.04,0.5
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.17739,0.17739,0.17739,1,0.04,0.75
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,45.0,mean,0.19263333333333332,0.18014643943114753,0.20512022723551912,3,0.04,1.0
+e_pose,"sigma_d,rho,phi,theta | has_grasps=1",30.0,90.0,mean,0.18924,0.18924,0.18924,1,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.34237195288961925,1.0,2,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.0,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.0,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.6576280471103807,2,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.005,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,1.0,0.43849391955098227,1.0,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,0.6666666666666666,0.2076549551264879,0.9385096847238394,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.3333333333333333,0.0614903152761605,0.7923450448735121,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.02,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.25
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.5
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.7934567085261071,1,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.6576280471103807,2,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,0.75
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",30.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",45.0,90.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,0.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,45.0,proportion,0.0,0.0,0.5615060804490177,3,0.04,1.0
+Y,"has_grasps,sigma_d,rho,phi,theta",60.0,90.0,proportion,0.0,0.0,0.6576280471103807,2,0.04,1.0

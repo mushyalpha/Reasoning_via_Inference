@@ -4,6 +4,18 @@ scm_fit.py
 Structural Causal Model fitting for the MSc thesis:
   Causal Inference for Robotic Grasp Failure Diagnosis under Perceptual Degradation
 
+*** NOTE (5 Aug 2026): the DAG drawn in fig_dag() below (q_grasp -> e_pose
+as a mediation edge, and the "% mediated via q_grasp" language in Eq4) is
+SUPERSEDED. Reading best_grasp_cam()'s dataflow shows e_pose's code never
+reads q_grasp's value -- both are read from the same argmax(scores) index
+of the same CGN output object, i.e. they are siblings with correlated
+errors (a documented NPSEM-ie violation), not a causal chain. See
+CAUSAL_DAG_PREREGISTRATION.md (the pre-registered, dataflow-derived graph)
+and scm_nonparametric.py (the nonparametric functional-form fit that
+replaces the linear/logistic equations below as the primary causal
+estimator). This file's OLS/logit fits are retained for interpretability
+and thesis narrative only. ***
+
 Fits four structural equations to the 432-trial dataset.
 
 Verified DAG (see implementation_plan.md for full justification):

@@ -1,5 +1,5 @@
 # PROJECT CONTEXT — Paste this at the start of every new AI session
-**Last updated:** 2026-07-09 (Week 7, Wednesday)
+**Last updated:** 2026-08-05 (DAG re-derivation + nonparametric SCM session)
 **Student:** Bonolo Masima | MSc project, University of Lincoln
 **Supervisor:** Dezong Zhao | PhD advisor contact: Jingzhi Ruan
 
@@ -57,6 +57,9 @@
 | `thesis_direction_example.tex` | Detailed method write-up sections (camera model, IK, success criterion) |
 | `project_pipeline.md` | Full living journal — all decisions, bugs, resolutions, open questions |
 | `RIGOUR_LEDGER.md` | Rigour ledger — every design choice & assumption tracked per pipeline stage, with strength/weakness, whether it holds, severity, and disposition (keep-for-MSc / fix-now / future-work / redesign-candidate). Use to test the approach against new papers or criticisms, and as the input to any future experiment redesign |
+| `CAUSAL_DAG_PREREGISTRATION.md` | The pre-registered, dated causal graph (Layer 1), derived from reading pipeline dataflow only — never from results. Every edge/non-edge cites the file:line that justifies it |
+| `test_dag_edges.py` | Interventional falsification tests for every edge/non-edge in the DAG, run against `experiment_results.csv` → `results/dag_edge_falsification_report.md` |
+| `scm_nonparametric.py` | Layer-2 (functional form) nonparametric SCM ("Option A") — stratified empirical total/path-specific/moderated effects, no functional form fit. Outputs in `results/scm_nonparametric_*` |
 
 ---
 
@@ -146,6 +149,31 @@ before landing on a working one (mocap hand → doesn't transmit friction,
 silently broken; hand-rolled PD via `xfrc_applied` → numerically unstable;
 weld-constrained dynamic hand → works, validated). Full account:
 `RIGOUR_LEDGER.md` Stage 21.
+
+### DAG re-derived from dataflow + nonparametric SCM adopted (5 Aug 2026)
+Split the SCM's two layers and handled them differently, per a session on
+what "rigorous" means for each. **Layer 1 (the graph):** re-derived from
+scratch by reading the actual execution order of `run_experiments.py` /
+`sim_common.py` / `contact_grasp_estimator.py` (never from the data),
+pre-registered and dated in `CAUSAL_DAG_PREREGISTRATION.md`. This
+independently re-confirmed the original `C_pc` fix and caught a **second,
+previously undocumented error**: `q_grasp → e_pose` was drawn as a
+mediation edge (`scm_fit.py::fig_dag`, Stage 12's "% mediated" text), but
+`e_pose`'s code never reads `q_grasp` — both are read from the same
+`argmax(scores)` index of the same CGN output object, so they're siblings
+with correlated errors (a concrete NPSEM-ie violation, Stage 15), not a
+causal chain. Every edge/non-edge was then tested **interventionally**
+against the 432-trial dataset (`test_dag_edges.py` →
+`results/dag_edge_falsification_report.md`) — all tests passed, including
+a literal "fix φ,θ, vary σ_d/ρ, does `C_pc` move?" check (spread =
+0.00000). **Layer 2 (functional forms):** rebuilt as a fully nonparametric
+model (`scm_nonparametric.py`, "Option A") — every structural equation is
+left unspecified; total/path-specific/moderated effects are computed as
+stratified empirical statistics (Wilson-CI proportions, means) over the
+factorial grid, identified from graph + randomization alone, no β to
+defend. Full account: `RIGOUR_LEDGER.md` Stage 23. **Not yet done:**
+propagate the corrected DAG into `msc_report.tex` Ch.3's figure and Eq4
+mediation text (still shows the old, superseded graph).
 
 ### Box object replaced: GelatinBox → SugarBox (5 Aug 2026)
 The gelatin box (~2.8cm thick) turned out to be a pathological case for the

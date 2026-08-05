@@ -147,10 +147,10 @@ It exists so that, as you read more papers or receive criticisms, you can test e
 - **Assumption(s):** Relationships are approximately monotone and linear over the grid range; logistic link is correct for the binary outcome.
 - **Strength:** Interpretable coefficients; cheap to fit; OLS has closed form.
 - **Weakness / risk:** Functional-form assumptions are "costly" (per the causality literature) — the 6 cm φ=30° bias and the σ_d→n_grasps collapse are non-linear effects forced into linear terms.
-- **Holds?** partial
-- **Severity** high
-- **Disposition** redesign-candidate — non-parametric / neural structural equations in a follow-up; `future-work` already listed.
-- **Evidence / notes:** `msc_report.tex:474`-`522`; Future Work §7.5.
+- **Holds?** superseded (was `partial`) — **5 Aug**: see new **Stage 23**. `scm_nonparametric.py` replaces the linear/logistic fits with a fully nonparametric estimation of every structural equation, removing the functional-form cost this row describes. The linear/logistic fit in `scm_fit.py` is retained as a documented, superseded first pass (its coefficient table is still useful for interpretability/thesis narrative), not as the primary causal estimator going forward.
+- **Severity** high (unchanged — this was the right call to prioritise)
+- **Disposition** redesign-candidate → **actioned 5 Aug**, see Stage 23.
+- **Evidence / notes:** `msc_report.tex:474`-`522`; Future Work §7.5; `scm_nonparametric.py`.
 
 ## Stage 13 — Causal DAG (expert-specified)
 
@@ -158,10 +158,10 @@ It exists so that, as you read more papers or receive criticisms, you can test e
 - **Assumption(s):** No omitted direct effects among modelled variables; no latent common causes.
 - **Strength:** Grounded in mechanism; factorial design validates L2 predictions.
 - **Weakness / risk:** If the true structure differs (e.g., the σ_d→C_pc / ρ→C_pc edges that the empirical audit showed should be removed — CONTEXT.md open issue #5), counterfactuals are wrong.
-- **Holds?** challenged
-- **Severity** high
-- **Disposition** fix-now — correct the DAG in `msc_report.tex` Ch.3 (C_pc computed before noise/downsample, so those edges are spurious).
-- **Evidence / notes:** CONTEXT.md open issue #5; Yang & Bareinboim hierarchy ⇒ L3 assumptions unfalsifiable from L1/L2 data.
+- **Holds?** superseded (was `challenged`) — **5 Aug**: see new **Stage 23**. The DAG was fully re-derived from the pipeline's dataflow (not domain intuition) in `CAUSAL_DAG_PREREGISTRATION.md`, dated and pre-registered independently of any result, and every edge/non-edge was then tested interventionally against the 432-trial dataset (`test_dag_edges.py`, all tests passed). This also caught a second error beyond the original C_pc fix: the `q_grasp → e_pose` edge does not exist in the code (both are read from the same `argmax` index of the same CGN output object) — corrected to a sibling relationship with an explicitly-named NPSEM-ie violation (Stage 15).
+- **Severity** high (unchanged — getting this right is the precondition for everything downstream)
+- **Disposition** fix-now → **closed 5 Aug** for the graph itself, see Stage 23. Remaining action: propagate the corrected graph into `msc_report.tex` Ch.3's DAG figure and Eq4 mediation text (not yet done — the thesis document still shows the old, now-superseded figure).
+- **Evidence / notes:** CONTEXT.md open issue #5; Yang & Bareinboim hierarchy ⇒ L3 assumptions unfalsifiable from L1/L2 data; `CAUSAL_DAG_PREREGISTRATION.md`; `results/dag_edge_falsification_report.md`.
 
 ## Stage 14 — SCM fitting (OLS + MLE logistic)
 
@@ -169,10 +169,10 @@ It exists so that, as you read more papers or receive criticisms, you can test e
 - **Assumption(s):** Residuals well-behaved; no overfitting given the small grid; fit generalises to held-out conditions.
 - **Strength:** Standard, reproducible, no NN training.
 - **Weakness / risk:** Fit quality on the training split ≠ counterfactual accuracy on held-out trials; no held-out L2 interventional check has been run.
-- **Holds?** open
-- **Severity** high
-- **Disposition** fix-now — run a held-out interventional check: predict `P(Y|do(σ_d=s))` from the fitted SCM and compare to re-simulated empirical rates. This is the single highest-value rigour test available because you own the simulator.
-- **Evidence / notes:** R²/AUC values in CONTEXT.md "SCM fitted (9 July)"; surrogate-model concern (Stage 16).
+- **Holds?** partial (upgraded from `open`) — **5 Aug**: the nonparametric refit (Stage 23) sidesteps most of this row's concern by construction — `P(Y|do(σ_d=s))` is now computed as a direct stratified empirical rate over the actual grid (`scm_nonparametric.py::total_effects_table`), not predicted from a fitted line, so there is no separate "does the fit generalise" question for the interventional query itself (a stratified mean of already-collected interventional data cannot be "wrong" the way a regression extrapolation can). What remains open: whether the *linear/logistic* fit in `scm_fit.py` (still reported alongside, for interpretability) diverges from the nonparametric ground truth at any grid cell — a direct comparison of the two has not yet been run.
+- **Severity** high (downgraded in practice by Stage 23, kept high pending the direct comparison above)
+- **Disposition** fix-now — remaining action: diff `scm_fit.py`'s fitted predictions against `results/scm_nonparametric_total_effects.csv` at each grid point and report the max discrepancy, quantifying exactly how much the linear/logistic surrogate costs vs. the nonparametric ground truth.
+- **Evidence / notes:** R²/AUC values in CONTEXT.md "SCM fitted (9 July)"; surrogate-model concern (Stage 16); Stage 23; `results/scm_nonparametric_total_effects.csv`.
 
 ## Stage 15 — Exogenous error independence (NPSEM-ie)
 
@@ -180,10 +180,10 @@ It exists so that, as you read more papers or receive criticisms, you can test e
 - **Assumption(s):** `U_C, U_q, U_n, U_e` are mutually independent.
 - **Strength:** Gives identifiability of L3 counterfactuals; abduction becomes per-equation and unique.
 - **Weakness / risk:** Independence is *assumed*, not tested; the modern causality literature (Richardson & Robins) treats NPSEM-ie as optional and contested, yet the thesis adopts it without naming it.
-- **Holds?** open
-- **Severity** med
-- **Disposition** fix-now — (a) name the NPSEM-ie assumption explicitly at `msc_report.tex:1009`; (b) add a one-sentence design-based defence (the `U` terms arise from mechanistically distinct sources: pixel coverage geometry, CGN scoring stochasticity, network-head pose regression).
-- **Evidence / notes:** `msc_report.tex:1009`; previous dissection points 3–5.
+- **Holds?** challenged (was `open`) — **5 Aug**: Stage 23's dataflow re-derivation found a concrete, provable instance where NPSEM-ie is FALSE, not just untested: `U_q` (q_grasp's error) and `U_e` (e_pose's error) are not independent, because both `q_grasp` and `e_pose` are read from the same `idx = argmax(scores)` of the same CGN output object (`CAUSAL_DAG_PREREGISTRATION.md` Sec.4). This is not a defect to explain away — it is exactly why the nonparametric refit (Stage 23) avoids treating `q_grasp` as a mediator of `e_pose` at all, sidestepping the need for independent errors between that specific pair.
+- **Severity** med (unchanged elsewhere in the graph; this specific pair's violation is now handled structurally rather than assumed away)
+- **Disposition** fix-now — (a) name the NPSEM-ie assumption explicitly at `msc_report.tex:1009`, including the q_grasp/e_pose counterexample as a worked illustration of why the assumption matters; (b) for every *other* pair of nodes (not sharing a common `argmax` selection step), the mechanistically-distinct-source defence still applies as originally written.
+- **Evidence / notes:** `msc_report.tex:1009`; previous dissection points 3–5; `CAUSAL_DAG_PREREGISTRATION.md` Sec.4; Stage 23.
 
 ## Stage 16 — Surrogate-model status of the fitted SCM
 
@@ -191,10 +191,10 @@ It exists so that, as you read more papers or receive criticisms, you can test e
 - **Assumption(s):** The fitted SCM has enough expressive power for the queries being asked of it (L3).
 - **Strength:** Tractable, interpretable.
 - **Weakness / risk:** The *true* mechanism is CGN + MuJoCo + IK + proximity — opaque and unattainable in closed form. The fitted SCM is a surrogate; the literature only promises surrogates are safe at L1/L2, but the thesis pushes the surrogate to L3, where mis-specification is amplified by abduction.
-- **Holds?** open
-- **Severity** high
-- **Disposition** fix-now — reframe §4.10 explicitly as a *surrogate* (cite Rubenstein et al.); run the L2 interventional check from Stage 14 to bound the surrogate's L2 error before trusting L3.
-- **Evidence / notes:** previous dissection point 7.
+- **Holds?** partial (upgraded from `open`) — **5 Aug**: Stage 23's nonparametric refit removes this row's concern for Layer 2 specifically — because `f` is left unspecified and every estimand is a direct stratified statistic over actually-collected interventional data, there is no separate parametric surrogate being pushed to L3 for the *total/moderated/path-specific effect* queries. The surrogate-model concern still applies in full to Layer 1 if the graph itself were ever wrong (mitigated by Stage 23's interventional falsification tests) and to any L3 counterfactual query that requires abduction over an individual trial's exact noise term (`U`) — the nonparametric model does not, by itself, resolve single-trial counterfactual abduction, only population-level interventional queries.
+- **Severity** high (kept high for the abduction/counterfactual-diagnosis use case specifically — see Stage 17)
+- **Disposition** fix-now — reframe §4.10 to state precisely which queries are now surrogate-free (interventional, Stage 23) vs. which still rely on a model of the individual-trial noise term for abduction (counterfactual diagnosis, Stage 17); cite Rubenstein et al. for the latter only.
+- **Evidence / notes:** previous dissection point 7; Stage 23; `scm_nonparametric.py`.
 
 ## Stage 17 — Counterfactual diagnosis (single-cause, argmax Δ)
 
@@ -263,6 +263,17 @@ It exists so that, as you read more papers or receive criticisms, you can test e
 - **Disposition** fix-now, in progress. Next actions: (1) before committing compute to the full RunPod grid, visually inspect a handful of CGN's actual predicted poses for the box (pose overlay screenshot, similar to `render_floating_gripper_figures.py`'s grasp-sequence figure) to check for a systematic bias, e.g. top-down proposals that clip the table given the object's height; (2) if the pattern persists, consider evaluating success against the top-k (not just top-1) scored proposal for this object as a diagnostic (not necessarily a change to the final protocol); (3) run a slightly larger (e.g. 20-30 trial) `--object box` batch before the full grid to get a less noise-dominated read on the box's baseline success rate at σ_d=0; (4) if a genuinely low clean-condition success rate persists after (1)-(3) rule out a selection artifact, treat it as a legitimate geometry/proportion finding and report it as such, distinct from the perception-degradation causal story.
 - **Evidence / notes:** `object_specs.py` (`box` spec, docstring), `assets/ycb/sugar_box/visual.obj`, `assets/ycb/README.md`, `smoke_test_floating_gripper.py` (generalised, both objects passing 6/6), `results/experiment_results_v2.csv` (refreshed 5 Aug — cylinder/mustard rows byte-identical to the pre-swap run, confirming determinism was not disturbed by the object_specs.py edit), `results/experiment_results_v2.csv.bak_pre_sugarbox` (the pre-swap run, kept for direct before/after comparison of the box rows only).
 
+## Stage 23 — DAG re-derived from dataflow + nonparametric SCM adopted (5 Aug 2026)
+
+- **Design choice:** Split the SCM into its two layers and treated them differently. Layer 1 (the graph) was re-derived by reading the actual execution order of `run_experiments.py` / `sim_common.py` / `contact_grasp_estimator.py` — never from the data — and pre-registered, dated, in `CAUSAL_DAG_PREREGISTRATION.md`. Layer 2 (functional forms) was rebuilt as a fully nonparametric model (`scm_nonparametric.py`, "Option A"): every structural equation is left unspecified, and every causal estimand (total effect, path-specific effect through `has_grasps`, phi-moderated effect) is computed as a stratified empirical statistic over the complete factorial grid, identified purely from the graph + randomization — no β to defend.
+- **Assumption(s):** (a) The pipeline code faithfully implements what its comments claim (checked by direct line citation, not assumed); (b) conditioning on independently-randomized exogenous variables is equivalent to intervening on them (`do(v=x) = condition on v=x`), which holds by the grid's construction (`itertools.product` + independent per-trial RNG seed), not by a balance test after the fact.
+- **Strength:** This closes Stage 13 (DAG correctness) and directly answers Stage 12/16 (functional-form cost, surrogate-model risk) by removing the functional-form question entirely for Layer 2. It also independently re-derived and confirmed the original PhD-student catch (`C_pc` independent of σ_d, ρ) via a fresh reading, and caught a **second, previously undocumented DAG error**: the existing DAG figure (`scm_fit.py::fig_dag`) and `RIGOUR_LEDGER.md` Stage 12's "% mediated via q_grasp" both treat `q_grasp → e_pose` as a mediation edge. Reading `best_grasp_cam`/`best_grasp_overall` shows `e_pose`'s code never reads `q_grasp`'s value — both are read from the same `idx = argmax(scores)` of the same underlying CGN output object, i.e. they are **siblings with correlated errors under a common parent**, not a causal chain. This is a concrete, dataflow-provable **violation of the NPSEM-ie independent-errors assumption** (Stage 15) for this specific pair — now named explicitly rather than silently assumed away. Every edge and non-edge in the corrected graph was then tested interventionally against the 432-trial dataset (`test_dag_edges.py` → `results/dag_edge_falsification_report.md`): all tests passed, including a literal "fix φ,θ, vary σ_d/ρ, does `C_pc` move?" stratified check (spread = 0.00000 in every cell) and a confirmation that the `q_grasp`/`e_pose` residual link survives conditioning on {σ_d,ρ,φ,θ,log(n_grasps)} (p=0.015), consistent with the shared-`idx` reading.
+- **Weakness / risk:** (i) The nonparametric total/moderated effects are computed on the **historical 432-trial grid** (3 seeds/cell for the full 4-way stratification, so some cells — e.g. the moderated σ_d×φ table — have wide Wilson CIs); this is honest about the data's limits rather than hidden by a smoothing functional form, but it does mean some reported effects are imprecise until the densified/v2 grid lands. (ii) The path-decomposition and total-effect machinery in `scm_nonparametric.py` targets the **historical proximity success metric** (Stage 10, superseded by Stage 21's floating-gripper test for new data); it will need to be re-run, unchanged in method, once floating-gripper-based trial data exists. (iii) `msc_report.tex`'s DAG figure (Ch.3) and Eq4 mediation text still reflect the *old*, now-corrected graph — not yet updated in the thesis document itself, only in code + the new pre-registration file.
+- **Holds?** yes (for Layer 1, on the historical dataset — every claimed edge/non-edge was interventionally tested and passed) / partial (for Layer 2's precision, pending more seeds)
+- **Severity** high (this is the graph and the identification strategy the entire causal-attribution chapter depends on)
+- **Disposition** fix-now, closed for the graph itself (Stage 13); the nonparametric refit should be re-run once `run_experiments_v2.py`/Stage-21 data land (tracked under Stage 20/21's existing next-actions, not a new item). **Next action:** update `msc_report.tex` Ch.3's DAG figure and Eq4 text to match `CAUSAL_DAG_PREREGISTRATION.md` / `results/figures/scm_dag_corrected.png`, and cite the interventional falsification report as the thesis's edge-validation evidence.
+- **Evidence / notes:** `CAUSAL_DAG_PREREGISTRATION.md` (dated, pre-registered graph with file:line citations for every edge/non-edge), `test_dag_edges.py` + `results/dag_edge_falsification_report.md` (all tests passed), `scm_nonparametric.py` + `results/scm_nonparametric_*.csv` + `results/scm_nonparametric_report.md` (Option A fit), `results/figures/scm_dag_corrected.png`, `results/figures/scm_nonparametric_total_effects.png`, `results/figures/scm_nonparametric_moderation.png`.
+
 ---
 
 ## Redesign-candidate shortlist (for a future experiment)
@@ -285,11 +296,11 @@ Filtering `Disposition = redesign-candidate`:
 6. ~~Stage 10 — Threshold sensitivity sweep~~ — **closed 3 Aug**, see `success_threshold_sensitivity.py`; σ_d ranking is threshold-robust. Surfaced a new item: **fix the 85% clean-condition calibration claim at `msc_report.tex:978`** — actual value is 51.9% for the literal (σ_d=0, ρ=1.0) cell; the 85%/89% figures apply only when restricted to φ∈{30°,45°}. *(med — checkable inconsistency, fix before freeze)*
 7. **Stage 18 — Finalise LLM prompt/rubric** with "none/joint" category, before any LLM trials. *(med)*
 
-## Counts at last review (updated 5 Aug, third pass — box object replaced (GelatinBox → SugarBox), new Stage 22 added)
+## Counts at last review (updated 5 Aug, fourth pass — DAG re-derived from dataflow + nonparametric SCM adopted, new Stage 23 added)
 
-- Total tracked stages: 22
-- `Holds? = yes`: 0 · `partial`: 10 · `open`: 5 · `challenged`: 2 · `fixed`: 1 · `superseded`: 4
-- `Disposition`: keep-for-MSc: 6 · fix-now: 10 (2 closed: Stage 7, and Stage 9/10-threshold-sweep from 3 Aug) · future-work: 3 · redesign-candidate: 5 (3 newly actioned: Stages 5, 8, 11 — code built, not yet run)
-- `Severity high`: 8 · `med`: 8 · `med-high`: 1 · `low`/`low–med`: 5
+- Total tracked stages: 23
+- `Holds? = yes`: 0 · `partial`: 12 · `open`: 3 · `challenged`: 1 · `fixed`: 1 · `superseded`: 6
+- `Disposition`: keep-for-MSc: 6 · fix-now: 11 (3 closed: Stage 7, Stage 9/10-threshold-sweep from 3 Aug, Stage 13 from 5 Aug) · future-work: 3 · redesign-candidate: 5 (4 newly actioned: Stages 5, 8, 11, 12 — Stage 12's non-parametric SCM is code-built AND run, on the historical grid; Stages 5/8/11 code built, not yet run)
+- `Severity high`: 9 · `med`: 8 · `med-high`: 1 · `low`/`low–med`: 5
 
 *Update these counts whenever you edit a row.*
