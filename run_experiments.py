@@ -1,14 +1,34 @@
 """
 run_experiments.py
 ==================
-Full 432-trial batch experiment for the MSc thesis.
+Batch experiment runner for the MSc thesis.
 
-Experimental grid (4 × 4 × 3 × 3 × 3 = 432 trials):
+ORIGINAL grid (4 x 4 x 3 x 3 x 3 = 432 trials), preserved in
+`results/experiment_results.csv` and referenced throughout the fitted SCM,
+counterfactual ground truth, and LLM baseline:
   sigma_d : [0.000, 0.005, 0.020, 0.040]   depth noise std dev (m)
   rho     : [1.0,   0.75,  0.50,  0.25]    point cloud keep fraction
-  phi     : [30,    45,    60]              camera elevation (deg)
+  phi     : [30,    45,    60]             camera elevation (deg)
   theta   : [0,     45,    90]             camera azimuth (deg)
   repeat  : [0,     1,     2]              3 random seeds per condition
+
+DENSIFIED grid (current default, 6 x 4 x 6 x 3 x 3 = 1296 trials), added to
+resolve two under-sampled regions identified from the original 432-trial
+results: the sigma_d success-rate collapse (42.6% -> 11.1%) occurred
+entirely between sigma_d=0.005 and sigma_d=0.02 with no intermediate
+sample point, and the phi "dead zone" (success falls to 15.3% at phi=60,
+with 98/167 unexplained "none" counterfactual failures concentrated there)
+was bracketed only by a bare 45 -> 60 jump. Two points were added inside
+each gap (sigma_d: +0.010, +0.015; phi: +50, +55, +65 to also bracket the
+transition from above) rather than replacing the original grid, so every
+original condition is re-sampled with 3 fresh seeds -- this run therefore
+also doubles seed coverage (3 -> 6) at every point shared with the original
+grid, addressing the "increase seeds" item from the same review.
+  sigma_d : [0.000, 0.005, 0.010, 0.015, 0.020, 0.040]
+  rho     : [1.0,   0.75,  0.50,  0.25]     unchanged
+  phi     : [30,    45,    50,    55,   60,   65]
+  theta   : [0,     45,    90]              unchanged
+  repeat  : [0,     1,     2]               3 random seeds per condition
 
 Each trial records:
   Exogenous  : sigma_d, rho, phi, theta, seed
@@ -18,14 +38,31 @@ Each trial records:
     e_pose   - Euclidean distance between proposed and true object position
     n_grasps - total CGN grasp candidates
   Outcome:
-    success  - 1 if object lifted above LIFT_HEIGHT, else 0
+    success  - 1 if the end-effector is within GRASP_RADIUS of the object
+               centroid after the scripted approach + close (proximity
+               criterion; see execute_grasp() -- NOT a physical lift check,
+               despite the historical LIFT_HEIGHT constant below, which is
+               unused by the current success logic and kept only because
+               demo_grasp.py still references its own copy for the viewer
+               demo's physical-lift attempt).
 
-Results saved to:  results/experiment_results.csv
+Results saved to:  results/experiment_results_densified.csv
+  (the original results/experiment_results.csv is untouched by this script
+  as of the densified grid -- see OUTPUT_CSV below)
+
+Contact-GraspNet auto-selects CUDA if available (contact_grasp_estimator.py:
+`self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")`),
+so no code change is needed to use a GPU. Before a long run, confirm it will
+actually be picked up:
+    python -c "import torch; print(torch.cuda.is_available())"
 
 Usage:
-    python run_experiments.py              # all 432 trials
-    python run_experiments.py --test       # 9-trial smoke test (3×3 grid)
+    python run_experiments.py              # all 1296 densified-grid trials
+    python run_experiments.py --test       # 9-trial smoke test (3x3 grid)
     python run_experiments.py --resume     # skip already-completed trials
+    python run_experiments.py --original   # re-run the original 432-trial
+                                            # grid instead (writes to
+                                            # experiment_results.csv)
 """
 
 import os
@@ -61,21 +98,34 @@ SCENE_XML   = os.path.join(_PROJECT, 'grasp_scene_v2.xml')
 CGN_ROOT    = os.path.join(_PROJECT, 'contact_graspnet_pytorch')
 CKPT_DIR    = os.path.join(CGN_ROOT, 'checkpoints', 'contact_graspnet')
 RESULTS_DIR = os.path.join(_PROJECT, 'results')
-OUTPUT_CSV  = os.path.join(RESULTS_DIR, 'experiment_results.csv')
 
-LIFT_HEIGHT = 0.55
+LIFT_HEIGHT = 0.55   # unused by execute_grasp()'s proximity criterion; kept
+                      # only for parity with demo_grasp.py's separate,
+                      # still-lift-based viewer demo
 IMG_W, IMG_H = 640, 480
 TARGET_BODY = 'target_object'
 CAM_NAME    = 'perception_camera'
 EE_SITE     = 'ee_site'
 TARGET_POS  = np.array([0.5, 0., 0.455])
 
-# Experimental grid
-SIGMA_D_VALS = [0.000, 0.005, 0.020, 0.040]   # depth noise
-RHO_VALS     = [1.00,  0.75,  0.50,  0.25]    # sparsity
-PHI_VALS     = [30.,   45.,   60.]             # elevation
-THETA_VALS   = [0.,    45.,   90.]             # azimuth
-N_REPEATS    = 3                               # seeds per condition
+# Original 432-trial grid (results/experiment_results.csv) -- preserved here
+# for provenance / re-run capability via --original. Do not edit these.
+ORIGINAL_SIGMA_D_VALS = [0.000, 0.005, 0.020, 0.040]
+ORIGINAL_RHO_VALS     = [1.00,  0.75,  0.50,  0.25]
+ORIGINAL_PHI_VALS     = [30.,   45.,   60.]
+ORIGINAL_THETA_VALS   = [0.,    45.,   90.]
+ORIGINAL_N_REPEATS    = 3
+
+# Densified grid (current default) -- adds points inside the sigma_d cliff
+# (0.005-0.02) and around the phi=60 dead-zone transition. rho and theta
+# are unchanged: rho showed no significant effect in the original SCM fit
+# (Eq2A p=0.144, Eq4 p=0.975) and theta's effect was already clean and
+# monotone, so neither needed denser sampling.
+SIGMA_D_VALS = [0.000, 0.005, 0.010, 0.015, 0.020, 0.040]   # depth noise
+RHO_VALS     = [1.00,  0.75,  0.50,  0.25]                  # sparsity (unchanged)
+PHI_VALS     = [30.,   45.,   50.,   55.,   60.,   65.]     # elevation
+THETA_VALS   = [0.,    45.,   90.]                          # azimuth (unchanged)
+N_REPEATS    = 3                                            # seeds per condition
 
 CSV_FIELDS = [
     'trial_id', 'sigma_d', 'rho', 'phi', 'theta', 'seed',
@@ -431,6 +481,13 @@ def main():
                         help='Run 9-trial smoke test instead of full grid')
     parser.add_argument('--resume', action='store_true',
                         help='Skip trials already in the CSV')
+    parser.add_argument('--original', action='store_true',
+                        help='Re-run the original 432-trial grid (writes to '
+                             'experiment_results.csv) instead of the '
+                             'densified 1296-trial grid (default; writes to '
+                             'experiment_results_densified.csv)')
+    parser.add_argument('--output', type=str, default=None,
+                        help='Override the output CSV path')
     args = parser.parse_args()
 
     # Build trial list
@@ -440,12 +497,23 @@ def main():
         phi_vals     = [45.]
         theta_vals   = [0.,   45.]
         n_repeats    = 1
+        default_csv  = 'experiment_results_test.csv'
+    elif args.original:
+        sigma_d_vals = ORIGINAL_SIGMA_D_VALS
+        rho_vals     = ORIGINAL_RHO_VALS
+        phi_vals     = ORIGINAL_PHI_VALS
+        theta_vals   = ORIGINAL_THETA_VALS
+        n_repeats    = ORIGINAL_N_REPEATS
+        default_csv  = 'experiment_results.csv'
     else:
         sigma_d_vals = SIGMA_D_VALS
         rho_vals     = RHO_VALS
         phi_vals     = PHI_VALS
         theta_vals   = THETA_VALS
         n_repeats    = N_REPEATS
+        default_csv  = 'experiment_results_densified.csv'
+
+    OUTPUT_CSV = args.output or os.path.join(RESULTS_DIR, default_csv)
 
     trials = []
     for i, (sigma_d, rho, phi, theta, rep) in enumerate(
