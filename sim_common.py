@@ -174,6 +174,35 @@ def render_depth_seg(model, data, body_labels, cam_name='perception_camera',
     `body_labels` (dict {body_name: int label >= 1}) with its own
     integer id (0 = background). Generalizes the old binary seg_map
     (single target) to support the clutter scene (multiple targets).
+
+    Returns (depth_noisy, K, seg_map, seg_empty).
+
+    Root-caused (RIGOUR_LEDGER / RunPod pilot review, 5 Aug): this
+    function used to silently substitute a blind depth-range mask
+    (`0.2 < depth < 1.5`) whenever the true per-body segmentation came
+    back completely empty. That fallback is NOT a graceful degradation
+    -- it hands CGN a crop of the table/background with no relation to
+    the target object, which was traced (via
+    contact_grasp_estimator.extract_3d_cam_boxes's now-recorded
+    `_last_cube_sizes`) to a spurious "rescue" of grasp generation at
+    specific (phi, theta) combinations where the true segmentation is
+    empty: C_pc jumped from ~1e-5 (a handful of real pixels) to ~0.85
+    (most of the fallback-masked frame) with no physically plausible
+    camera-pose explanation. That silently corrupted both the treatment
+    channel (what CGN actually sees) and the logged C_pc mediator in
+    those cells.
+
+    Fix: the fallback substitution is removed entirely. `seg_map` is
+    now ALWAYS the true, per-body segmentation (so C_pc computed from
+    it by every caller is genuinely "fraction of pixels showing the
+    target", unconditionally). When the true segmentation is empty,
+    that is treated as a legitimate causal outcome of (phi, theta) --
+    "object not visible from this viewpoint" -- not an error to paper
+    over: callers should check `seg_empty` and skip CGN entirely
+    (there is nothing for it to segment), logging a distinct
+    `no_visible_object` outcome rather than either fabricating grasps
+    from the wrong geometry or collapsing it into the same `no_grasps`
+    bucket as "CGN ran on a real crop and found nothing".
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -197,8 +226,7 @@ def render_depth_seg(model, data, body_labels, cam_name='perception_camera',
             if model.geom_bodyid[gid] == bid:
                 seg_map[geom_ids_image == gid] = label
 
-    if seg_map.sum() == 0:
-        seg_map = ((depth_raw > 0.2) & (depth_raw < 1.5)).astype(np.int32)
+    seg_empty = bool(seg_map.sum() == 0)
 
     if sigma_d > 0.:
         depth_noisy = np.clip(depth_raw + rng.normal(0., sigma_d, depth_raw.shape),
@@ -207,7 +235,7 @@ def render_depth_seg(model, data, body_labels, cam_name='perception_camera',
         depth_noisy = depth_raw.copy()
 
     K = build_K(model, cam_name, img_w, img_h)
-    return depth_noisy, K, seg_map
+    return depth_noisy, K, seg_map, seg_empty
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -637,3 +665,75 @@ def run_floating_gripper_test(model, data, target_body_name, grasp_pos, grasp_qu
     result.update(success=bool(success), final_xy_offset=round(xy_offset, 5),
                   final_lift=round(lift, 5), obj_z_final=round(float(obj_pos_final[2]), 4))
     return result
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  Failure-mode taxonomy (response to RunPod pilot review, 5 Aug)
+#
+#  Each stage of the pipeline can terminate a trial for a different
+#  reason; collapsing them all into a single FAILURE label discards the
+#  information needed to tell "the object was never visible" apart from
+#  "CGN found nothing", "the proposed pose collides before any contact
+#  is even attempted", "the grasp closed but the object was pushed out
+#  sideways", and "the grasp closed, lifted partially, and then slipped
+#  or fell". Each of these is a different terminal node in the SCM and
+#  is expected to have different causes / respond to different
+#  exogenous variables.
+# ══════════════════════════════════════════════════════════════════════
+
+FAILURE_MODES = (
+    'success', 'no_visible_object', 'no_grasps', 'pregrasp_collision',
+    'executed_ejected', 'executed_dropped',
+)
+
+
+def classify_failure_mode(seg_empty, n_grasps, floating_gripper_result,
+                           footprint_radius, lift_height=0.15,
+                           xy_tolerance_margin=0.03, min_lift_m=0.01):
+    """
+    Map a trial's terminal state to exactly one of FAILURE_MODES.
+
+    Parameters mirror the inputs available at each stage of run_trial:
+      seg_empty                -- from render_depth_seg (True: object not
+                                   visible from this viewpoint at all;
+                                   CGN was never run).
+      n_grasps                 -- 0 if CGN ran on a real crop but
+                                   proposed nothing.
+      floating_gripper_result  -- the dict returned by
+                                   run_floating_gripper_test(), or None
+                                   if execution never ran (seg_empty or
+                                   no_grasps).
+      footprint_radius, lift_height, xy_tolerance_margin -- must match
+                                   the values passed to
+                                   run_floating_gripper_test() for this
+                                   trial, so the same tolerance is used
+                                   to distinguish "pushed sideways out
+                                   of the gripper" from "lifted partway
+                                   then slipped/fell straight down".
+      min_lift_m                -- below this, treat the object as
+                                   never having left the table at all
+                                   (still classified as `executed_dropped`,
+                                   since it is executed-and-failed either
+                                   way, but useful for a secondary
+                                   analysis split via final_lift itself).
+
+    Returns one of FAILURE_MODES (str).
+    """
+    if seg_empty:
+        return 'no_visible_object'
+    if n_grasps == 0:
+        return 'no_grasps'
+    if floating_gripper_result is None:
+        # Defensive: should not happen if seg_empty/n_grasps are checked
+        # first, but avoids a crash if this is ever called out of order.
+        return 'no_grasps'
+    if not floating_gripper_result.get('collision_free', False):
+        return 'pregrasp_collision'
+    if floating_gripper_result.get('success', False):
+        return 'success'
+
+    tol = footprint_radius + xy_tolerance_margin
+    xy_offset = floating_gripper_result.get('final_xy_offset')
+    if xy_offset is not None and xy_offset > tol:
+        return 'executed_ejected'
+    return 'executed_dropped'

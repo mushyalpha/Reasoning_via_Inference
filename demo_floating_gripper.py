@@ -155,9 +155,16 @@ def get_pose_cgn(object_name, spec, phi, theta, sigma_d, rho, seed):
     sc.set_camera(model, phi, theta, CAM_RADIUS, np.array(centroid))
     mujoco.mj_forward(model, data)
 
-    depth, K, seg_map = sc.render_depth_seg(
+    depth, K, seg_map, seg_empty = sc.render_depth_seg(
         model, data, {spec['body_name']: 1}, sigma_d=sigma_d, rng=rng,
         img_w=IMG_W, img_h=IMG_H)
+
+    if seg_empty:
+        print(f'[CGN] Object not visible at phi={phi} theta={theta} '
+              f'(true segmentation empty) — falling back to hand-tuned pose')
+        centroid = centroid_world(spec, data.xpos[obj_id])
+        gp, gq = _known_good_pose(object_name, centroid)
+        return data.xpos[obj_id].copy(), data.xquat[obj_id].copy(), gp, gq, None
 
     cfg = config_utils.load_config(CKPT_DIR, batch_size=1, arg_configs=[])
     est = GraspEstimator(cfg)

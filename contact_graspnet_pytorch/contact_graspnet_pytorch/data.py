@@ -16,7 +16,19 @@ import trimesh.transformations as tra
 from scipy.spatial import cKDTree
 
 import provider
-from contact_graspnet_pytorch.scene_renderer import SceneRenderer
+# NOT imported at module scope (RunPod headless-inference fix, 5 Aug):
+# SceneRenderer pulls in `pyrender`, which in turn eagerly imports
+# `OpenGL.platform.egl` at *import* time regardless of whether any
+# rendering ever actually happens. On a machine with no EGL library (or
+# only a generic Mesa EGL lacking the NVIDIA device-enumeration
+# extensions MuJoCo's own EGL backend needs -- see RUNPOD_SETUP.md),
+# that import crashes before `import contact_grasp_estimator` even
+# finishes, which breaks every inference-only script (run_experiments*.py,
+# run_clutter_experiments.py, demo_floating_gripper.py) even though none
+# of them ever construct a PointCloudReader or touch pyrender. Moved into
+# PointCloudReader.__init__ (the only place SceneRenderer is actually
+# used) so the inference path never imports it.
+# from contact_graspnet_pytorch.scene_renderer import SceneRenderer
 
 def load_scene_contacts(dataset_folder, test_split_only=False, num_test=None, scene_contacts_path='scene_contacts_new'):
     """
@@ -465,6 +477,7 @@ class PointCloudReader:
         self._current_pc = None
         self._cache = {}
 
+        from contact_graspnet_pytorch.scene_renderer import SceneRenderer
         self._renderer = SceneRenderer(caching=True, intrinsics=intrinsics)
 
         if use_uniform_quaternions:
