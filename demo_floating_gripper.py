@@ -15,6 +15,10 @@ Usage (macOS):
     mjpython demo_floating_gripper.py --cgn               # use CGN grasps
     mjpython demo_floating_gripper.py --speed 0.5         # half speed (even slower)
 
+    # Save a video (.mp4) + 4 key-stage screenshots (.png) per object,
+    # no viewer window needed (works headless too):
+    mjpython demo_floating_gripper.py --record_dir results/figures/pickup_demo --no_viewer
+
 Linux:
     python3 demo_floating_gripper.py
 """
@@ -46,6 +50,12 @@ import numpy as np
 import mujoco
 import mujoco.viewer
 
+try:
+    import imageio
+    _IMAGEIO_OK = True
+except ImportError:
+    _IMAGEIO_OK = False
+
 _PROJECT = os.path.dirname(os.path.abspath(__file__))
 _CGN_REPO = os.path.join(_PROJECT, 'contact_graspnet_pytorch')
 _CGN_SRC  = os.path.join(_CGN_REPO, 'contact_graspnet_pytorch')
@@ -76,6 +86,73 @@ RENDER_EVERY    = 1
 SLEEP_PER_STEP  = 0.010
 
 os.makedirs(SCENES_DIR, exist_ok=True)
+
+
+# ─── offscreen recording (video + key-stage stills), independent of the ──────
+# ─── interactive viewer so it also works headless (--no_viewer) ─────────────
+
+class VideoRecorder:
+    """Captures MuJoCo frames offscreen and writes them to an MP4."""
+
+    def __init__(self, model, output_path, fps=30, width=1280, height=720,
+                 azimuth=130., elevation=-22., distance=0.80):
+        self.output_path = output_path if output_path.endswith('.mp4') else output_path + '.mp4'
+        self.fps = fps
+        self.frames = []
+        self._renderer = mujoco.Renderer(model, height=height, width=width)
+        self._cam = mujoco.MjvCamera()
+        mujoco.mjv_defaultFreeCamera(model, self._cam)
+        self._cam.distance = distance
+        self._cam.azimuth = azimuth
+        self._cam.elevation = elevation
+
+    def set_lookat(self, pos):
+        self._cam.lookat[:] = pos
+
+    def capture(self, data):
+        self._renderer.update_scene(data, camera=self._cam)
+        self.frames.append(self._renderer.render().copy())
+
+    def snapshot(self, data, out_path):
+        """Render the current frame straight to a PNG (doesn't touch the video buffer)."""
+        self._renderer.update_scene(data, camera=self._cam)
+        img = self._renderer.render().copy()
+        imageio.imwrite(out_path, img)
+        print(f'[Snapshot] {out_path}')
+
+    def save(self):
+        if not self.frames:
+            print('[Record] No frames captured.')
+            return
+        print(f'[Record] Writing {len(self.frames)} frames to {self.output_path} ...')
+        writer = imageio.get_writer(self.output_path, fps=self.fps,
+                                    codec='libx264', quality=8,
+                                    macro_block_size=None)
+        for frame in self.frames:
+            writer.append_data(frame)
+        writer.close()
+        print(f'[Record] Saved: {self.output_path}')
+
+
+class _NullViewer:
+    """Drop-in stand-in for mujoco.viewer's context manager, for headless
+    (--no_viewer) recording -- provides the same is_running()/sync()/cam
+    surface the animation loop uses, without opening a window."""
+
+    def __init__(self):
+        self.cam = mujoco.MjvCamera()
+
+    def is_running(self):
+        return True
+
+    def sync(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
 
 
 # ─── known-good hand-tuned poses (validated in smoke_test_floating_gripper.py) ─
@@ -201,20 +278,23 @@ def get_pose_cgn(object_name, spec, phi, theta, sigma_d, rho, seed):
 
 # ─── core animated demo ──────────────────────────────────────────────────────
 
-def _sync(viewer, model, data, sleep_s):
-    """Sync viewer and sleep; returns False if viewer was closed."""
+def _sync(viewer, model, data, sleep_s, recorder=None):
+    """Sync viewer, capture a video frame if recording, and sleep;
+    returns False if viewer was closed."""
     if not viewer.is_running():
         return False
+    if recorder is not None:
+        recorder.capture(data)
     viewer.sync()
     time.sleep(sleep_s)
     return True
 
 
-def _hold_still(viewer, model, data, n_steps, sleep_s):
+def _hold_still(viewer, model, data, n_steps, sleep_s, recorder=None):
     """Run physics + render n_steps times without moving the gripper."""
     for _ in range(n_steps):
         mujoco.mj_step(model, data)
-        if not _sync(viewer, model, data, sleep_s):
+        if not _sync(viewer, model, data, sleep_s, recorder):
             return False
     return True
 
@@ -224,14 +304,22 @@ def _update_cam_lookat(viewer, pos):
     viewer.cam.lookat[:] = pos
 
 
-def run_demo_animated(model, data, spec, grasp_pos, grasp_quat, viewer, sleep_s):
+def run_demo_animated(model, data, spec, grasp_pos, grasp_quat, viewer, sleep_s,
+                      recorder=None, snap_dir=None, object_name=None):
     """
     Full animated grasp routine, rendered every sim step:
       1. Approach  — teleport gripper open to grasp pose, hold 1 s
       2. Close     — close fingers slowly, camera follows
       3. Lift+shake — rise 15 cm while shaking, camera follows object up
       4. Hold      — freeze at top for 3 s so you can see the result
+
+    If `recorder` is given, every synced frame is appended to its video
+    buffer. If `snap_dir` is also given, 4 key-stage PNGs are saved there
+    (named "<object_name>_<stage>.png").
     """
+    def _snap(stage):
+        if recorder is not None and snap_dir is not None:
+            recorder.snapshot(data, os.path.join(snap_dir, f'{object_name}_{stage}.png'))
     gp   = np.asarray(grasp_pos, dtype=float)
     gq   = np.asarray(grasp_quat, dtype=float)
     tb   = spec['body_name']
@@ -251,17 +339,23 @@ def run_demo_animated(model, data, spec, grasp_pos, grasp_quat, viewer, sleep_s)
     collision_free = len(contacted) == 0
     print(f'         collision_free={collision_free}  contacted={contacted}')
 
+    if recorder is not None:
+        recorder.set_lookat(data.xpos[oid].copy())
+    _snap('1_approach')
+
     # Hold at approach for ~1.5 s so viewer can take in the scene
     approach_frames = int(1.5 / sleep_s)
     for _ in range(approach_frames):
         mujoco.mj_step(model, data)
         _update_cam_lookat(viewer, data.xpos[oid].copy())
-        if not _sync(viewer, model, data, sleep_s):
+        if recorder is not None:
+            recorder.set_lookat(data.xpos[oid].copy())
+        if not _sync(viewer, model, data, sleep_s, recorder):
             return None
 
     if not collision_free:
         print('[Demo] Collision — showing for 2 s then exiting this object')
-        _hold_still(viewer, model, data, int(2.0 / sleep_s), sleep_s)
+        _hold_still(viewer, model, data, int(2.0 / sleep_s), sleep_s, recorder)
         return dict(collision_free=False, contacted_bodies=contacted, success=False)
 
     z0 = float(data.xpos[oid][2])
@@ -281,17 +375,23 @@ def run_demo_animated(model, data, spec, grasp_pos, grasp_quat, viewer, sleep_s)
             mujoco.mj_step(model, data)
         if step % RENDER_EVERY == 0:
             _update_cam_lookat(viewer, data.xpos[oid].copy())
-            if not _sync(viewer, model, data, sleep_s):
+            if recorder is not None:
+                recorder.set_lookat(data.xpos[oid].copy())
+            if not _sync(viewer, model, data, sleep_s, recorder):
                 return None
 
     if contact_ctrl is not None:
         data.ctrl[aid] = contact_ctrl
 
+    _snap('2_closed')
+
     # Pause with fingers closed for 1 s
     for _ in range(int(1.0 / sleep_s)):
         mujoco.mj_step(model, data)
         _update_cam_lookat(viewer, data.xpos[oid].copy())
-        if not _sync(viewer, model, data, sleep_s):
+        if recorder is not None:
+            recorder.set_lookat(data.xpos[oid].copy())
+        if not _sync(viewer, model, data, sleep_s, recorder):
             return None
 
     # ── Phase 3: Lift + shake ──────────────────────────────────────────────
@@ -316,8 +416,15 @@ def run_demo_animated(model, data, spec, grasp_pos, grasp_quat, viewer, sleep_s)
         if i % RENDER_EVERY == 0:
             # Camera lookat follows the object as it rises
             _update_cam_lookat(viewer, data.xpos[oid].copy())
-            if not _sync(viewer, model, data, sleep_s):
+            if recorder is not None:
+                recorder.set_lookat(data.xpos[oid].copy())
+            if not _sync(viewer, model, data, sleep_s, recorder):
                 return None
+
+        if i == int(SHAKE_STEPS * 0.3):
+            _snap('3_mid_lift')
+
+    _snap('4_full_lift_shake')
 
     # ── Phase 4: Final result hold ─────────────────────────────────────────
     obj_final  = data.xpos[oid].copy()
@@ -333,7 +440,9 @@ def run_demo_animated(model, data, spec, grasp_pos, grasp_quat, viewer, sleep_s)
     for _ in range(hold_frames):
         mujoco.mj_step(model, data)
         _update_cam_lookat(viewer, data.xpos[oid].copy())
-        if not _sync(viewer, model, data, sleep_s):
+        if recorder is not None:
+            recorder.set_lookat(data.xpos[oid].copy())
+        if not _sync(viewer, model, data, sleep_s, recorder):
             break
 
     return dict(collision_free=True, contacted_bodies=[], success=bool(success),
@@ -343,7 +452,8 @@ def run_demo_animated(model, data, spec, grasp_pos, grasp_quat, viewer, sleep_s)
 
 # ─── per-object entry point ───────────────────────────────────────────────────
 
-def demo_object(object_name, use_cgn, phi, theta, sigma_d, rho, seed, speed):
+def demo_object(object_name, use_cgn, phi, theta, sigma_d, rho, seed, speed,
+                record_dir=None, no_viewer=False, record_fps=30):
     spec = OBJECT_SPECS[object_name]
     sleep_s = SLEEP_PER_STEP / max(speed, 0.05)
 
@@ -374,16 +484,38 @@ def demo_object(object_name, use_cgn, phi, theta, sigma_d, rho, seed, speed):
     oid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, spec['body_name'])
     start_lookat = data.xpos[oid].copy()
 
-    print(f'[Viewer] Opening window (speed={speed:.2f}× — sleep {sleep_s*1000:.0f} ms/step)')
-    print('         Close the window to skip to the next object.')
-    with mujoco.viewer.launch_passive(model, data) as viewer:
-        # Slightly elevated angle so lift is clearly visible
-        viewer.cam.distance  = 0.80
-        viewer.cam.azimuth   = 130.
-        viewer.cam.elevation = -22.
-        viewer.cam.lookat[:] = start_lookat
-        return run_demo_animated(model, data, spec, grasp_pos, grasp_quat,
-                                 viewer, sleep_s)
+    recorder = None
+    if record_dir is not None:
+        if not _IMAGEIO_OK:
+            print('[Record] ERROR: imageio not installed. Run: pip install imageio[ffmpeg]')
+        else:
+            os.makedirs(record_dir, exist_ok=True)
+            recorder = VideoRecorder(model, os.path.join(record_dir, f'grasp_{object_name}.mp4'),
+                                     fps=record_fps, distance=0.80, azimuth=130., elevation=-22.)
+            recorder.set_lookat(start_lookat)
+
+    if no_viewer:
+        print(f'[Headless] Recording {object_name} (no window)...')
+        with _NullViewer() as viewer:
+            result = run_demo_animated(model, data, spec, grasp_pos, grasp_quat,
+                                       viewer, sleep_s, recorder=recorder,
+                                       snap_dir=record_dir, object_name=object_name)
+    else:
+        print(f'[Viewer] Opening window (speed={speed:.2f}× — sleep {sleep_s*1000:.0f} ms/step)')
+        print('         Close the window to skip to the next object.')
+        with mujoco.viewer.launch_passive(model, data) as viewer:
+            # Slightly elevated angle so lift is clearly visible
+            viewer.cam.distance  = 0.80
+            viewer.cam.azimuth   = 130.
+            viewer.cam.elevation = -22.
+            viewer.cam.lookat[:] = start_lookat
+            result = run_demo_animated(model, data, spec, grasp_pos, grasp_quat,
+                                       viewer, sleep_s, recorder=recorder,
+                                       snap_dir=record_dir, object_name=object_name)
+
+    if recorder is not None:
+        recorder.save()
+    return result
 
 
 # ─── main ─────────────────────────────────────────────────────────────────────
@@ -402,19 +534,31 @@ def main():
     p.add_argument('--sigma_d', type=float, default=0.,  help='Depth noise std (m)')
     p.add_argument('--rho',     type=float, default=1.0, help='Point-cloud keep fraction')
     p.add_argument('--seed',    type=int,   default=42)
+    p.add_argument('--record_dir', type=str, default=None,
+                   help='Save a grasp_<object>.mp4 video + 4 key-stage PNGs per '
+                        'object into this directory')
+    p.add_argument('--record_fps', type=int, default=30,
+                   help='Frames per second for the output video (default: 30)')
+    p.add_argument('--no_viewer', action='store_true',
+                   help='Skip the interactive window entirely (headless, e.g. for --record_dir on a server)')
     args = p.parse_args()
 
     sc.configure_determinism()
     print('\nDemo: floating-gripper grasp + lift routine')
     print(f'Objects : {args.object}')
     print(f'Poses   : {"CGN" if args.cgn else "hand-tuned (guaranteed success)"}')
-    print(f'Speed   : {args.speed}×  (~{SLEEP_PER_STEP/args.speed*1000:.0f} ms/step)\n')
+    print(f'Speed   : {args.speed}×  (~{SLEEP_PER_STEP/args.speed*1000:.0f} ms/step)')
+    if args.record_dir:
+        print(f'Record  : videos + stills -> {args.record_dir}')
+    print()
 
     results = {}
     for obj in args.object:
         try:
             results[obj] = demo_object(obj, args.cgn, args.phi, args.theta,
-                                       args.sigma_d, args.rho, args.seed, args.speed)
+                                       args.sigma_d, args.rho, args.seed, args.speed,
+                                       record_dir=args.record_dir, no_viewer=args.no_viewer,
+                                       record_fps=args.record_fps)
         except Exception as exc:
             import traceback
             traceback.print_exc()
