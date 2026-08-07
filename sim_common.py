@@ -640,3 +640,48 @@ def run_floating_gripper_test(model, data, target_body_name, grasp_pos, grasp_qu
     result.update(success=bool(success), final_xy_offset=round(xy_offset, 5),
                   final_lift=round(lift, 5), obj_z_final=round(float(obj_pos_final[2]), 4))
     return result
+
+
+def classify_failure_mode(seg_empty, n_grasps, floating_gripper_result,
+                          footprint_radius, lift_height,
+                          xy_tolerance_margin=0.03):
+    """
+    Map a trial's outcome into one of 6 failure-mode taxonomy labels:
+
+      - ``success``             -- grasp succeeded (held throughout shake)
+      - ``no_visible_object``   -- seg_empty: no target pixels in rendered image
+      - ``no_grasps``           -- CGN produced zero grasp candidates
+      - ``pregrasp_collision``  -- gripper collided at the predicted pose before
+                                   closing (collision_free=False)
+      - ``executed_ejected``    -- object slid out of the gripper's XY footprint
+                                   during lift/shake
+      - ``executed_dropped``    -- object stayed under the gripper but never
+                                   sustained 40% of commanded lift height
+
+    The labels correspond to distinct terminal nodes in the SCM's selection
+    structure and are not expected to share causes.
+    """
+    if seg_empty:
+        return 'no_visible_object'
+    if n_grasps == 0:
+        return 'no_grasps'
+    if floating_gripper_result is None:
+        # Should not happen, but defensive
+        return 'no_grasps'
+    if not floating_gripper_result['collision_free']:
+        return 'pregrasp_collision'
+    if floating_gripper_result['success']:
+        return 'success'
+
+    # Failed after execution -- distinguish ejected vs dropped
+    tol = footprint_radius + xy_tolerance_margin
+    xy_off = floating_gripper_result.get('final_xy_offset')
+    lift   = floating_gripper_result.get('final_lift')
+
+    if xy_off is not None and xy_off > tol:
+        return 'executed_ejected'
+    if lift is not None and lift < lift_height * 0.4:
+        return 'executed_dropped'
+
+    # Edge case: both slightly out of spec -- default to ejected
+    return 'executed_ejected'
