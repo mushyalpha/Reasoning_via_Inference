@@ -140,7 +140,17 @@ class GraspEstimator:
         
         pc_regions = {}
         obj_centers = {}
-        
+        # Recorded per segment id so callers (run_experiments_v2.py etc.) can
+        # log it per trial instead of only seeing it in stdout -- this is
+        # the value whose min/max clamping (min_size..max_size) was traced
+        # to the phi=55/theta=0 "dead zone" artifact: a degenerate (near-
+        # empty) segmented cloud floor-clamps to min_size, while a bogus,
+        # scene-spanning fallback mask (see sim_common.render_depth_seg)
+        # ceiling-clamps to max_size and silently feeds CGN a crop of the
+        # wrong geometry. Reset per call so stale values from a previous
+        # trial are never mistaken for the current one.
+        self._last_cube_sizes = {}
+
         for i in pc_segments:
             pc_segments[i] = reject_median_outliers(pc_segments[i], m=0.4, z_only=False)
             
@@ -151,9 +161,10 @@ class GraspEstimator:
                 obj_extent = max_bounds - min_bounds
                 obj_center = min_bounds + obj_extent/2
                 
-                # cube size is between 0.3 and 0.6 depending on object extents
+                # cube size is between min_size and max_size depending on object extents
                 size = np.minimum(np.maximum(np.max(obj_extent)*2, min_size), max_size)
                 print('Extracted Region Cube Size: ', size)
+                self._last_cube_sizes[i] = float(size)
                 partial_pc = full_pc[np.all(full_pc > (obj_center - size/2), axis=1) & np.all(full_pc < (obj_center + size/2),axis=1)]
                 if np.any(partial_pc):
                     partial_pc = regularize_pc_point_count(partial_pc, self._contact_grasp_cfg['DATA']['raw_num_points'], use_farthest_point=self._contact_grasp_cfg['DATA']['use_farthest_point'])
@@ -265,6 +276,10 @@ class GraspEstimator:
         """
 
         pred_grasps_cam, scores, contact_pts, gripper_openings = {}, {}, {}, {}
+        # Always reset (not just inside extract_3d_cam_boxes) so a call that
+        # takes the full-pc / use_cam_boxes=False path never leaves a stale
+        # value from a previous trial for a caller to misread.
+        self._last_cube_sizes = {}
 
         # Predict grasps in local regions or full pc
         if local_regions:
