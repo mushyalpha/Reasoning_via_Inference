@@ -103,6 +103,7 @@ CLOSE_STEPS = 400
 SHAKE_STEPS = 600
 LIFT_HEIGHT = 0.15
 SHAKE_AMPLITUDE = 0.03
+XY_TOLERANCE_MARGIN = 0.03  # must match run_floating_gripper_test's default
 STATIC_SCENE_BODIES = ('table', 'world')
 
 SIGMA_D_VALS = [0.000, 0.0025, 0.005, 0.010, 0.015, 0.020, 0.040]
@@ -114,9 +115,9 @@ N_REPEATS = 3
 
 CSV_FIELDS = [
     'trial_id', 'target_object', 'sigma_d', 'rho', 'phi', 'theta', 'seed',
-    'C_pc', 'q_grasp', 'e_pose', 'n_grasps',
-    'collision_free', 'success', 'collision_with_neighbor',
-    'final_xy_offset', 'final_lift', 'obj_z_final', 'error'
+    'seg_empty', 'C_pc', 'cube_size', 'q_grasp', 'e_pose', 'n_grasps',
+    'collision_free', 'contacted_bodies', 'success', 'collision_with_neighbor',
+    'final_xy_offset', 'final_lift', 'obj_z_final', 'failure_mode', 'error'
 ]
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -133,6 +134,8 @@ def load_cgn():
 
 
 def run_cgn(depth, K, seg_map, estimator, rho=1.0, rng=None):
+    """Returns (pred_grasps, scores, cube_size) -- see run_experiments_v2.py's
+    module docstring fix #4 for why cube_size is captured."""
     if rng is None:
         rng = np.random.default_rng()
     tmp = os.path.join(_PROJECT, f'_tmp_clutter_{os.getpid()}.npz')
@@ -157,8 +160,11 @@ def run_cgn(depth, K, seg_map, estimator, rho=1.0, rng=None):
             pc_full, pc_segments=pc_segs,
             local_regions=True, filter_grasps=True, forward_passes=1)
 
+    cube_sizes = getattr(estimator, '_last_cube_sizes', {}) or {}
+    cube_size = cube_sizes.get(1, next(iter(cube_sizes.values()), None))
+
     os.path.exists(tmp) and os.remove(tmp)
-    return pred_grasps, scores
+    return pred_grasps, scores, cube_size
 
 
 def execute_grasp_clutter_floating(fg_scene_xml, target_spec, target_body,
@@ -185,7 +191,8 @@ def execute_grasp_clutter_floating(fg_scene_xml, target_spec, target_body,
         fg_model, fg_data, target_body, grasp_pos, grasp_quat,
         footprint_radius=target_spec['footprint_radius'],
         close_steps=CLOSE_STEPS, shake_steps=SHAKE_STEPS,
-        lift_height=LIFT_HEIGHT, shake_amplitude=SHAKE_AMPLITUDE)
+        lift_height=LIFT_HEIGHT, shake_amplitude=SHAKE_AMPLITUDE,
+        xy_tolerance_margin=XY_TOLERANCE_MARGIN)
 
     collided_neighbor = any(b not in (target_body,) + STATIC_SCENE_BODIES
                              for b in result['contacted_bodies'])
@@ -223,22 +230,42 @@ def run_trial(trial_id, target_name, sigma_d, rho, phi, theta, seed, estimator):
     sc.set_camera(model, phi, theta, CAM_RADIUS, look_at)
     mujoco.mj_forward(model, data)
 
-    depth, K, seg_map, _seg_empty = sc.render_depth_seg(
+    depth, K, seg_map, seg_empty = sc.render_depth_seg(
         model, data, {target_body: 1}, sigma_d=sigma_d, rng=rng,
         img_w=IMG_W, img_h=IMG_H)
+    # Always the true segmentation now -- no fallback mask left to inflate
+    # this (see sim_common.render_depth_seg's docstring).
     C_pc = float(seg_map.sum()) / (IMG_W * IMG_H)
 
-    pred_grasps, scores = run_cgn(depth, K, seg_map, estimator, rho=rho, rng=rng)
+    row_base = dict(trial_id=trial_id, target_object=target_name, sigma_d=sigma_d,
+                     rho=rho, phi=phi, theta=theta, seed=seed, seg_empty=int(seg_empty))
+
+    if seg_empty:
+        failure_mode = sc.classify_failure_mode(
+            seg_empty=True, n_grasps=0, floating_gripper_result=None,
+            footprint_radius=target_spec['footprint_radius'], lift_height=LIFT_HEIGHT,
+            xy_tolerance_margin=XY_TOLERANCE_MARGIN)
+        return {**row_base, 'C_pc': round(C_pc, 5), 'cube_size': None,
+                'q_grasp': None, 'e_pose': None, 'n_grasps': 0,
+                'collision_free': None, 'contacted_bodies': None, 'success': 0,
+                'collision_with_neighbor': None, 'final_xy_offset': None,
+                'final_lift': None, 'obj_z_final': None,
+                'failure_mode': failure_mode, 'error': 'no_visible_object'}
+
+    pred_grasps, scores, cube_size = run_cgn(depth, K, seg_map, estimator, rho=rho, rng=rng)
     n_grasps = sum(len(scores[k]) for k in scores)
 
-    row_base = dict(trial_id=trial_id, target_object=target_name, sigma_d=sigma_d,
-                     rho=rho, phi=phi, theta=theta, seed=seed)
-
     if n_grasps == 0:
-        return {**row_base, 'C_pc': C_pc, 'q_grasp': None, 'e_pose': None,
-                'n_grasps': 0, 'collision_free': None, 'success': 0,
+        failure_mode = sc.classify_failure_mode(
+            seg_empty=False, n_grasps=0, floating_gripper_result=None,
+            footprint_radius=target_spec['footprint_radius'], lift_height=LIFT_HEIGHT,
+            xy_tolerance_margin=XY_TOLERANCE_MARGIN)
+        return {**row_base, 'C_pc': round(C_pc, 5), 'cube_size': cube_size,
+                'q_grasp': None, 'e_pose': None,
+                'n_grasps': 0, 'collision_free': None, 'contacted_bodies': None, 'success': 0,
                 'collision_with_neighbor': None, 'final_xy_offset': None,
-                'final_lift': None, 'obj_z_final': None, 'error': 'no_grasps'}
+                'final_lift': None, 'obj_z_final': None,
+                'failure_mode': failure_mode, 'error': 'no_grasps'}
 
     pose_cam, q_grasp, _ = sc.best_grasp_overall(pred_grasps, scores)
     pose_world = sc.cam_to_world(pose_cam, model, data)
@@ -256,12 +283,19 @@ def run_trial(trial_id, target_name, sigma_d, rho, phi, theta, seed, estimator):
 
     result, collided_neighbor = execute_grasp_clutter_floating(
         FG_SCENE_XML, target_spec, target_body, all_obj_poses, grasp_pos, grasp_quat)
+    failure_mode = sc.classify_failure_mode(
+        seg_empty=False, n_grasps=n_grasps, floating_gripper_result=result,
+        footprint_radius=target_spec['footprint_radius'], lift_height=LIFT_HEIGHT,
+        xy_tolerance_margin=XY_TOLERANCE_MARGIN)
 
-    return {**row_base, 'C_pc': round(C_pc, 5), 'q_grasp': round(q_grasp, 5),
+    return {**row_base, 'C_pc': round(C_pc, 5), 'cube_size': cube_size,
+            'q_grasp': round(q_grasp, 5),
             'e_pose': round(e_pose, 5), 'n_grasps': n_grasps,
             'collision_free': int(result['collision_free']),
+            'contacted_bodies': ';'.join(result['contacted_bodies']) or None,
             'success': int(result['success']),
             'collision_with_neighbor': int(collided_neighbor),
+            'failure_mode': failure_mode,
             'final_xy_offset': result['final_xy_offset'],
             'final_lift': result['final_lift'],
             'obj_z_final': result['obj_z_final'], 'error': ''}
