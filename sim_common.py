@@ -197,7 +197,10 @@ def render_depth_seg(model, data, body_labels, cam_name='perception_camera',
             if model.geom_bodyid[gid] == bid:
                 seg_map[geom_ids_image == gid] = label
 
-    if seg_map.sum() == 0:
+    # seg_empty: True if no target-body pixels are visible (before fallback)
+    seg_empty = (seg_map.sum() == 0)
+
+    if seg_empty:
         seg_map = ((depth_raw > 0.2) & (depth_raw < 1.5)).astype(np.int32)
 
     if sigma_d > 0.:
@@ -207,7 +210,7 @@ def render_depth_seg(model, data, body_labels, cam_name='perception_camera',
         depth_noisy = depth_raw.copy()
 
     K = build_K(model, cam_name, img_w, img_h)
-    return depth_noisy, K, seg_map
+    return depth_noisy, K, seg_map, seg_empty
 
 
 # ══════════════════════════════════════════════════════════════════════

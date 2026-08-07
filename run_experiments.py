@@ -232,13 +232,14 @@ def render_depth_seg(model, data, sigma_d=0.0, rng=None):
     for gid in range(model.ngeom):
         if model.geom_bodyid[gid] == tgt_bid:
             seg_map[gid_img == gid] = 1
-    if seg_map.sum() == 0:
+    seg_empty = (seg_map.sum() == 0)
+    if seg_empty:
         seg_map = ((depth_raw > 0.2) & (depth_raw < 1.5)).astype(np.int32)
 
     depth_noisy = (np.clip(depth_raw + rng.normal(0., sigma_d, depth_raw.shape),
                             0., None).astype(np.float32)
                    if sigma_d > 0. else depth_raw.copy())
-    return depth_noisy, build_K(model), seg_map
+    return depth_noisy, build_K(model), seg_map, seg_empty
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -414,7 +415,7 @@ def run_trial(trial_id, sigma_d, rho, phi, theta, seed, estimator):
     settle(model, data, 200)
 
     # Perception
-    depth, K, seg_map = render_depth_seg(model, data, sigma_d=sigma_d, rng=rng)
+    depth, K, seg_map, _seg_empty = render_depth_seg(model, data, sigma_d=sigma_d, rng=rng)
     C_pc = float(seg_map.sum()) / (IMG_W * IMG_H)   # fraction of pixels
 
     # CGN

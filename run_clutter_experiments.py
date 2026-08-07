@@ -223,7 +223,7 @@ def run_trial(trial_id, target_name, sigma_d, rho, phi, theta, seed, estimator):
     sc.set_camera(model, phi, theta, CAM_RADIUS, look_at)
     mujoco.mj_forward(model, data)
 
-    depth, K, seg_map = sc.render_depth_seg(
+    depth, K, seg_map, _seg_empty = sc.render_depth_seg(
         model, data, {target_body: 1}, sigma_d=sigma_d, rng=rng,
         img_w=IMG_W, img_h=IMG_H)
     C_pc = float(seg_map.sum()) / (IMG_W * IMG_H)

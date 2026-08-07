@@ -96,7 +96,7 @@ def _run_single(sigma_d, rho, phi, theta, seed, estimator):
         mujoco.mj_forward(model, data)
         settle(model, data, 200)
 
-        depth, K, seg_map = render_depth_seg(
+        depth, K, seg_map, _seg_empty = render_depth_seg(
             model, data, sigma_d=float(sigma_d), rng=rng)
         pred_grasps, scores = run_cgn(
             depth, K, seg_map, estimator, rho=float(rho), rng=rng)

@@ -155,7 +155,7 @@ def get_pose_cgn(object_name, spec, phi, theta, sigma_d, rho, seed):
     sc.set_camera(model, phi, theta, CAM_RADIUS, np.array(centroid))
     mujoco.mj_forward(model, data)
 
-    depth, K, seg_map = sc.render_depth_seg(
+    depth, K, seg_map, _seg_empty = sc.render_depth_seg(
         model, data, {spec['body_name']: 1}, sigma_d=sigma_d, rng=rng,
         img_w=IMG_W, img_h=IMG_H)
 
