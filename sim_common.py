@@ -534,7 +534,7 @@ def run_floating_gripper_test(model, data, target_body_name, grasp_pos, grasp_qu
                                close_steps=400, shake_steps=600,
                                lift_height=0.15, shake_amplitude=0.03,
                                xy_tolerance_margin=0.03, sample_every=25,
-                               squeeze_margin=60.):
+                               squeeze_margin=60., bypass_collision_gate=False):
     """
     Floating-gripper shake test (ACRONYM / 6-DOF-GraspNet protocol,
     Marker A's recommended fix).
@@ -574,7 +574,7 @@ def run_floating_gripper_test(model, data, target_body_name, grasp_pos, grasp_qu
                   success=False, final_xy_offset=None, final_lift=None,
                   obj_z_final=round(float(data.xpos[obj_id][2]), 4))
 
-    if not collision_free:
+    if not collision_free and not bypass_collision_gate:
         return result
 
     z0 = float(data.xpos[obj_id][2])
