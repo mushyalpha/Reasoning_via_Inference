@@ -174,6 +174,25 @@ def render_depth_seg(model, data, body_labels, cam_name='perception_camera',
     `body_labels` (dict {body_name: int label >= 1}) with its own
     integer id (0 = background). Generalizes the old binary seg_map
     (single target) to support the clutter scene (multiple targets).
+
+    Returns (depth_noisy, K, seg_map, seg_empty).
+
+    IMPORTANT: `seg_map` is now ALWAYS the true, per-body segmentation --
+    no fallback substitution. A previous version of this function (and,
+    briefly, a regression reintroduced here) computed `seg_empty` but
+    still overwrote `seg_map` with a blind `0.2 < depth < 1.5` mask
+    whenever the true segmentation was empty. That fallback silently
+    corrupts `C_pc` for every caller that computes it from this
+    function's `seg_map` (e.g. `C_pc = seg_map.sum()/(img_w*img_h)`):
+    it was traced, via contact_grasp_estimator.extract_3d_cam_boxes's
+    recorded region cube size, to a spurious ~1e-5 -> ~0.85 jump in C_pc
+    at specific (phi>=60, theta=0) combinations with no physically
+    plausible camera-pose explanation -- the fallback was handing CGN
+    (and the logged mediator) a crop of the table/background, not the
+    object. "Object not visible from this viewpoint" is a legitimate
+    causal outcome of (phi, theta), not an error to paper over: callers
+    must check `seg_empty` and skip CGN entirely rather than run
+    inference on a fabricated mask.
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -197,11 +216,10 @@ def render_depth_seg(model, data, body_labels, cam_name='perception_camera',
             if model.geom_bodyid[gid] == bid:
                 seg_map[geom_ids_image == gid] = label
 
-    # seg_empty: True if no target-body pixels are visible (before fallback)
-    seg_empty = (seg_map.sum() == 0)
-
-    if seg_empty:
-        seg_map = ((depth_raw > 0.2) & (depth_raw < 1.5)).astype(np.int32)
+    seg_empty = bool(seg_map.sum() == 0)
+    # NOTE: no fallback substitution here -- seg_map stays exactly what
+    # the true per-body segmentation produced, including all-zero when
+    # seg_empty is True. See docstring above.
 
     if sigma_d > 0.:
         depth_noisy = np.clip(depth_raw + rng.normal(0., sigma_d, depth_raw.shape),
