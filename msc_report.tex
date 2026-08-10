@@ -252,7 +252,7 @@ Existing approaches to handling grasp failure do not provide the kind of causal 
 
 \textbf{Causal robot-failure explanation.} The closest prior work targets causal explanation of robot failures directly: Diehl and Ramirez-Amaro~\cite{diehl2022whydidifail} learn a causal Bayesian network from simulation data and generate contrastive explanations by searching for the nearest counterfactual state that would have succeeded. This shares our goal of structural, causal explanation, but the causal graph is \emph{learned} rather than pre-registered from known system architecture, and the method targets manipulation tasks such as block-stacking rather than a perception-driven grasp-synthesis pipeline with controlled degradation of a sensing stage. Causal robotics benchmarks such as CausalWorld~\cite{ahmed2021causalworld} similarly expose intervenable causal variables in a manipulation simulator, but target transfer learning and policy generalisation rather than post-hoc diagnosis of a fixed, pre-trained perception model.
 
-\textbf{Vision-language models.} Recent work demonstrates that large vision-language models (LLMs/VLMs) can provide natural-language explanations of observed phenomena~\cite{ahn2022saycan, driess2023palm}. However, their diagnoses are highly sensitive to prompt phrasing, often rely on surface-level correlations rather than structural physics, and lack a built-in mechanism for validation against ground truth.
+\textbf{Vision-language models.} Recent work demonstrates that large vision-language models (VLMs) can provide natural-language explanations of observed phenomena~\cite{ahn2022saycan, driess2023palm}. However, their diagnoses are highly sensitive to prompt phrasing, often rely on surface-level correlations rather than structural physics, and lack a built-in mechanism for validation against ground truth.
 
 What remains absent is an audit method that (a) leverages the known computational architecture of the robot to build a structural model of failure, and (b) validates that model using a principled counterfactual test: \emph{if this particular structural precondition had been met, would the grasp have succeeded?}
 
@@ -263,11 +263,11 @@ This thesis addresses the diagnostic gap by formulating grasp failure diagnosis 
 
 To conduct this audit rigorously, we construct a fully controlled factorial testbed in MuJoCo that directly implements Pearl's do-operator. This environment allows us to strictly isolate and manipulate four exogenous environmental variables: depth noise standard deviation~$\sigma_d$, point cloud retention fraction~$\rho$, camera elevation~$\phi$, and camera azimuth~$\theta$. The SCM links these controlled interventions to the binary grasp outcome~$Y$ through intermediate mechanistic variables: point cloud completeness~$C_{pc}$, grasp confidence~$q_{\text{grasp}}$, grasp pose error~$e_{\text{pose}}$, and the number of valid grasp candidates~$n_{\text{grasps}}$.
 
-The audit is conducted entirely in simulation, which is a deliberate scope choice rather than an oversight. The counterfactual test at the centre of this thesis requires rewinding a trial and re-executing it under an altered condition to obtain ground truth---something no physical robot allows. Simulation is what makes this test possible at all; the corresponding cost is that our conclusions describe failure mechanisms within a physically-grounded but simulated pipeline, and their transfer to physical hardware is not evaluated here.
+The audit is conducted entirely in simulation, which is a deliberate scope choice rather than an oversight. The counterfactual test at the centre of this thesis requires rewinding a trial and re-executing it under an altered condition to obtain ground truth---something no physical robot allows. Simulation is what makes this test possible at all; the corresponding cost is that our conclusions describe failure mechanisms within a physically grounded but simulated pipeline, and their transfer to physical hardware is not evaluated here.
 
-To cleanly separate the layers of failure, the experimental pipeline utilises a deliberate two-arm design. The unfiltered arm measures how much the physical geometry of the scene alone accounts for failure; the filtered arm serves as the clean bench on which perceptual interventions are readable. We isolate pose quality from full arm kinematics using a dynamic floating-gripper physical test, ensuring that the outcome variable strictly measures the validity of the perception-driven pose.
+To cleanly separate the layers of failure, the experimental pipeline utilises a deliberate two-arm design. The unfiltered arm measures how much the physical geometry of the scene alone accounts for failure; the filtered arm serves as the clean bench on which perceptual interventions are readable. We isolate pose quality from full arm kinematics using a floating-gripper physics-based test, ensuring that the outcome variable strictly measures the validity of the perception-driven pose.
 
-By separating these layers, we resolve the apparent tension in headline numbers. Without filtering, geometry-driven invalid poses dominate and success rates are low across the pre-registered viewpoint grid. As a separate, post-hoc scoping check---not a claim of replication---we then asked how high the clean baseline could go: once we replicate the collision-filtering precondition CGN's own pipeline implicitly assumes, and select the single most favourable viewpoint after inspecting the main grid, success reaches 89\%, a ceiling in the same range as CGN's own 90.2\% mean benchmark. We report this as evidence that the testbed is capable of near-benchmark performance under best-case conditions, not as a like-for-like comparison against CGN's average-case number: the pre-registration commitment underpinning the rest of this thesis applies to the SCM graph and the main experimental grid, not to this auxiliary ceiling check.
+By separating these layers, we resolve the apparent tension in headline numbers. Without filtering, geometry-driven invalid poses dominate and success rates are low across the pre-registered viewpoint grid. As a separate, post-hoc scoping check---not a claim of replication---we then asked how high the clean baseline could go: once we replicate the collision-filtering precondition CGN's own pipeline implicitly assumes, and select the single most favourable viewpoint after inspecting the main grid, success reaches 89\%, a ceiling in the same range as CGN's own 90.2\% mean benchmark. We report this as evidence that the testbed is capable of near-benchmark performance under best-case conditions: the pre-registration commitment underpinning the rest of this thesis applies to the SCM graph and the main experimental grid, not to this auxiliary ceiling check.
 
 Given an observed grasp failure, we apply Pearl's three-step counterfactual procedure~\cite{pearl2018book}---\emph{abduction}, \emph{action}, and \emph{prediction}---to infer which modelled environmental factor most likely caused the failure. Because the testbed directly implements the do-operator, we are able to rewind the simulation and verify the counterfactual against ground truth within the modelled environment---establishing whether fixing the identified perceptual variable would have saved the grasp, or whether the failure was irreducibly constrained by physical geometry.
 
@@ -276,7 +276,7 @@ Finally, we compare this structured causal diagnosis against a zero-shot large l
 \section{Aim and Objectives}
 \label{sec:aims}
 
-\paragraph{Aim.} To determine whether a mechanistic Structural Causal Model using Pearl's counterfactual procedure can diagnose a robotic grasp failure more reliably---in accuracy and in consistency---than a zero-shot large language model given the same observational data, where a correct diagnosis means either attributing the failure to the correct single structural variable when a single cause exists, or correctly recognising the failure as irreducibly multi-causal when it does not, in each case checked against a known ground truth.
+\paragraph{Aim.} To determine whether a mechanistic Structural Causal Model using Pearl's counterfactual procedure can diagnose robotic grasp failures more reliably---in accuracy and in consistency---than a zero-shot large language model given the same observational data. A diagnosis is correct if it attributes the failure to the right single structural variable when one exists, or recognises the failure as irreducibly multi-causal when it does not; both are checked against simulated ground truth.
 
 \paragraph{Objectives.} To achieve this aim, the thesis pursues five objectives:
 
@@ -297,13 +297,29 @@ The core contributions of this thesis are:
     \item \textbf{A Fully Controlled Factorial Testbed:} A complete simulation environment in MuJoCo~\cite{todorov2012mujoco} that directly implements Pearl's do-operator. It combines Contact-GraspNet~\cite{sundermeyer2021contact}, varied object geometries, and a dynamic floating-gripper test in a two-arm design to eliminate kinematic confounders and explicitly isolate perceptual from geometric failures.
     \item \textbf{Baseline Separation of Geometry from Perception:} An empirical demonstration that geometry-driven invalid poses dominate without filtering, and that a high clean success rate (89\%, at a post-hoc-selected favourable viewpoint) is achievable once those poses are gated out, providing a clean bench for perceptual interventions.
     \item \textbf{Quantification of Irreducible Multi-Causal Failures:} A counterfactual ground-truth study showing that 57.2\% of failures resist single-variable attribution, heavily concentrated at overhead viewpoints, underscoring the physical limits of perceptual fixes and motivating irreducibility as a first-class diagnostic outcome rather than a failure of the method.
-    \item \textbf{Counterfactual Evaluation Pipeline:} A completed pipeline that executes Pearl's counterfactual procedure to diagnose failures, alongside an empirical comparison demonstrating the differences between structured causal diagnosis and LLM-based attribution.
+    \item \textbf{Counterfactual Evaluation Pipeline:} An end-to-end pipeline that executes Pearl's counterfactual procedure to diagnose failures, alongside an empirical comparison demonstrating the differences between structured causal diagnosis and LLM-based attribution.
 \end{enumerate}
 
-\section{Report Organisation}
+\section{Structure of this Thesis}
 \label{sec:organisation}
 
-Chapter~\ref{ch:background} reviews prior work on causal inference, robotic grasping, depth sensor noise, and large language models in robotics; Chapter~\ref{ch:formulation} formalises the causal graph, structural equations, and research hypotheses; and Chapter~\ref{ch:method} details the proposed pipeline. Chapter~\ref{ch:implementation} documents the engineering process and the bugs encountered along the way, Chapter~\ref{ch:experiments} describes the experimental design, and Chapter~\ref{ch:results} and Chapter~\ref{ch:discussion} report and interpret the results. Chapter~\ref{ch:conclusion} concludes the report.
+The remainder of this thesis is organised as follows.
+
+Chapter~\ref{ch:background} reviews the theoretical and empirical background needed to motivate the audit: Structural Causal Models and Pearl's counterfactual hierarchy, prior work on robotic grasp failure and depth sensor noise, Contact-GraspNet as the perception backbone under study, and the use of large language models in robotics.
+
+Chapter~\ref{ch:formulation} formalises the problem. It specifies the pre-registered causal graph, the structural equations linking exogenous variables to the grasp outcome, the identifiability assumptions required for counterfactual inference, and the research hypotheses tested in later chapters.
+
+Chapter~\ref{ch:method} details the proposed pipeline: the factorial testbed design, the floating-gripper success criterion, the two-arm collision-filtering protocol, and the counterfactual abduction--action--prediction procedure used for diagnosis.
+
+Chapter~\ref{ch:implementation} documents the engineering process, including the reconstruction of the simulation environment, the iterative development of the control pipeline, and the significant bugs encountered and resolved along the way---an honest account of the work that underpins the audit's validity.
+
+Chapter~\ref{ch:experiments} describes the experimental design: the full factorial grid over $\sigma_d$, $\rho$, $\phi$, and $\theta$, the object set, and the protocol for the LLM baseline comparison.
+
+Chapter~\ref{ch:results} reports the descriptive, decomposition, and counterfactual findings, including the collision-filtering ceiling check and the quantification of irreducible multi-causal failures.
+
+Chapter~\ref{ch:discussion} interprets these results against the thesis's aim and objectives, and considers their implications and limitations.
+
+Chapter~\ref{ch:conclusion} summarises the contributions of the thesis and outlines directions for future work.
 
 
 % ============================================================
