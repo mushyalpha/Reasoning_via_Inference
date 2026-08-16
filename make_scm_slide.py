@@ -170,9 +170,8 @@ fig.add_artist(plt.Line2D(
     color="#3a3a6a", linewidth=0.9,
 ))
 
-# ---------------------------------------------------------------------------
 # Save
-# ---------------------------------------------------------------------------
+
 fig.savefig(OUT, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
 print(f"Slide saved: {OUT}")
 plt.close(fig)
