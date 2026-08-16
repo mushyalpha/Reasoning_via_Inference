@@ -40,9 +40,8 @@ hmap_sr    = imread(FIGDIR / "scm_heatmap_sigma_rho.png")
 hmap_pt    = imread(FIGDIR / "scm_heatmap_phi_theta.png")
 residuals  = imread(FIGDIR / "scm_binned_residuals.png")
 
-# ---------------------------------------------------------------------------
 # Slide canvas — 16:9, high-res
-# ---------------------------------------------------------------------------
+
 fig = plt.figure(figsize=(19.2, 10.8), facecolor="#1a1a2e")
 
 # Typography
@@ -56,9 +55,8 @@ plt.rcParams.update({
     "text.color":  TITLE_COL,
 })
 
-# ---------------------------------------------------------------------------
 # Grid layout
-# ---------------------------------------------------------------------------
+
 outer = gridspec.GridSpec(
     2, 1,
     figure=fig,
@@ -90,9 +88,8 @@ ax_hsr   = fig.add_subplot(bot[0])
 ax_hpt   = fig.add_subplot(bot[1])
 ax_key   = fig.add_subplot(bot[2])
 
-# ---------------------------------------------------------------------------
 # Helper: show image in axis, no ticks
-# ---------------------------------------------------------------------------
+
 def show(ax, img, label, label_col=LABEL_COL, bg="#12122a"):
     ax.set_facecolor(bg)
     ax.imshow(img)
@@ -109,9 +106,8 @@ show(ax_coeff, coeffs,      "③ Structural equation coefficients")
 show(ax_hsr,   hmap_sr,     "④ Grasp count: σ_d × ρ interaction")
 show(ax_hpt,   hmap_pt,     "⑤ Scene coverage: φ × θ interaction")
 
-# ---------------------------------------------------------------------------
 # Panel ⑥ — Key numbers summary (text panel, no image)
-# ---------------------------------------------------------------------------
+
 ax_key.set_facecolor("#0d1b2a")
 ax_key.set_xticks([]); ax_key.set_yticks([])
 for spine in ax_key.spines.values():
