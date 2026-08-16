@@ -30,9 +30,8 @@ ROOT    = Path(__file__).parent
 FIGDIR  = ROOT / "results" / "figures"
 OUT     = FIGDIR / "scm_slide.png"
 
-# ---------------------------------------------------------------------------
 # Load existing figures
-# ---------------------------------------------------------------------------
+
 dag        = imread(FIGDIR / "scm_dag.png")
 calibration= imread(FIGDIR / "scm_has_grasps_calibration.png")
 coeffs     = imread(FIGDIR / "scm_coefficients.png")
@@ -150,9 +149,8 @@ for label, value, col, size in lines:
                     va="top", ha="right")
     y -= size * 0.0072 + 0.025
 
-# ---------------------------------------------------------------------------
 # Slide title and subtitle
-# ---------------------------------------------------------------------------
+
 fig.text(0.5, 0.965,
          "Structural Causal Model — Fitting Results",
          ha="center", va="top",
