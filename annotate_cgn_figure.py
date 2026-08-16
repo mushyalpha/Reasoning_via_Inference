@@ -204,15 +204,20 @@ print(f'Saved: {out2}')
 # ─────────────────────────────────────────────────────────────────────────────
 # FIGURE 3: Top-down 2D view (XY plane) - clearest view of the arc
 # ─────────────────────────────────────────────────────────────────────────────
-fig3, axes3 = plt.subplots(1, 2, figsize=(16, 7), facecolor='#0d1117')
+plt.rcParams.update({
+    'font.family': 'serif',
+    'font.serif': ['Times New Roman', 'STIXGeneral', 'DejaVu Serif'],
+    'mathtext.fontset': 'cm',
+})
+fig3, axes3 = plt.subplots(1, 2, figsize=(16, 7), facecolor='white')
 
 ## Left: top-down XY view
 ax3L = axes3[0]
-ax3L.set_facecolor('#0d1117')
+ax3L.set_facecolor('white')
 
 # Cylinder cloud top-down
 if len(pc_zoom) > 0:
-    ax3L.scatter(pc_zoom[:,0], pc_zoom[:,1], c='#e06c75', s=4, alpha=0.4,
+    ax3L.scatter(pc_zoom[:,0], pc_zoom[:,1], c='#8a8a8a', s=4, alpha=0.35,
                  label='Cylinder surface')
 
 sc3 = ax3L.scatter(all_pos[:,0], all_pos[:,1], c=all_sc, cmap='plasma',
@@ -221,88 +226,63 @@ sc3 = ax3L.scatter(all_pos[:,0], all_pos[:,1], c=all_sc, cmap='plasma',
 ax3L.scatter(best_pos[0], best_pos[1], c='red', s=300, marker='*', zorder=10,
              label=f'Best grasp\n(score={all_sc[best_idx]:.4f})')
 
-# Approach direction arrows (top-down = XY projection)
-for k in pred_grasps:
-    grasps_k = pred_grasps[k]
-    sc_k = scores[k]
-    order = np.argsort(sc_k)[::-1][:8]
-    for rank, gi in enumerate(order):
-        g = grasps_k[gi]
-        pos = g[:3, 3]
-        approach = g[:3, 2] * 0.04
-        ax3L.annotate('', xy=(pos[0]+approach[0], pos[1]+approach[1]),
-                      xytext=(pos[0], pos[1]),
-                      arrowprops=dict(arrowstyle='->', color='yellow' if rank==0 else '#56d8e4',
-                                      lw=2.5 if rank==0 else 1.5))
-
 cbar3 = fig3.colorbar(sc3, ax=ax3L, shrink=0.8)
-cbar3.set_label('Confidence', color='white', fontsize=10)
-cbar3.ax.yaxis.set_tick_params(color='white')
-plt.setp(plt.getp(cbar3.ax.axes, 'yticklabels'), color='white')
+cbar3.set_label('Confidence', color='black', fontsize=10)
+cbar3.ax.yaxis.set_tick_params(color='black')
+plt.setp(plt.getp(cbar3.ax.axes, 'yticklabels'), color='black')
 
-ax3L.set_xlabel('X (m)  [horizontal]', color='white', fontsize=11)
-ax3L.set_ylabel('Y (m)  [+Y = downward in camera]', color='white', fontsize=11)
-ax3L.set_title('Top-Down View (XY plane)\n"Why is it crescent-shaped?"', 
-               color='white', fontsize=12, fontweight='bold')
-ax3L.tick_params(colors='white')
-ax3L.spines[:].set_color('#444466')
-ax3L.legend(facecolor='#1a1a2e', labelcolor='white', fontsize=9)
+ax3L.set_xlabel('X (m)', color='black', fontsize=11)
+ax3L.set_ylabel('Y (m)', color='black', fontsize=11)
+ax3L.set_title('(a) Top-down projection (XY)', loc='left',
+               color='black', fontsize=12)
+ax3L.tick_params(colors='black')
+ax3L.spines[:].set_color('#777777')
+ax3L.legend(facecolor='white', labelcolor='black', edgecolor='#777777',
+            framealpha=1.0, fontsize=9)
 
 # Annotation callouts
 mid_x = all_pos[:,0].mean()
 mid_y = all_pos[:,1].mean()
 ax3L.annotate('The crescent = 133 grasp\ncandidate contact points,\nall on the cylinder surface',
                xy=(mid_x, mid_y), xytext=(mid_x + 0.15, mid_y + 0.12),
-               color='white', fontsize=9, ha='left',
-               arrowprops=dict(arrowstyle='->', color='#56d8e4', lw=1.5),
-               bbox=dict(boxstyle='round,pad=0.4', fc='#1f2937', ec='#56d8e4', alpha=0.9))
+               color='black', fontsize=9, ha='left',
+               arrowprops=dict(arrowstyle='->', color='#4c78a8', lw=1.2),
+               bbox=dict(boxstyle='round,pad=0.4', fc='white',
+                         ec='#777777', alpha=0.95))
 
 ## Right: side view (XZ = depth profile)
 ax3R = axes3[1]
-ax3R.set_facecolor('#0d1117')
+ax3R.set_facecolor('white')
 
 if len(pc_zoom) > 0:
-    ax3R.scatter(pc_zoom[:,0], pc_zoom[:,2], c='#e06c75', s=4, alpha=0.35)
+    ax3R.scatter(pc_zoom[:,0], pc_zoom[:,2], c='#8a8a8a', s=4, alpha=0.35)
 sc3R = ax3R.scatter(all_pos[:,0], all_pos[:,2], c=all_sc, cmap='plasma',
                      s=60, alpha=0.9, vmin=mn, vmax=mx, zorder=5)
 ax3R.scatter(best_pos[0], best_pos[2], c='red', s=300, marker='*', zorder=10,
              label=f'Best grasp')
 
-# Approach arrows in XZ plane
-for k in pred_grasps:
-    grasps_k = pred_grasps[k]
-    sc_k = scores[k]
-    order = np.argsort(sc_k)[::-1][:8]
-    for rank, gi in enumerate(order):
-        g = grasps_k[gi]
-        pos = g[:3, 3]
-        approach = g[:3, 2] * 0.04
-        ax3R.annotate('', xy=(pos[0]+approach[0], pos[2]+approach[2]),
-                      xytext=(pos[0], pos[2]),
-                      arrowprops=dict(arrowstyle='->', color='yellow' if rank==0 else '#56d8e4',
-                                      lw=2.5 if rank==0 else 1.5))
-
 cbar3R = fig3.colorbar(sc3R, ax=ax3R, shrink=0.8)
-cbar3R.set_label('Confidence', color='white', fontsize=10)
-cbar3R.ax.yaxis.set_tick_params(color='white')
-plt.setp(plt.getp(cbar3R.ax.axes, 'yticklabels'), color='white')
+cbar3R.set_label('Confidence', color='black', fontsize=10)
+cbar3R.ax.yaxis.set_tick_params(color='black')
+plt.setp(plt.getp(cbar3R.ax.axes, 'yticklabels'), color='black')
 
-ax3R.set_xlabel('X (m)  [horizontal]', color='white', fontsize=11)
-ax3R.set_ylabel('Z (m)  [depth = distance from camera]', color='white', fontsize=11)
-ax3R.set_title('Side View (XZ plane)\nShows grasps at different heights on cylinder',
-               color='white', fontsize=12, fontweight='bold')
-ax3R.tick_params(colors='white')
-ax3R.spines[:].set_color('#444466')
-ax3R.legend(facecolor='#1a1a2e', labelcolor='white', fontsize=9)
+ax3R.set_xlabel('X (m)', color='black', fontsize=11)
+ax3R.set_ylabel('Z (m)', color='black', fontsize=11)
+ax3R.set_title('(b) Side projection (XZ)', loc='left',
+               color='black', fontsize=12)
+ax3R.tick_params(colors='black')
+ax3R.spines[:].set_color('#777777')
+ax3R.legend(facecolor='white', labelcolor='black', edgecolor='#777777',
+            framealpha=1.0, fontsize=9)
 
-fig3.suptitle('Contact-GraspNet: Zoomed Grasp Distribution — Two Projection Views\n'
-              'Arrows show the top-8 gripper approach directions  |  '
-              'Yellow = best grasp  |  Red star = selected for execution',
-              color='white', fontsize=13, fontweight='bold', y=1.01)
+fig3.suptitle(
+    'Contact-GraspNet proposal geometry on the cylinder',
+    color='black', fontsize=13, y=1.01,
+)
 
 plt.tight_layout()
 out3 = os.path.join(OUT_DIR, 'cgn_zoomed_2d_projections.png')
-plt.savefig(out3, dpi=160, bbox_inches='tight', facecolor=fig3.get_facecolor())
+plt.savefig(out3, dpi=160, bbox_inches='tight', facecolor='white')
 plt.close(fig3)
 print(f'Saved: {out3}')
 

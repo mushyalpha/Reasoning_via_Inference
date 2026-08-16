@@ -1,0 +1,30 @@
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance = 8mm and 12mm,
+        box/.style = {draw, rectangle, rounded corners, minimum width=2.8cm, minimum height=1.2cm, align=center, fill=blue!5},
+        arrow/.style = {-{Stealth[scale=1.2]}, thick}
+    ]
+        % Nodes
+        \node[box, fill=gray!10] (rgbd) {RGB-D Image\\(Point Cloud)};
+        
+        \node[box, right=of rgbd, yshift=1.2cm] (cgn) {Contact-GraspNet\\(3D PointNet++)};
+        \node[box, right=of rgbd, yshift=-1.2cm] (seg) {Object Segmentation\\(Optional ROI)};
+        
+        \node[box, fill=yellow!20, right=2.5cm of rgbd] (filter) {Grasp Contact\\Filtering};
+        
+        \node[box, fill=green!10, right=of filter] (output) {6-DoF Grasp\\Distribution};
+        
+        % Arrows
+        \draw[arrow] (rgbd.east) -- ++(0.6,0) |- (cgn.west);
+        \draw[arrow] (rgbd.east) -- ++(0.6,0) |- (seg.west);
+        
+        \draw[arrow] (cgn.east) -| (filter.north);
+        \draw[arrow] (seg.east) -| (filter.south);
+        
+        \draw[arrow] (filter.east) -- (output.west);
+        
+    \end{tikzpicture}
+    \caption{Contact-GraspNet Inference Pipeline. An input point cloud is processed by the Contact-GraspNet network to predict contact points and 6-DoF grasp poses. Simultaneously, an object segmentation module isolates the target object. The Grasp Contact Filtering step associates the predicted grasps with the segmented object to produce the final 6-DoF grasp distribution for execution.}
+    \label{fig:cgn_architecture}
+\end{figure}

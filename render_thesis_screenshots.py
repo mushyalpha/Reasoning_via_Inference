@@ -246,6 +246,11 @@ def figure_clutter():
 
 def figure_depth_strip():
     print("Rendering depth degradation strip...")
+    plt.rcParams.update({
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "STIXGeneral", "DejaVu Serif"],
+        "mathtext.fontset": "cm",
+    })
     model, data = load_scene(SCENES["cylinder"])
     set_arm_home(model, data)
     settle(model, data, steps=400)
@@ -254,23 +259,25 @@ def figure_depth_strip():
     frames = render_depth_strip(model, data, sigmas)
 
     fig, axes = plt.subplots(1, len(sigmas), figsize=(22, 5))
-    fig.patch.set_facecolor("#1a1a2e")
+    fig.patch.set_facecolor("white")
 
     for ax, (sigma, depth) in zip(axes, frames):
+        ax.set_facecolor("white")
         valid = depth[depth > 0]
         vmin  = float(valid.min()) if valid.size else 0
         vmax  = float(np.percentile(valid, 98)) if valid.size else 1
         ax.imshow(depth, cmap="plasma", vmin=vmin, vmax=vmax)
         ax.axis("off")
         label = "Clean\n(σ_d = 0)" if sigma == 0 else f"σ_d = {sigma}"
-        ax.set_title(label, color="white", fontsize=11, fontweight="bold")
+        ax.set_title(label, color="black", fontsize=11)
 
-    fig.suptitle("Perception Degradation: Depth Noise Levels on Cylinder (φ = 45°)\n"
-                 "Left = clean depth image   →   Right = heavily degraded",
-                 color="white", fontsize=14, fontweight="bold")
+    fig.suptitle(
+        "Depth-noise intervention on the cylinder ($\\phi=45^\\circ$)",
+        color="black", fontsize=14,
+    )
     fig.tight_layout(pad=1.5)
     out = os.path.join(OUT, "fig_depth_degradation.png")
-    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  → saved {out}")
 

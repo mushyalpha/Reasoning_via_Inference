@@ -485,113 +485,289 @@ def _arrow(ax, start, end, color="#455a64"):
 
 
 def fig_audit_engine():
-    """Causal inference engine adapted to the mechanistic grasp audit."""
-    fig, ax = plt.subplots(figsize=(10.5, 5.8))
-    ax.set_xlim(0, 10.5)
-    ax.set_ylim(0, 5.8)
-    ax.axis("off")
+    """Architecture-style diagram of the mechanistic causal audit.
 
-    # --- Unobserved SCM (left) ---
-    _rounded(
-        ax, (0.25, 2.0), 2.0, 1.8,
-        "Physical Reality of\nthe Grasp Attempt\n(Unobserved $\\mathcal{M}^*$)",
-        "#f3e5f5", "#6a1b9a", fontsize=9, bold=True, lw=1.8,
-    )
+    Left-to-right layout in the style of a robotics architecture figure:
+    input tensors, dashed module groups, rounded process blocks, thin
+    data bars, and a diagnosis grid as the output. Content is unchanged
+    from the Yang & Bareinboim causal-inference-engine framing.
+    """
+    fig_dir = Path(__file__).resolve().parents[1] / "figures"
+    fig_dir.mkdir(parents=True, exist_ok=True)
 
-    # --- Three inputs ---
-    _rounded(
-        ax, (3.1, 4.35), 2.35, 1.15,
-        "1. Query $\\mathcal{Q}$\n"
-        "Counterfactual $\\mathcal{L}_3$:\n"
-        r"``If $\sigma_d{=}0$, would" + "\nthis grasp have succeeded?''",
-        "#e3f2fd", "#1565c0", fontsize=8,
-    )
-    _rounded(
-        ax, (3.1, 2.35), 2.35, 1.15,
-        "2. Observed Data $\\mathcal{D}$\n"
-        "Failed-trial logs:\n"
-        r"$\sigma_d$, $\rho$, $\phi$, $\theta$",
-        "#e8f5e9", "#2e7d32", fontsize=8.5,
-    )
-    _rounded(
-        ax, (3.1, 0.35), 2.35, 1.15,
-        "3. Graphical Model $\\mathcal{G}$\n"
-        "Pre-registered SCM from\n"
-        "robot architecture",
-        "#fff8e1", "#f9a825", fontsize=8.5,
-    )
+    with plt.rc_context({
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "Times", "STIXGeneral", "DejaVu Serif"],
+        "mathtext.fontset": "cm",
+    }):
+        FW, FH = 13.0, 5.72
+        fig, ax = plt.subplots(figsize=(FW, FH))
+        ax.set_xlim(0.0, FW)
+        ax.set_ylim(0.0, FH)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
-    # Arrows from reality to inputs
-    _arrow(ax, (2.25, 3.55), (3.1, 4.7), "#6a1b9a")
-    ax.text(2.55, 4.25, "demands", fontsize=7, color="#6a1b9a", style="italic", rotation=25)
+        LW = 1.05
+        BLACK = "black"
+        MODULE_FACE = "#f0f0f0"
+        DASH = (0, (4.0, 2.6))
 
-    _arrow(ax, (2.25, 2.9), (3.1, 2.9), "#6a1b9a")
-    ax.text(2.45, 3.05, "logs", fontsize=7, color="#6a1b9a", style="italic")
+        def sharp(x, y, w, h, lw=LW, face="white", z=3, edge=BLACK):
+            ax.add_patch(mpatches.Rectangle(
+                (x, y), w, h, facecolor=face, edgecolor=edge,
+                linewidth=lw, joinstyle="miter", zorder=z, clip_on=False,
+            ))
 
-    _arrow(ax, (2.25, 2.25), (3.1, 1.1), "#6a1b9a")
-    ax.text(2.4, 1.45, "architecture", fontsize=7, color="#6a1b9a", style="italic", rotation=-30)
+        def rounded(x, y, w, h, radius=0.14, lw=LW, face="white", edge=BLACK, z=3):
+            ax.add_patch(FancyBboxPatch(
+                (x, y), w, h,
+                boxstyle=f"round,pad=0.0,rounding_size={radius}",
+                facecolor=face, edgecolor=edge, linewidth=lw,
+                zorder=z, clip_on=False,
+            ))
 
-    # --- Causal Inference Engine ---
-    engine = FancyBboxPatch(
-        (5.85, 0.9), 2.55, 4.0,
-        boxstyle="round,pad=0.02,rounding_size=0.04",
-        facecolor="#e1f5fe", edgecolor="#01579b", linewidth=2.0, zorder=1,
-    )
-    ax.add_patch(engine)
-    ax.text(
-        7.125, 4.6, "Causal Inference Engine",
-        ha="center", va="center", fontsize=10, fontweight="bold",
-        color="#01579b", zorder=4,
-    )
+        def module(x, y, w, h):
+            sharp(x, y, w, h, lw=0, face=MODULE_FACE, z=0, edge="none")
+            ax.add_patch(mpatches.Rectangle(
+                (x, y), w, h, facecolor="none", edgecolor=BLACK,
+                linewidth=1.15, linestyle=DASH, zorder=1, clip_on=False,
+            ))
 
-    _rounded(
-        ax, (6.05, 3.35), 2.15, 0.85,
-        "MuJoCo Testbed\n(direct $do(\\cdot)$ operator)",
-        "#b3e5fc", "#0277bd", fontsize=8.5, bold=True,
-    )
-    _rounded(
-        ax, (6.05, 2.35), 2.15, 0.7,
-        "Abduction",
-        "#ffffff", "#0277bd", fontsize=9,
-    )
-    _rounded(
-        ax, (6.05, 1.5), 2.15, 0.7,
-        "Action",
-        "#ffffff", "#0277bd", fontsize=9,
-    )
-    _rounded(
-        ax, (6.05, 0.65), 2.15, 0.7,
-        "Prediction",
-        "#ffffff", "#0277bd", fontsize=9,
-    )
+        def txt(x, y, s, fs=9.0, w="normal", ha="center", va="center", z=5):
+            ax.text(
+                x, y, s, ha=ha, va=va, fontsize=fs, fontweight=w,
+                color=BLACK, zorder=z, linespacing=1.22, clip_on=False,
+            )
 
-    # Vertical flow inside engine
-    _arrow(ax, (7.125, 3.35), (7.125, 3.05), "#0277bd")
-    _arrow(ax, (7.125, 2.35), (7.125, 2.2), "#0277bd")
-    _arrow(ax, (7.125, 1.5), (7.125, 1.35), "#0277bd")
+        def arr(p0, p1, lw=LW, ms=10.0):
+            ax.annotate(
+                "", xy=p1, xytext=p0,
+                arrowprops=dict(
+                    arrowstyle="-|>", color=BLACK, lw=lw,
+                    mutation_scale=ms, shrinkA=0, shrinkB=0,
+                    connectionstyle="arc3,rad=0",
+                ),
+                zorder=2,
+            )
 
-    # Inputs → engine
-    _arrow(ax, (5.45, 4.9), (5.85, 3.9), "#455a64")
-    _arrow(ax, (5.45, 2.9), (5.85, 2.9), "#455a64")
-    _arrow(ax, (5.45, 0.9), (5.85, 1.5), "#455a64")
+        def hline(x0, x1, y, lw=LW):
+            ax.plot([x0, x1], [y, y], color=BLACK, lw=lw,
+                    solid_capstyle="butt", zorder=2, clip_on=False)
 
-    # --- Output ---
-    _rounded(
-        ax, (8.75, 2.15), 1.55, 1.5,
-        "Diagnosis\nGeometry\nor\nPerception?",
-        "#e8eaf6", "#283593", fontsize=9, bold=True, lw=1.8,
-    )
-    _arrow(ax, (8.4, 2.9), (8.75, 2.9), "#01579b")
+        def vline(x, y0, y1, lw=LW):
+            ax.plot([x, x], [y0, y1], color=BLACK, lw=lw,
+                    solid_capstyle="butt", zorder=2, clip_on=False)
 
-    fig.suptitle(
-        "The Mechanistic Causal Audit as a Causal Inference Engine",
-        fontsize=13, fontweight="bold", y=0.98,
-    )
+        # Shared vertical band. xlim/ylim match figsize so 1 unit = 1 inch.
+        Y0, Y1 = 1.42, 4.18
+        YM = 0.5 * (Y0 + Y1)
+        TH = Y1 - Y0
+        TALL_PAD = 0.22
+        LAB_Y, SUB_Y = 0.72, 0.42
 
-    for ext in ("png", "pdf"):
-        fig.savefig(OUT / f"fig_mechanistic_audit_engine.{ext}")
-    plt.close(fig)
-    print(f"Wrote {OUT / 'fig_mechanistic_audit_engine.png'}")
+        # ------------------------------------------------------------------
+        # Inputs: Query Q, stacked observations D, graphical model G
+        # ------------------------------------------------------------------
+        q_x, q_w = 0.22, 0.72
+        d_x, d_bw = 1.06, 0.30
+        d_n = 4
+        d_w = d_n * d_bw
+        g_x, g_w = 2.38, 0.72
+        in_right = g_x + g_w
+
+        # L3 query banner (too long for a thin tensor; kept as a wide label).
+        banner_h = 0.40
+        banner_y = 4.78
+        rounded(q_x, banner_y, in_right - q_x, banner_h, radius=0.08)
+        txt(
+            0.5 * (q_x + in_right), banner_y + banner_h / 2,
+            r"Counterfactual $\mathcal{L}_3$:  ``If $\sigma_d{=}0$, would the grasp succeed?''",
+            fs=10.0,
+        )
+
+        sharp(q_x, Y0, q_w, TH)
+        txt(q_x + q_w / 2, Y0 + TH * 0.62, r"$\mathcal{Q}$", fs=16.0, w="bold")
+        txt(q_x + q_w / 2, Y0 + TH * 0.32, r"$\mathcal{L}_3$", fs=10.0)
+        txt(q_x + q_w / 2, 4.38, "demands", fs=8.5)
+
+        d_labels = [r"$\sigma_d$", r"$\rho$", r"$\phi$", r"$\theta$"]
+        for i, lab in enumerate(d_labels):
+            sharp(
+                d_x + i * d_bw, Y0, d_bw, TH,
+                face="#ffffff" if i % 2 == 0 else "#e9e9e9",
+            )
+            txt(d_x + (i + 0.5) * d_bw, YM, lab, fs=11.0)
+        txt(d_x + d_w / 2, 4.38, "logs", fs=8.5)
+
+        sharp(g_x, Y0, g_w, TH)
+        txt(g_x + g_w / 2, Y0 + TH * 0.62, r"$\mathcal{G}$", fs=16.0, w="bold")
+        txt(g_x + g_w / 2, Y0 + TH * 0.32, "SCM", fs=10.0)
+        txt(g_x + g_w / 2, 4.38, "architecture", fs=8.5)
+
+        br = in_right + 0.11
+        vline(br, Y0, Y1)
+        hline(br - 0.08, br, Y1)
+        hline(br - 0.08, br, Y0)
+
+        txt(
+            0.5 * (q_x + in_right), LAB_Y,
+            r"Physical Reality $\mathcal{M}^{*}$",
+            fs=10.5, w="bold",
+        )
+        txt(
+            0.5 * (q_x + in_right), SUB_Y,
+            "(unobserved grasp attempt)",
+            fs=8.0,
+        )
+
+        # ------------------------------------------------------------------
+        # Module 1: MuJoCo testbed
+        # ------------------------------------------------------------------
+        m1_x, m1_w = 3.42, 2.72
+        m1_y, m1_h = 1.18, 3.32
+        module(m1_x, m1_y, m1_w, m1_h)
+
+        muj_w, muj_h = 1.52, 1.92
+        muj_x = m1_x + 0.16
+        muj_y = YM - muj_h / 2
+        rounded(muj_x, muj_y, muj_w, muj_h, radius=0.18)
+        txt(muj_x + muj_w / 2, muj_y + muj_h * 0.64, "MuJoCo", fs=12.0, w="bold")
+        txt(muj_x + muj_w / 2, muj_y + muj_h * 0.42, "testbed", fs=10.5)
+        txt(
+            muj_x + muj_w / 2, muj_y + muj_h * 0.18,
+            r"direct $\mathrm{do}(\cdot)$",
+            fs=8.0,
+        )
+
+        do_w = 0.68
+        do_x = m1_x + m1_w - do_w - 0.16
+        sharp(do_x, Y0 + TALL_PAD, do_w, TH - 2 * TALL_PAD)
+        txt(do_x + do_w / 2, YM + 0.16, r"$\mathrm{do}(\cdot)$", fs=9.0)
+        txt(do_x + do_w / 2, YM - 0.22, "trial", fs=8.0)
+
+        txt(m1_x + m1_w / 2, LAB_Y, "MuJoCo Testbed", fs=10.5, w="bold")
+        txt(
+            m1_x + m1_w / 2, SUB_Y,
+            r"direct $\mathrm{do}(\cdot)$ intervention",
+            fs=8.0,
+        )
+
+        arr((br, YM), (muj_x, YM))
+        arr((muj_x + muj_w, YM), (do_x, YM))
+
+        # ------------------------------------------------------------------
+        # Module 2: Pearl counterfactual procedure
+        # ------------------------------------------------------------------
+        m2_x, m2_w = 6.32, 4.28
+        module(m2_x, m1_y, m2_w, m1_h)
+
+        proc_h = 0.82
+        proc_y = YM - proc_h / 2
+        gap = 0.11
+        abd_w, u_w, act_w, pred_w, yhat_w = 1.02, 0.40, 0.86, 1.02, 0.38
+        abd_x = m2_x + 0.16
+        u_x = abd_x + abd_w + gap
+        act_x = u_x + u_w + gap
+        pred_x = act_x + act_w + gap
+        yhat_x = pred_x + pred_w + gap
+
+        rounded(abd_x, proc_y, abd_w, proc_h, radius=0.14)
+        txt(abd_x + abd_w / 2, YM + 0.12, "Abduction", fs=10.0, w="bold")
+        txt(abd_x + abd_w / 2, YM - 0.16, r"recover $U$", fs=8.0)
+
+        sharp(u_x, Y0 + TALL_PAD, u_w, TH - 2 * TALL_PAD)
+        txt(u_x + u_w / 2, YM, r"$U$", fs=13.0, w="bold")
+
+        rounded(act_x, proc_y, act_w, proc_h, radius=0.14)
+        txt(act_x + act_w / 2, YM + 0.12, "Action", fs=10.0, w="bold")
+        txt(act_x + act_w / 2, YM - 0.16, r"$\mathrm{do}(x')$", fs=8.0)
+
+        rounded(pred_x, proc_y, pred_w, proc_h, radius=0.14)
+        txt(pred_x + pred_w / 2, YM + 0.12, "Prediction", fs=10.0, w="bold")
+        txt(pred_x + pred_w / 2, YM - 0.16, r"$\hat{Y}_{x'}$", fs=8.5)
+
+        sharp(yhat_x, Y0 + TALL_PAD, yhat_w, TH - 2 * TALL_PAD)
+        txt(yhat_x + yhat_w / 2, YM, r"$\hat{Y}$", fs=10.5, w="bold")
+
+        txt(
+            m2_x + m2_w / 2, LAB_Y,
+            "Causal Inference Engine", fs=10.5, w="bold",
+        )
+        txt(
+            m2_x + m2_w / 2, SUB_Y,
+            "abduction, action, prediction",
+            fs=8.0,
+        )
+
+        arr((do_x + do_w, YM), (abd_x, YM))
+        arr((abd_x + abd_w, YM), (u_x, YM))
+        arr((u_x + u_w, YM), (act_x, YM))
+        arr((act_x + act_w, YM), (pred_x, YM))
+        arr((pred_x + pred_w, YM), (yhat_x, YM))
+
+        # ------------------------------------------------------------------
+        # Outputs: diagnosis grid + counterfactual buffer
+        # ------------------------------------------------------------------
+        out_x = 10.82
+        grid_w = 1.92
+        grid_h = 1.92
+        grid_y = 2.42
+        sharp(out_x, grid_y, grid_w, grid_h, lw=1.15)
+        n_grid = 8
+        for i in range(1, n_grid):
+            gx = out_x + i * grid_w / n_grid
+            gy = grid_y + i * grid_h / n_grid
+            ax.plot(
+                [gx, gx], [grid_y, grid_y + grid_h],
+                color="#c8c8c8", lw=0.5, zorder=4, clip_on=False,
+            )
+            ax.plot(
+                [out_x, out_x + grid_w], [gy, gy],
+                color="#c8c8c8", lw=0.5, zorder=4, clip_on=False,
+            )
+        # White knockout so the labels stay readable on the grid.
+        panel_w, panel_h = 1.52, 0.78
+        rounded(
+            out_x + (grid_w - panel_w) / 2,
+            grid_y + (grid_h - panel_h) / 2,
+            panel_w, panel_h, radius=0.06, lw=0.0, edge="none", z=4,
+        )
+        txt(
+            out_x + grid_w / 2, grid_y + grid_h / 2 + 0.14,
+            "Diagnosis", fs=11.0, w="bold",
+        )
+        txt(
+            out_x + grid_w / 2, grid_y + grid_h / 2 - 0.16,
+            "geometry or\nperception?", fs=8.5,
+        )
+
+        buf_h = 0.82
+        buf_y = 1.28
+        sharp(out_x, buf_y, grid_w, buf_h)
+        txt(
+            out_x + grid_w / 2, buf_y + buf_h * 0.64,
+            r"Counterfactual $\hat{Y}$", fs=8.5, w="bold",
+        )
+        txt(
+            out_x + grid_w / 2, buf_y + buf_h * 0.28,
+            r"$Y_{x'}\in\{0,1\}$", fs=8.0,
+        )
+
+        split_x = yhat_x + yhat_w + 0.10
+        hline(yhat_x + yhat_w, split_x, YM)
+        vline(split_x, buf_y + buf_h / 2, grid_y + grid_h / 2)
+        arr((split_x, grid_y + grid_h / 2), (out_x, grid_y + grid_h / 2))
+        arr((split_x, buf_y + buf_h / 2), (out_x, buf_y + buf_h / 2))
+
+        for dest in (OUT, fig_dir):
+            for ext in ("png", "pdf"):
+                fig.savefig(
+                    dest / f"fig_mechanistic_audit_engine.{ext}",
+                    facecolor="white", bbox_inches="tight", pad_inches=0.12,
+                )
+        plt.close(fig)
+        print(f"Wrote {OUT / 'fig_mechanistic_audit_engine.png'}")
 
 
 if __name__ == "__main__":

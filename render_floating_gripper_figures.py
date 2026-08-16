@@ -329,18 +329,21 @@ def figure_grasp_sequence():
             frames["3. Mid-lift\n(~40% of 15cm target)"] = render_scene(model, data, **cam_kwargs)
     frames["4. Full lift + shake\n(held through disturbance)"] = render_scene(model, data, **cam_kwargs)
 
-    fig, axes = plt.subplots(1, 4, figsize=(20, 6))
-    fig.patch.set_facecolor(BG)
+    plt.rcParams.update({
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "STIXGeneral", "DejaVu Serif"],
+        "mathtext.fontset": "cm",
+    })
+    fig, axes = plt.subplots(1, 4, figsize=(20, 5.4))
+    fig.patch.set_facecolor("white")
     for ax, (label, img) in zip(axes, frames.items()):
+        ax.set_facecolor("white")
         ax.imshow(img)
         ax.axis("off")
-        ax.set_title(label, color="white", fontsize=12, fontweight="bold")
-    fig.suptitle("Floating-Gripper Shake Test — Cylinder, Known-Good Side Grasp\n"
-                 "Result: collision_free=True, success=True, final_lift≈15.0cm",
-                 color=GOOD, fontsize=14, fontweight="bold", y=1.02)
-    fig.tight_layout()
+        ax.set_title(label, color="black", fontsize=12, pad=6)
+    fig.tight_layout(pad=0.6, w_pad=0.4)
     out = os.path.join(OUT, "fig_grasp_sequence.png")
-    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  -> saved {out}")
 
