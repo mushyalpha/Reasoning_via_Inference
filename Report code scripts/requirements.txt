@@ -1,0 +1,32 @@
+# Pipeline dependencies for run_experiments_v2.py / run_clutter_experiments.py.
+#
+# The original 432-trial dataset was collected with a Linux/CUDA conda env
+# (see contact_graspnet_pytorch/contact_graspnet_env.yml, python 3.9,
+# pytorch 2.0.1+cu117). That env no longer exists in this workspace; the
+# versions below are a pip-only, newer-Python-compatible reconstruction
+# (validated on macOS/CPU during development; see RUNPOD_SETUP.md for the
+# Linux/CUDA notes -- torch's default Linux pip wheel already includes
+# CUDA support, no special index-url needed).
+#
+# One source patch was required for numpy>=2.0 compatibility:
+# contact_graspnet_pytorch/contact_graspnet_pytorch/contact_grasp_estimator.py
+# line ~341, np.in1d -> np.isin (np.in1d was removed in numpy 2.0).
+
+mujoco>=3.11
+torch>=2.0
+opencv-python-headless
+pillow
+trimesh
+pyyaml
+scipy
+tqdm
+addict
+configargparse
+tensorboardX
+tensorboard
+plotly
+pyquaternion
+pyrender
+numpy
+pandas
+matplotlib

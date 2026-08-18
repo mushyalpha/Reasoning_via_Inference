@@ -39,6 +39,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{bm}
 \usepackage{graphicx}
+\usepackage{grffile}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{array}
@@ -348,7 +349,7 @@ Appendix~\ref{app:implementation} records the engineering process, including the
 \chapter{Background and Related Work}
 \label{ch:background}
 
-This chapter reviews prior work only as far as it bears on the diagnostic gap identified in Section~\ref{sec:diagnostic_gap}: the absence of a method that both derives a structural model of failure from known architecture and checks that model's counterfactual predictions against ground truth. We first survey grasp failure and recovery (Section~\ref{sec:bg_grasp}) and the existing families of diagnosis approaches (Section~\ref{sec:bg_diagnosis}); the latter is the chapter's central argument and is organised around a single question for each family---what does it claim, what layer of the Pearl Causal Hierarchy can it answer a query at, and what can it not verify? Section~\ref{sec:bg_scm} then introduces the causal machinery the audit itself requires: Structural Causal Models, the do-operator, and Pearl's counterfactual procedure. Sections~\ref{sec:bg_depth} and~\ref{sec:bg_cgn} scope the two pipeline components under audit---the depth-noise surrogate, the point-cloud representation, and Contact-GraspNet---to exactly what the experimental design manipulates, rather than surveying sensing or grasping broadly. Section~\ref{sec:bg_llm} reviews LLMs in robotics and motivates their role here as a deliberately asymmetric baseline rather than a competing perception system.
+This chapter reviews prior work only as far as it bears on the diagnostic gap identified in Section~\ref{sec:diagnostic_gap}: the absence of a method that both derives a structural model of failure from known architecture and checks that model's counterfactual predictions against ground truth. We first survey grasp failure and recovery (Section~\ref{sec:bg_grasp}) and the existing families of diagnosis approaches (Section~\ref{sec:bg_diagnosis}); the latter is the chapter's central argument and is organised around a single question for each family---what does it claim, what layer of the Pearl Causal Hierarchy can it answer a query at, and what can it not verify? Section~\ref{sec:bg_scm} then introduces the causal machinery the audit itself requires: Structural Causal Models, the do-operator, and Pearl's counterfactual procedure. Sections~\ref{sec:bg_depth} and~\ref{sec:bg_cgn} scope the pipeline quantities under audit---the depth-noise surrogate, the segmentation-fraction statistic $C_{pc}$, the point-cloud representation, and Contact-GraspNet---to exactly what the experimental design manipulates, rather than surveying sensing or grasping broadly. Section~\ref{sec:bg_llm} reviews LLMs in robotics and motivates their role here as a deliberately asymmetric baseline rather than a competing perception system.
 
 \section{Robotic Grasp Failure and Recovery}
 \label{sec:bg_grasp}
@@ -357,7 +358,7 @@ Grasp synthesis has moved from analytical methods based on force- and form-closu
 
 Two mechanisms exist for handling failure once it occurs, and neither is diagnosis. Tactile feedback (e.g.\ GelSight-based systems~\cite{calandra2018more}) detects slippage \emph{during} execution, after contact is made; it cannot say why a vision-based proposal was wrong \emph{before} contact, which is where the failure modes studied in this thesis originate. Retry policies re-attempt the same or a perturbed grasp, implicitly treating failure as stochastic; if the true cause is systematic-a viewpoint that consistently fails to observe a critical surface, say-retrying reproduces the same failure at the same rate, because nothing about the violated precondition has changed. Neither mechanism asks, let alone answers, \emph{which} precondition of success was violated. Failures stay undecomposed.
 
-A related line of work seeks to raise success rates by adapting perception during execution, rather than attributing failure after the fact. Active perception methods such as ActiveVLA~\cite{liu2026activevla} adapt viewpoint and resolution to improve success; this thesis instead treats viewpoint (and other perceptual degradations) as intervenable causes and asks whether failures can be diagnosed via a mechanistic SCM. The two questions are complementary: ActiveVLA asks how to look better so that a policy succeeds; this thesis asks, given that a grasp already failed under a fixed viewpoint and sensing regime, which controlled factor was responsible.
+A related line of work seeks to raise success rates by adapting perception during execution, rather than attributing failure after the fact. Active perception methods such as ActiveVLA~\cite{liu2026activevla} adapt viewpoint and resolution to improve success. Completion-based methods such as PCF-Grasp~\cite{cheng2025pcfgrasp} make the same complementary move on geometry rather than on viewpoint: they convert coarse point-completion output into a shape feature for a Contact-GraspNet-style 6-DoF network, keep proposals on the original visible 2.5D points rather than grasping on the completed cloud, and reweight scores so that a high-ranking pose facing away from the arm is not selected. Single-image pipelines such as Triplane Grasping~\cite{li2025triplanegrasp} take a related upstream route: a hybrid Triplane--Gaussian reconstructor produces a partial point cloud from one RGB view, and Contact-GraspNet is then applied unchanged, treating reconstructed surface points as contact candidates and filtering proposals to the segmented target. This thesis instead treats viewpoint (and other perceptual degradations) as intervenable causes and asks whether failures can be diagnosed via a mechanistic SCM. The questions are complementary: ActiveVLA asks how to look better so that a policy succeeds; PCF-Grasp asks how to make a proposal succeed from an incomplete cloud; Triplane Grasping asks how to reconstruct a cloud good enough for CGN from RGB alone; this thesis asks, given that Contact-GraspNet already failed under a fixed viewpoint and sensing regime, which controlled factor was responsible.
 
 \section{Approaches to Grasp Failure Diagnosis}
 \label{sec:bg_diagnosis}
@@ -426,11 +427,37 @@ The counterfactual outcome $Y_{X=x'}$ is the value that $Y$ \emph{would have tak
 \section{Depth Sensing and Point Clouds}
 \label{sec:bg_depth}
 
-A depth buffer is a two-dimensional array in which each element stores the perpendicular distance, in metres, from the camera's focal point to the nearest surface visible at that pixel. Real depth sensors exhibit stochastic axial noise whose magnitude grows with distance and angle of incidence: Khoshelham and Elberink~\cite{khoshelham2011accuracy} report standard deviations of approximately 1--2\,mm at 1\,m rising to roughly 40\,mm at 5\,m for a structured-light sensor, and Nguyen et al.~\cite{nguyen2012modeling} show that the accompanying lateral component is typically larger still. A physically faithful model of this kind is not what the experimental design in Chapter~\ref{ch:formulation} needs. The additive Gaussian model $d_{\text{noisy}} = d_{\text{true}} + \mathcal{N}(0, \sigma_d^2)$ is adopted here as the standard first-order surrogate used in depth-simulation pipelines, for one specific reason: it exposes a single, continuously variable, independently intervenable parameter $\sigma_d$ that can be set to a chosen value on every trial, which a physically complete sensor model-with its coupled distance-, angle-, and material-dependent terms-would not.
+\noindent A depth buffer is a 2D array in which each element stores the perpendicular distance (in metres) from the camera's focal point to the nearest surface visible at that pixel. Real depth sensors experience complex, stochastic noise that scales with distance and angle of incidence.~Khoshelham and Elberink~\cite{khoshelham2011accuracy} report standard deviations of approximately 2--3\,mm at 1\,m that rise to about 40\,mm at 5\,m for a triangulation sensor. They further show through error propagation that the accompanying lateral ($X$, $Y$) components grow by the same quadratic law~\cite{khoshelham2011accuracy}. Sweeney et al.~\cite{sweeney2019supervised} demonstrate that the dominant noise artefact in light depth cameras is spatially correlated, scene-dependent dropout (NDP). This project however uses independent additive Gaussian noise~\cite{border2024see} (Equation~\ref{eq:noise_injection}), which sacrifices realism for experimental control. Because each pixel's noise is drawn i.i.d., $\sigma_d$ is the sole free parameter, making the intervention causally clean and independently manipulable from $\rho$, $\phi$ and $\theta$. \\
 
-This is a deliberate scoping decision, not an oversight, and its causal role in this pipeline is fixed empirically rather than assumed. Section~\ref{sec:falsification} shows that $\sigma_d$ has no measurable effect on segmentation fraction $C_{pc}$ (a 2-D mask statistic, not 3-D coverage), because $C_{pc}$ is computed from the segmentation buffer before noise is injected, but has direct effects on grasp confidence $q_{\text{grasp}}$, candidate count $n_{\text{grasps}}$, and pose error $e_{\text{pose}}$: noise acts on what Contact-GraspNet does with the points it receives, not on how many object pixels the mask contains. What this scoping does not give: any claim about a specific real depth camera's behaviour, or about the non-Gaussian effects (specular dropout, edge bias) that a full sensor model would include. $\sigma_d$ is a controllable surrogate for the intervention this thesis actually runs, not a sensor model in its own right.
+Registered to the same pixels as the depth buffer is a second image-plane array, the \emph{segmentation buffer} $M$. Each element of $M$ stores an integer object identifier rather than a distance. In simulation this identifier is exact: the renderer knows which geometry produced the pixel. The \emph{segmentation fraction} $C_{pc}$ is the proportion of those pixels whose identifier is the target object,
+\begin{equation}
+  C_{pc} = \frac{\lvert\{p : M_p = \mathrm{target}\}\rvert}{H \times W}.
+  \label{eq:cpc_def}
+\end{equation}
+A low $C_{pc}$ means the object occupies few pixels of the image---because it is small in the frame, partly off-screen, or seen from a viewpoint that presents little projected area. It does \emph{not} mean that the object's three-dimensional surface is sparsely sampled. The name, inherited from the codebase, is therefore a slight misnomer: $C_{pc}$ is a 2-D mask statistic, computed from $M$ \emph{before} the depth buffer is back-projected, so it is a property of camera pose and silhouette, not of the subsequent point cloud.
 
-A \emph{point cloud} is the geometric object obtained by back-projecting a depth buffer through the pinhole camera model, and it is the primary input to Contact-GraspNet. It is this object whose quality the four causal variables $(\sigma_d,\, \rho,\, \phi,\, \theta)$ degrade.
+That distinction is what $C_{pc}$ can and cannot stand in for. Elevation and azimuth change how large the object is on the image plane, so they change $C_{pc}$. Additive noise and downsampling act on depth values and on the 3-D points derived from them, after $C_{pc}$ has already been read, so they are properties of the depth buffer and of the point cloud, not of the mask. The graph that follows from this dataflow, and the tests of the edges into $C_{pc}$, belong in Chapter~\ref{ch:formulation}.
+
+A \emph{point cloud} is the geometric object obtained by back-projecting a depth buffer through the pinhole camera model, and it is the primary input to Contact-GraspNet (Figure~\ref{fig:oxford_deer} illustrates the correspondence between a physical object and its point cloud representation). It is this object whose quality the four causal variables $(\sigma_d,\, \rho,\, \phi,\, \theta)$ degrade.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}[b]{0.46\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/oxford_deer_photograph}
+    \caption{Photograph of the UR10 robot arm scanning the Oxford Deer statue using an Intel RealSense L515 depth sensor.}
+    \label{fig:oxford_deer_photo}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.46\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/oxford_deer_point_cloud}
+    \caption{The reconstructed 3D point cloud of the same statue: a finite set of metric surface samples $\mathcal{P} = \{\mathbf{p}_i \in \mathbb{R}^3\}$ produced by the sensor.}
+    \label{fig:oxford_deer_pc}
+  \end{subfigure}
+  \caption{A physical object and its point cloud representation, illustrating what a depth sensor actually produces. The raw scene (left) is converted into an unordered set of 3D surface coordinates (right); the point cloud retains only surfaces visible from the sensor's viewpoint and discards all topological structure. Adapted from Border and Gammell~\cite{border2024see}: photograph from Fig.~1 (p.~1507); point cloud from Fig.~15 (p.~1523).}
+  \label{fig:oxford_deer}
+\end{figure}
 
 \begin{definition}[Point Cloud]
 \label{def:pointcloud}
@@ -465,11 +492,18 @@ Grasp poses predicted from a point cloud are typically expressed in the OpenCV c
 \section{Contact-GraspNet}
 \label{sec:bg_cgn}
 
-Contact-GraspNet (CGN)~\cite{sundermeyer2021contact} is a neural network for 6-DoF grasp generation from point-cloud observations: given a partial point cloud $\mathcal{P}$, it outputs a set of grasp proposals, each a $4\times4$ pose together with a scalar confidence, by predicting per-point contact probability rather than regressing poses from global point cloud features. Its architecture processes each point $\mathbf{p}_i$ through a PointNet++-style encoder~\cite{qi2017pointnetpp} that aggregates local geometric features by grouping neighbouring points in 3D space. For each point, the network then predicts whether it is a valid contact point for a parallel-jaw gripper and, if so, what the associated grasp pose should be. This contact-centric formulation is architecturally anchored to the point cloud: the network's prediction heads are defined \emph{per point in $\mathcal{P}$}, not per image pixel or per voxel. Providing the raw depth image or a mesh instead would require a fundamentally different model. Using the point cloud is therefore not a design choice made in this thesis but a prerequisite of using CGN.
+Contact-GraspNet (CGN)~\cite{sundermeyer2021contact} is a neural network for 6-DoF grasp generation from point-cloud observations: given a partial point cloud $\mathcal{P}$, it outputs a set of grasp proposals, each a $4\times4$ pose together with a scalar confidence, by predicting per-point contact probability rather than regressing poses from global point cloud features. Its architecture processes each point $\mathbf{p}_i$ through a PointNet++-style encoder~\cite{qi2017pointnetpp} that aggregates local geometric features by grouping neighbouring points in 3D space. For each point, the network then predicts whether it is a valid contact point for a parallel-jaw gripper and, if so, what the associated grasp pose should be. This contact-centric formulation is architecturally anchored to the point cloud: the network's prediction heads are defined \emph{per point in $\mathcal{P}$}, not per image pixel or per voxel. Providing the raw depth image or a mesh instead would require a fundamentally different model. Using the point cloud is therefore not a design choice made in this thesis but a prerequisite of using CGN. The grasp pose itself is parameterised by a surface contact $c$, baseline and approach directions $(\vec{b},\vec{a})$, width $w$, and a fixed finger-base offset $d$, as illustrated in Figure~\ref{fig:cgn_grasp_representation}. Rather than regressing a free 6-DoF transform in SE(3), CGN predicts local grasp parameters around a point that is already in the observed cloud. Because each proposal is tied to a visible surface sample, CGN's behaviour depends directly on point-cloud quality: when $\sigma_d$, $\rho$, $\phi$, or $\theta$ degrade perception, the effect is not merely added noise on an otherwise fixed pose, but a change in which contact points are available and how reliable they are. That coupling is what makes CGN a suitable fixed mechanism for this audit---its inputs are perturbed and its outputs measured, without modifying the network itself. The same contact-point parameterisation is reused downstream rather than reimplemented; Triplane Grasping~\cite{li2025triplanegrasp}, for example, leaves CGN unchanged as a second stage on a single-view reconstructed cloud.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.52\textwidth]{figures/Figure3-grasp representation.png}
+  \caption{Contact-GraspNet grasp representation (adapted from~\cite{sundermeyer2021contact}, Fig.~3). Contact point $c$ anchors the pose to an observed surface sample; approach and baseline directions $(\vec{a},\vec{b})$ specify the 3-DoF rotation; $w$ is the predicted grasp width; and $d$ is the distance from the baseline to the gripper base frame. Pink markers show the five gripper points $\mathbf{v}$ used in the LADD-S loss.}
+  \label{fig:cgn_grasp_representation}
+\end{figure}
 
 CGN was trained on partial point clouds generated from single-viewpoint depth renders of ShapeNet objects~\cite{sundermeyer2021contact}---precisely the same modality as the perception pipeline in this thesis---under clean sensing conditions (no depth noise, no extreme viewpoint). A full mesh or a CAD model of the target object would be \emph{out of distribution} for CGN: the network has never been trained to process complete, noise-free geometric representations. Using the partial, viewpoint-dependent point cloud produced by back-projection faithfully reproduces the input distribution on which CGN was trained, which is essential for the validity of any degradation study. A degradation that pushes the input away from the training distribution for a reason unrelated to the variable under study would confound the causal analysis. CGN's headline accuracy-over 90\% on unseen objects in structured clutter-is reported downstream of a collision-aware selection stage that filters candidate grasps before execution.
 
-That filtering stage is frequently left implicit in how such numbers are quoted, yet it is itself a precondition of success rather than a detail: without it, poses that are in collision with the object or support surface are counted alongside geometrically valid ones, and success rates collapse for reasons that have nothing to do with perception. This observation motivates the two-arm experimental design of Chapter~\ref{ch:method} (Section~\ref{sec:approach}), which separates an unfiltered arm (raw geometric validity under top-1 execution; this is the confirmatory grid, on which perceptual degradations are studied) from a filtered arm (top-$k$ collision rejection as a gate intervention) precisely so that this often-implicit precondition is measured rather than assumed away.
+That filtering stage is frequently left implicit in how such numbers are quoted, yet it is itself a precondition of success rather than a detail: without it, poses that are in collision with the object or support surface are counted alongside geometrically valid ones, and success rates collapse for reasons that have nothing to do with perception. Recent execution-oriented pipelines such as GILP~3.0~\cite{gambino2026gilp} make the same point explicitly: Contact-GraspNet-style predictors typically filter collisions after generation, whereas grasp success in clutter is often dominated by scene-level feasibility rather than the raw proposal score. Li et al.~\cite{li2025triplanegrasp} likewise separate raw CGN output from execution feasibility through \emph{grasp contact filtering}, retaining only proposals whose contact points lie on the segmented target object. They further report that most of their end-to-end latency is spent on single-view reconstruction rather than on grasp inference, underscoring that CGN's apparent performance is often gated by upstream cloud quality---a dependency this thesis makes explicit through $(\sigma_d,\rho,\phi,\theta)$ rather than through a learned reconstructor. This observation motivates the two-arm experimental design of Chapter~\ref{ch:method} (Section~\ref{sec:approach}), which separates an unfiltered arm (raw geometric validity under top-1 execution; this is the confirmatory grid, on which perceptual degradations are studied) from a filtered arm (top-$k$ collision rejection as a gate intervention) precisely so that this often-implicit precondition is measured rather than assumed away.
 
 For this thesis, CGN is treated strictly as a fixed black-box backbone: its architecture is not modified or retrained, and the object of study is how its outputs-confidence $q_{\text{grasp}}$, candidate count $n_{\text{grasps}}$, and pose error $e_{\text{pose}}$-respond to controlled perturbation of its inputs, namely segmentation fraction $C_{pc}$ (via viewpoint) and depth noise $\sigma_d$ (via the surrogate of Section~\ref{sec:bg_depth}). Framed this way, CGN's opacity as a deep network is not the diagnostic problem this thesis solves: the SCM does not need to open CGN up, only to model its input-output behaviour as a mechanism with measurable intermediate variables, which is the surrogate-model move formalised in Section~\ref{sec:scm_fitting}. What CGN's opacity does foreclose is any diagnosis that depends on inspecting its internals directly-attention maps or learned features offered as an explanation-and that route is deliberately not taken here.
 
@@ -500,7 +534,7 @@ Four \emph{exogenous} variables <$\sigma_d$, $\rho$, $\phi$, $\theta$> are set b
   \label{fig:viewing_sphere}
 \end{figure}
 
-\noindent Five \emph{endogenous} variables <$C_{pc}$, $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$, $\text{has\_grasps}$> are measured within each trial. Segmentation fraction $C_{pc}$ is the fraction of image pixels belonging to the target object, computed from the simulator's segmentation buffer - a low $C_{pc}$ means the object is poorly resolved. The name is a slight misnomer worth flagging once: $C_{pc}$ is a 2-D segmentation-mask pixel fraction computed \emph{before} the 3-D point cloud is formed, which is precisely why depth noise and downsampling---both point-cloud-stage manipulations---turn out to have no causal effect on it (Section~\ref{sec:falsification}). The name is retained for continuity with the codebase and prior sections of this thesis rather than introduced fresh here. The remaining variables characterise CGN's output. The gate $\text{has\_grasps} \in \{0,1\}$ records whether CGN returns any candidate grasp at all; $n_{\text{grasps}}$ is the number of grasps returned; $q_{\text{grasp}}$ is the confidence score assigned to the top-ranked candidate grasps; and $e_{\text{pose}}$ is the Euclidean distance in the horizontal plane between that candidate's gripper $(x,y)$ and the true object centroid, so a large $e_{\text{pose}}$ means a grasp was proposed far from the object it should hold.~The outcome $Y \in \{0,1\}$ is binary grasp success or failure.~The gate is treated separately because when $\text{has\_grasps}=0$ there is no pose to execute and $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$ are undefined for that trial. \\
+\noindent Five \emph{endogenous} variables <$C_{pc}$, $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$, $\text{has\_grasps}$> are measured within each trial. Segmentation fraction $C_{pc}$ is the 2-D mask statistic of Section~\ref{sec:bg_depth} (Equation~\eqref{eq:cpc_def}): the fraction of image pixels belonging to the target object. A low $C_{pc}$ means the object is poorly resolved on the image plane. Because it is read from the segmentation buffer before the point cloud is formed, depth noise and downsampling have no causal path into it (Section~\ref{sec:falsification}). The remaining variables characterise CGN's output. The gate $\text{has\_grasps} \in \{0,1\}$ records whether CGN returns any candidate grasp at all; $n_{\text{grasps}}$ is the number of grasps returned; $q_{\text{grasp}}$ is the confidence score assigned to the top-ranked candidate grasps; and $e_{\text{pose}}$ is the Euclidean distance in the horizontal plane between that candidate's gripper $(x,y)$ and the true object centroid, so a large $e_{\text{pose}}$ means a grasp was proposed far from the object it should hold.~The outcome $Y \in \{0,1\}$ is binary grasp success or failure.~The gate is treated separately because when $\text{has\_grasps}=0$ there is no pose to execute and $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$ are undefined for that trial. \\
 
 \noindent Each structural equation carries its own exogenous \emph{noise term} $U_i$ ($U_C, U_q, U_n, U_e$) representing unmodelled factors internal to that mechanism such as segmentation noise, CGN's internal stochasticity or pose regression error. The independence of these noise terms determines whether the model is Markovian in the sense required by Section~\ref{sec:counterfactual_diagnosis}. This thesis uses ``exogenous'' in two related but distinct senses. In the graphical sense, $\sigma_d$, $\rho$, $\phi$, $\theta$ are exogenous because they have no parents in the DAG. Separately, each structural equation carries its own exogenous noise term $U_i$. It is the independence properties of these noise terms, not of the four controlled variables, that determine whether the model is Markovian in the sense required by the counterfactual identification argument of Section~\ref{sec:counterfactual_diagnosis}.
 
@@ -1644,6 +1678,13 @@ M.~Sundermeyer et al., ``Contact-GraspNet: Efficient 6-DoF Grasp
 Generation in Cluttered Scenes,'' \emph{IEEE ICRA}, 2021,
 pp.~13438--13444.
 
+\bibitem{gambino2026gilp}
+G.~Gambino, S.~Tolomei, F.~Angelini, and M.~Garabini,
+``Grasp It Like a Pro 3.0: An Expert-Based Data-Driven Algorithm
+for Grasping Unknown Objects in Cluttered Environments,''
+\emph{IEEE Trans.\ Autom.\ Sci.\ Eng.}, vol.~23,
+pp.~6579--6590, 2026.
+
 \bibitem{fang2020graspnet}
 H.-S.~Fang et al., ``GraspNet-1Billion: A Large-Scale Benchmark for
 General Object Grasping,'' \emph{IEEE/CVF CVPR}, 2020,
@@ -1654,6 +1695,19 @@ K.~Khoshelham and S.~O.~Elberink,
 ``Accuracy and Resolution of Kinect Depth Data for Indoor Mapping
 Applications,''
 \emph{Sensors}, vol.~12, no.~2, pp.~1437--1454, 2012.
+
+\bibitem{border2024see}
+R.~Border and J.~D.~Gammell,
+``The Surface Edge Explorer (SEE): A Measurement-Direct Approach to Next
+Best View Planning,''
+\emph{The International Journal of Robotics Research},
+vol.~43, no.~11, p.~1507, Sep.~2024.
+
+\bibitem{sweeney2019supervised}
+C.~Sweeney, G.~Izatt, and R.~Tedrake,
+``A Supervised Approach to Predicting Noise in Depth Images,''
+\emph{IEEE International Conference on Robotics and Automation (ICRA)},
+May 2019, doi:~10.1109/ICRA.2019.8793820.
 
 \bibitem{nguyen2012modeling}
 C.~V.~Nguyen, S.~Izadi, and D.~Lovell,
@@ -1729,6 +1783,17 @@ Z.~Liu, Y.~Gu, Y.~Wang, X.~Xue, and Y.~Fu,
 ``ActiveVLA: Injecting Active Perception into Vision-Language-Action
 Models for Precise 3D Robotic Manipulation,''
 \emph{IEEE/CVF Conf.\ Comput.\ Vis.\ Pattern Recognit.\ (CVPR)}, 2026.
+
+\bibitem{cheng2025pcfgrasp}
+Y.~Cheng, F.~Zha, W.~Guo, P.~Wang, C.~Zeng, L.~Sun, and C.~Yang,
+``PCF-Grasp: Converting Point Completion to Geometry Feature to Enhance
+6-DoF Grasp,'' arXiv:2504.16320, 2025.
+
+\bibitem{li2025triplanegrasp}
+Y.~Li, H.~Ren, J.~Deng, and X.~Xie,
+``Triplane Grasping: Efficient 6-DoF Grasping with Single RGB Images,''
+\emph{IEEE Int.\ Conf.\ Advanced Robotics and Mechatronics (ICARM)}, 2025,
+doi:~10.1109/ICARM65671.2025.11293550.
 
 \bibitem{liang2023code}
 J.~Liang et al., ``Code as Policies: Language Model Programs for
