@@ -39,7 +39,6 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{bm}
 \usepackage{graphicx}
-\usepackage{grffile}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{array}
@@ -169,14 +168,13 @@
   {\large James Watt School of Engineering}\\[0.3cm]
   {\large MSc Robotics and AI}\\[2cm]
 
-  {\LARGE\textbf{Causal Inference for Robotic Grasp Failure\\
-  Diagnosis under Perceptual Degradation}}\\[2cm]
+  {\LARGE\textbf{Counterfactual Diagnosis of Robotic Grasp Failures under Perceptual and Geometric Degradation}}\\[2cm]
 
   {\Large Bonolo Masima}\\[0.3cm]
   {\large Student Number: 3175764M}\\[2cm]
 
   \textbf{Supervisor:} Dr Dezong Zhao\\[0.5cm]
-  \textbf{Second Marker:} [To be assigned]\\[2cm]
+  \textbf{Second Marker:} Marco Cantini \\[2cm]
 
   Submitted in partial fulfilment of the requirements for the degree of\\
   \textbf{Master of Science in Robotics and AI}\\[1cm]
@@ -204,11 +202,11 @@ I declare that this thesis has been composed solely by myself and that it has no
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-This thesis develops and audits a pre-registered and revised mechanistic Structural Causal Model (SCM) for diagnosing robotic grasp failure. Given a failed grasp attempt, we ask whether Pearl's three-step counterfactual procedure---abduction, action, and prediction---applied to an SCM derived from the known dataflow of the perception-action pipeline, can correctly attribute the failure to its environmental root cause when a single cause exists, and correctly recognise the failure as irreducibly multi-causal when it does not. Because the perturbations are experimenter-controlled, the true cause of each failure is available for scoring against simulated ground truth, making this a falsifiable methodological audit rather than an unfalsifiable post-hoc narrative. As a secondary comparison, we contrast this structured diagnosis against a zero-shot vision-language model~(LLM) (a VLM-capable model given text only, not images) given identical observational data, to quantify what the SCM's explicit structural knowledge of the pipeline contributes relative to associative natural-language reasoning.
+This report builds a mechanistic Structural Causal Model (SCM) for diagnosing robotic grasp failure.~Given a failed grasp, Pearl's counterfactual procedure is applied to an SCM derived from the dataflow of the perception-action pipeline to attribute failure to its cause.~Perturbations are experimenter-controlled, so the true cause of each failure is known and scored against ground truth. As a baseline, the same observational data is fed to a zero-shot LLM to measure what the SCM's structural knowledge adds over associative reasoning.\\
 
-The SCM links four independently controllable perceptual variables---depth noise~($\sigma_d$), point cloud sparsity~($\rho$), viewpoint elevation~($\phi$), and viewpoint azimuth~($\theta$)---through four measurable mediators (segmentation fraction~$C_{pc}$, candidate count, grasp confidence, and pose error) plus a proposal gate to binary grasp success. The approach is implemented in MuJoCo with Contact-GraspNet as the grasp synthesis model, injecting synthetic Gaussian depth noise directly onto the simulated depth buffer to obtain perturbations that are causally clean and independently controlled, a level of experimental precision that is difficult to achieve on physical hardware. The confirmatory study is a 7{,}560-trial floating-gripper factorial grid with a physical hold/lift outcome. Unfiltered top-1 execution succeeds in 5.0\% of trials; 72.8\% fail at an open-hand pre-grasp collision before lift is attempted. Depth noise moves that collision gate and post-gate hold in opposite directions, so the marginal success rate is not monotone, and object geometry dominates execution. A targeted top-$k$ collision filter at one clean viewpoint reaches 89\% under a lighter clamp-and-lift criterion, consistent with the 5.0\% headline being mostly pose selection rather than a gripper that cannot lift. A 432-trial proximity study---grasp success falling from 71.0\% (76/107) under a noise-free sensor to 0.0\% (0/104) under the most severe noise---was the pilot that motivated this redesign. On that same pilot outcome, Algorithm~\ref{alg:diagnosis} attains 44.2\% attribution accuracy on 95 single-cause failures (Wilson 34.6--54.2\%), against a 31.6\% text-only LLM baseline. That misses a pre-registered 50\% bar and beats the LLM; the miss is concentrated on viewpoint variables, matching a known Contact-GraspNet pose bias at $\phi=30°$. Consistency is a structural contrast (deterministic SCM vs.\ 78.1\% LLM agreement). Neither comparison is re-scored on physical grasps.
+\noindent The SCM links four perception variables - depth noise~($\sigma_d$), point cloud sparsity~($\rho$), viewpoint elevation~($\phi$), and azimuth~($\theta$) - through four mediators (segmentation fraction~$C_{pc}$, candidate count, grasp confidence, pose error) and a proposal gate to binary grasp success. The system runs in MuJoCo with Contact-GraspNet for grasp synthesis; Gaussian noise is injected directly onto the simulated depth buffer, giving independent causally clean perturbations. The main experiment is a 7{,}560 trial floating gripper factorial grid scored on physical hold/lift. Top-1 execution succeeds in 5.0\% of trials; 72.8\% fail at a pre-grasp collision before lift. Depth noise shifts the collision gate and post-gate hold in opposite directions, producing a non-monotone marginal success rate dominated by object geometry. A top-$k$ collision filter at one clean viewpoint reaches 89\% under a clamp-and-lift criterion, confirming the 5.0\% rate reflects pose selection, not gripper incapability. A preceding 432-trial study, where success dropped from 71.0\% (76/107) noise-free to 0.0\% (0/104) at maximum noise, motivated the current design. On that dataset, Algorithm~\ref{alg:diagnosis} achieves 44.2\% attribution accuracy on 95 single-cause failures (Wilson 34.6--54.2\%), against a 31.6\% LLM baseline. The gap concentrates on viewpoint variables, consistent with a known Contact-GraspNet pose bias at $\phi=30°$. The SCM is deterministic; the LLM reaches only 78.1\% self-agreement. Neither method is validated on physical hardware.\\
 
-\textbf{Keywords:} Causal Inference, Counterfactual Reasoning, Grasp Failure Diagnosis, Structural Causal Model, Point Cloud, MuJoCo, Contact-GraspNet, Large Language Models, Perceptual Degradation.
+\noindent \textbf{Keywords:} Causal Inference, Counterfactual Reasoning, Grasp Failure Diagnosis, Structural Causal Model, Point Cloud, MuJoCo, Contact-GraspNet, Large Language Models, Perceptual Degradation.
 
 % ============================================================
 %  ACKNOWLEDGEMENTS
@@ -216,11 +214,11 @@ The SCM links four independently controllable perceptual variables---depth noise
 \chapter*{Acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements}
 
-I would like to express my sincere gratitude to my supervisor, Dr Dezong Zhao, for his guidance, patience, and invaluable feedback throughout this project. His expertise in robotics and causal reasoning has been instrumental in shaping the direction of this work.
+I would like to express my sincere gratitude to my supervisor, Dr Dezong Zhao, for his guidance and invaluable feedback throughout this project. His expertise has been important in shaping the direction of this work.
 
-I also wish to thank the James Watt School of Engineering at the University of Glasgow for providing the computational resources and academic environment necessary to complete this project.
+\noindent I also wish to thank the James Watt School of Engineering at the University of Glasgow for providing the academic environment necessary to complete this project.
 
-Finally, I am grateful to my family and friends for their unwavering support and encouragement throughout my studies.
+\noindent Finally, I am grateful to my family and friends for their unwavering support and encouragement throughout my studies.
 
 % ============================================================
 %  TABLE OF CONTENTS, LIST OF FIGURES, LIST OF TABLES
@@ -228,6 +226,7 @@ Finally, I am grateful to my family and friends for their unwavering support and
 \tableofcontents
 \listoffigures
 \listoftables
+
 
 % ============================================================
 %  CHAPTER 1: INTRODUCTION
@@ -238,18 +237,11 @@ Finally, I am grateful to my family and friends for their unwavering support and
 \section{Motivation and Context}
 \label{sec:motivation}
 
-Data-driven grasp synthesis algorithms often achieve high success rates under laboratory conditions. For example, Contact-GraspNet (CGN)~\cite{sundermeyer2021contact} achieves over 90\% grasp success on unseen objects in structured clutter. However, these figures are achieved under controlled conditions, including a collision-aware selection stage that filters candidate grasps before execution, a well-calibrated environment, a favourable camera viewpoint and a specified gripper. Achieving such high grasp success rates requires great engineering effort, as we demonstrate in Appendix~\ref{app:implementation}.
+Data-driven grasp synthesis algorithms often achieve high success rates under laboratory conditions. For example, Contact-GraspNet (CGN)~\cite{sundermeyer2021contactgraspnet} achieves over 90\% grasp success on unseen objects in structured clutter. However, these figures are achieved under controlled conditions, including a collision-aware selection stage that filters candidate grasps before execution, a well-calibrated environment, a favourable camera viewpoint and a specified gripper. Achieving such high grasp success rates requires great engineering effort, as we demonstrate in Chapter~\ref{ch:diagnosis}.\\
 
 \noindent When deployed in the real world, these high grasp success rates often fail to transfer. This results from combined effects of perception (depth sensor noise), geometry (unfavourable viewpoints causing partial observability) and physics (pre-grasp collisions, friction, mass effects). Determining which effect is responsible for a given failure is hard. As a result, success or failure of a grasp cannot be attributed back to its contributing causes. For example, is a failed grasp caused by a noisy depth image, a setup that leaves the camera and gripper poorly positioned or a collision during execution? Contact-GraspNet's black-box nature compounds this problem, since its internal reasoning cannot be inspected. Even a fully transparent version of the algorithm would not reveal which layer was at fault in a given trial. Therefore, when a grasp fails the system only knows that it failed, not why.
 
-\noindent Tracing a failure back to its cause requires an explicit model of how the stages of the pipeline causally depend on one another, i.e. a structural model. Trustworthy autonomy demands that we know \emph{why} a trusted algorithm fails. This thesis argues that we must make the preconditions of success explicit and measure how much each one contributes to failure. Doing so requires a causal audit of the perception-action pipeline. Figure~\ref{fig:teaser} summarises the contrast: previous methods explain a failed trial from observations alone, whereas the audit developed here rewinds the trial under a single intervention and scores the diagnosis against simulated ground truth.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\textwidth]{figures/fig_teaser_diagnosis.pdf}
-  \caption{Associative diagnosis versus a mechanistic causal audit. When a grasp fails under perceptual degradation, previous methods (retry policies, VLMs) produce an unverified explanation from observational logs and cannot test whether intervening on that factor would have saved the trial. This work pre-registers an SCM from the pipeline's known architecture and applies Pearl's abduction--action--prediction procedure in MuJoCo, intervening on $\sigma_d$, $\rho$, $\phi$, and $\theta$ to test whether a single factor caused the failure or whether it is irreducibly multi-causal.}
-  \label{fig:teaser}
-\end{figure}
+\noindent Tracing a failure back to its cause requires an explicit model of how the stages of the pipeline causally depend on one another, i.e. a structural model. Trustworthy autonomy demands that we know \emph{why} a trusted algorithm fails. This thesis argues that we must make the preconditions of success explicit and measure how much each one contributes to failure. Doing so requires a causal audit of the perception-action pipeline.
 
 \section{The Diagnostic Gap}
 \label{sec:diagnostic_gap}
@@ -264,14 +256,12 @@ Existing approaches to handling grasp failure include retry policies, anomaly de
 \begin{minipage}[t]{0.59\textwidth}
   \vspace{0pt}
   \centering
-  \includegraphics[width=\linewidth,trim=0 0 0 25pt,clip]{figures/fig_diagnostic_gap_cropped.pdf}
+  \includegraphics[width=\linewidth,trim=0 0 0 25pt,clip]{fig_diagnostic_gap_cropped.png}
   \captionsetup{font=footnotesize}
-  \captionof{figure}[The diagnostic gap on the Pearl Causal Hierarchy]{The diagnostic gap on the Pearl Causal Hierarchy, adapted from Yang and Bareinbo~\cite{yang2025hierarchy}. The diagonal is the Cartwright line~\cite{cartwright1989} (``no causes in, no causes out''): a query is valid only when the model's assumptions match its expressiveness. VLM explanations sit above that line; the proposed audit matches an $\mathcal{L}_3$ query with an $\mathcal{L}_3$ model.}
+  \captionof{figure}[The diagnostic gap on the Pearl Causal Hierarchy]{The diagnostic gap on the Pearl Causal Hierarchy, adapted from Yang and Bareinboim~\cite{yang2025hierarchy}. VLM explanations lie above the Cartwright line; the proposed audit matches an $\mathcal{L}_3$ query with an $\mathcal{L}_3$ model.}
   \label{fig:diagnostic_gap}
 \end{minipage}
 \par\medskip
-
-Learned causal explanation methods generate post-hoc rationales for failure, but these rationales are not checked against a ground-truth counterfactual and so cannot be verified as correct.
 
 \noindent Vision language models can describe a failed trial in natural language and propose a plausible cause, but their explanations are associative and are not tested against what would actually have happened under intervention. Chapter~\ref{ch:background} reviews these approaches in detail. What remains absent is an audit method that (a)~uses the known computational architecture of the robot to build a structural model of failure and (b)~validates that model using a principled counterfactual test to ask: \emph{if this particular structural precondition had been met, would the grasp have succeeded?} Figure~\ref{fig:diagnostic_gap} situates these approaches on the Pearl Causal Hierarchy to make the diagnostic gap geometric. In this graph, only a match between model assumptions and query expressiveness yields valid inference.
 
@@ -280,33 +270,33 @@ Learned causal explanation methods generate post-hoc rationales for failure, but
 
 This thesis addresses the diagnostic gap by formulating grasp failure diagnosis as a mechanistic causal audit (Figure~\ref{fig:audit_engine}). Rather than attempting to statistically learn a causal graph from noisy observational data, we use the known dataflow of the robot's perception-action pipeline to pre-register a Structural Causal Model (SCM)~\cite{pearl2009causality}.
 
-\noindent To conduct this audit, we construct a fully controlled factorial experiment in MuJoCo that implements Pearl's do-operator. This environment allows us to isolate and manipulate four exogenous environmental variables: depth noise~$\sigma_d$, point cloud retention fraction~$\rho$, camera elevation~$\phi$, and camera azimuth~$\theta$. The SCM links these controlled interventions to the binary grasp outcome~$Y$ through four mediators---segmentation fraction~$C_{pc}$ (a 2-D mask statistic, not 3-D coverage), grasp confidence~$q_{\text{grasp}}$, grasp pose error~$e_{\text{pose}}$, and candidate count~$n_{\text{grasps}}$---plus a proposal gate $\text{has\_grasps}$.
+\noindent To conduct this audit, we construct a fully controlled factorial experiment in MuJoCo that implements Pearl's do-operator. This environment allows us to isolate and manipulate four exogenous environmental variables: depth noise~$\sigma_d$, point cloud retention fraction~$\rho$, camera elevation~$\phi$, and camera azimuth~$\theta$. The SCM links these controlled interventions to the binary grasp outcome~$Y$ through intermediate mechanistic variables: point cloud completeness~$C_{pc}$, grasp confidence~$q_{\text{grasp}}$, grasp pose error~$e_{\text{pose}}$ and the number of valid grasp candidates~$n_{\text{grasps}}$.
 
-\noindent The audit is conducted entirely in simulation. The counterfactual test at the centre of this thesis rewinds a trial and re-executes it under an altered condition to obtain ground truth. No physical robot allows this, but simulation makes this possible. Therefore our conclusions describe failure mechanisms within a physically grounded simulation pipeline, but their transfer to physical hardware is not evaluated here.
+\noindent The audit is conducted entirely in simulation. The counterfactual test at the centre of this thesis rewinds a trial and re-executes it under an altered condition to obtain ground truth. Therefore our conclusions describe failure mechanisms within a physically grounded simulation pipeline, but their transfer to physical hardware is not evaluated here.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\textwidth]{figures/fig_mechanistic_audit_engine.pdf}
-  \caption{The Mechanistic Causal Audit as a causal inference architecture (adapted from Yang and Bareinboim~\cite{yang2025hierarchy}). Query~$\mathcal{Q}$, observed logs~$\mathcal{D}$ and the pre-registered graph~$\mathcal{G}$ enter a MuJoCo testbed that implements $\mathrm{do}(\cdot)$; Pearl's abduction--action--prediction procedure then diagnoses whether that trial failed from geometry or from perception.}
+  \includegraphics[width=\textwidth]{causal_inference_engine_diagram.pdf}
+  \caption{The Mechanistic Causal Audit framed as a causal inference engine (adapted from Yang and Bareinboim~\cite{yang2025hierarchy}). By deriving the graphical model directly from the robot's known computational architecture, the MuJoCo simulation can act as a valid inference engine, applying Pearl's three-step procedure (abduction, action, prediction) to diagnose single trial failures against ground truth.}
   \label{fig:audit_engine}
 \end{figure}
 
 
 \noindent To separate layers of failure, we carry out filtered and unfiltered experiments to isolate collisions and pose quality. The main factorial study executes Contact-GraspNet’s best pose and records whether that pose is already in collision - this shows how much failure is geometric vs. perceptual. We then test pose quality with a floating gripper not the full arm, so that full-arm inverse kinematics cannot confound the outcome. Without filtering, colliding poses dominate and success rate of grasps is low. We carry out a second experiment to filter collisions (a precondition that CGN's pipeline implicitly assumes) then also select a favourable viewpoint after inspecting the main grid results.
 
-\noindent That order is itself a result of the execution stack. A first full-arm inverse-kinematics attempt reached the proposed pose and still failed to lift, for contact and gripper-geometry reasons unrelated to perception; a later logged arm pass could reach collision-filtered poses but still did not lift without listed contact compromises (Chapter~\ref{ch:method}; Appendix~\ref{app:implementation}). The floating gripper is the confirmatory validator because it isolates pose quality. Unfiltered top-1 physical execution on the full grid is the confirmatory audit of deployed pose selection (5.0\% success; 72.8\% pre-grasp collision, under the shake disturbance). Filtering is a gate intervention, not the grid on which perceptual degradations are studied: at one post-hoc clean cell it reaches 89\% under clamp-and-lift. The 5.0\% and 89\% figures are different protocol slices, not two readings of the same experiment.
+ That order is a result of the execution stack. A first full-arm inverse kinematics attempt reached the proposed pose but failed to lift, for geometry reasons unrelated to perception. A later arm design could reach collision-filtered poses but still did not lift without listed contact compromises (Chapter~\ref{ch:method}; Appendix~\ref{app:implementation}). The floating gripper acts as the validator because it isolates pose quality. Unfiltered top 1 physical execution on the full grid has 5.0\% success and 72.8\% pre-grasp collision under the shake disturbance. Filtering is used as a gate intervention; with filtering we reach 89\% clamp-and-lift success. 
 
-Given an observed grasp failure, we apply Pearl's three-step counterfactual procedure~\cite{pearl2018book} (\emph{abduction}, \emph{action} and \emph{prediction}) to identify which modelled environmental factor most likely caused the failure. Because we fully control the exogenous variables ($\sigma_d$, $\rho$, $\phi$, $\theta$), abduction recovers only the unobserved noise terms of the intermediate structural equations. The diagnostic work is carried by the action and prediction steps, which ask what would have happened to \emph{that specific failed trial} under a different setting of one variable. This remains an $\mathcal{L}_3$ query---it conditions on the realised outcome, which a purely interventional model cannot do---and Section~\ref{sec:counterfactual_diagnosis} states this formally. And since the pipeline directly implements the do-operator, we are able to establish whether fixing the identified perceptual variable would have saved the grasp, or whether the failure was irreducibly constrained by physical geometry. The trial's random seed is recorded and held fixed on rewind, so that only the intervened-on variable changes and every other stochastic element of the pipeline replays identically. This is abduction carried out physically rather than by solving an equation---the recorded seed \emph{is} the abducted noise realisation---and it is what licenses reading the re-simulated outcome as the true counterfactual for that specific trial.
+Given an observed grasp failure, we apply Pearl's three-step counterfactual procedure~\cite{pearl2018book} (\emph{abduction}, \emph{action} and \emph{prediction}) to identify which modelled environmental factor most likely caused the failure. Because we fully control the exogenous variables ($\sigma_d$, $\rho$, $\phi$, $\theta$), abduction recovers only the unobserved noise terms of the intermediate structural equations. The diagnostic work is carried by the action and prediction steps, which ask what would have happened to \emph{that specific failed trial} under a different setting of one variable. And since the pipeline directly implements the do-operator, we are able to establish whether fixing the identified perceptual variable would have saved the grasp, or whether the failure was irreducibly constrained by physical geometry.
 
 
-As a secondary comparison, we contrast this structured causal diagnosis against a zero-shot large language model (LLM) baseline, to illustrate what associative natural-language reasoning misses relative to a diagnosis grounded in the pipeline's known structure. The underlying model (Gemini~2.5~Flash) is VLM-capable; in this comparison, however, it receives only structured textual descriptions of each trial rather than images. The comparison is asymmetric since the SCM encodes the pipeline's architecture and the comparison measures the value of that encoding. On identical proximity-pilot failure cases, we score whether SCM-based counterfactual reasoning identifies the root cause of a grasp failure more accurately than a zero-shot LLM (Section~\ref{sec:scm_fit}).
+As a secondary comparison, we contrast this structured causal diagnosis against a zero-shot large language model (LLM) baseline, to illustrate what associative natural-language reasoning misses relative to a diagnosis grounded in the pipeline's known structure. The underlying model (Gemini~2.5~Flash) is VLM-capable; in this comparison, however, it receives only structured textual descriptions of each trial rather than images. The comparison is asymmetric since the SCM encodes the pipeline's architecture and the comparison measures the value of that encoding. On identical failure cases, we test whether SCM-based counterfactual reasoning identifies the root cause of a grasp failure or correctly recognises that no single cause suffices more reliably than a zero-shot LLM.
 
 \section{Aim and Objectives}
 \label{sec:aims}
 
-\paragraph{Aim.} To determine whether a pre-registered and revised mechanistic Structural Causal Model enables auditable diagnosis of robotic grasp failure, including multi-causal failures checked against simulated ground truth. The criterion against which a diagnosis is judged correct is formalised in Section~\ref{sec:single_cause_def}. As a secondary aim, we compare this structured diagnosis against a zero-shot large language model given the same observational data, to quantify what explicit structural knowledge of the pipeline contributes relative to associative natural-language reasoning. That comparison is scored on the proximity-pilot outcome; the confirmatory claims concern the physical-outcome decomposition.
+\paragraph{Aim.} To determine whether a pre-registered mechanistic Structural Causal Model enables auditable diagnosis of robotic grasp failure, including multi-causal failures checked against simulated ground truth. The criterion against which a diagnosis is judged correct is formalised in Section~\ref{sec:single_cause_def}. As a secondary aim, we compare this structured diagnosis against a zero-shot large language model given the same observational data, to quantify what explicit structural knowledge of the pipeline contributes relative to associative natural-language reasoning.
 
-\paragraph{Objectives.} To pursue this aim, we first construct a physics-grounded MuJoCo testbed capable of executing automated grasp trials under controlled perceptual degradations to establish how much failure is attributable to geometry alone, including characterising pre-grasp collision as a baseline failure mode and quantifying the effect of top-$k$ collision filtering under clean conditions. We then pre-register a Structural Causal Model whose causal graph is derived from the pipeline's known dataflow, stating in advance the conditions under which the model would be falsified. Structural equations for the intermediate mechanisms are fitted parametrically and checked against nonparametric, model-free estimates. Pearl's abduction-action-prediction procedure is applied to observed proximity-pilot failures to identify root causes---including recognising failures that are multi-cause or irreducible---and each diagnosis is scored against simulated ground-truth counterfactuals on that pilot outcome. Finally, as a secondary comparison, the SCM's diagnoses are contrasted with those of a zero-shot LLM given identical observational data from the same pilot, to quantify what explicit structural knowledge contributes over associative reasoning. Neither diagnostic comparison is claimed on the confirmatory physical-grasp grid.
+\paragraph{Objectives.} To pursue this aim, we first construct a physics-grounded MuJoCo testbed capable of executing automated grasp trials under controlled perceptual degradations to establish how much failure is attributable to geometry alone. We then pre-register a Structural Causal Model whose causal graph is derived from the pipeline's known dataflow, stating in advance the conditions under which the model would be falsified. Pearl's abduction-action-prediction procedure is applied to observed failures to identify root causes and each diagnosis is validated against simulated ground-truth counterfactuals. Finally, as a secondary comparison, the SCM's diagnoses are contrasted with those of a zero-shot LLM given identical observational data, to quantify what explicit structural knowledge contributes over associative reasoning.
 
 \section{Contributions}
 \label{sec:contributions}
@@ -314,11 +304,11 @@ As a secondary comparison, we contrast this structured causal diagnosis against 
 The core contributions of this thesis are:
 
 \begin{enumerate}
-    \item \textbf{A Mechanistic Structural Causal Model:} An SCM for grasp failure that is derived directly from system architecture, featuring four independently intervenable variables, four measurable mediators, and a proposal gate.
-    \item \textbf{A Fully Controlled Factorial Testbed:} A complete simulation environment in MuJoCo~\cite{todorov2012mujoco} that directly implements Pearl's do-operator. It combines Contact-GraspNet~\cite{sundermeyer2021contact}, varied object geometries and a floating-gripper test (shake on the main grid; clamp-and-lift on the filtered clean-cell check) to eliminate confounders and isolate perceptual from geometric failures. The testbed uses a two-arm experimental design (unfiltered top-1 vs.\ filtered top-$k$), not two robot arms.
-    \item \textbf{Separation of Geometry from Perception:} Geometry-driven invalid poses are shown to dominate failure without collision filtering. Once these poses are gated out, the testbed reaches a high clean-condition success rate (89\%, at a favourable viewpoint selected post-hoc), consistent with the claim that the unfiltered 5.0\% headline is mostly pose selection rather than a gripper that cannot lift.
-    \item \textbf{Quantification of Irreducible Multi-Causal Failures:} A counterfactual ground-truth study on the 432-trial proximity pilot (not the floating-gripper grid) shows that, within the intervention magnitudes tested, 57.2\% of failures resist single-variable attribution, concentrated at overhead viewpoints. Whether this rate is a property of the failure modes themselves or of the intervention grid is taken up in Chapter~\ref{ch:discussion}.
-    \item \textbf{Counterfactual Evaluation Pipeline:} An end-to-end pipeline executes Pearl's counterfactual procedure and scores the resulting diagnoses against simulated ground truth on the proximity pilot. On 95 single-cause cases the SCM attains 44.2\% attribution accuracy against a 31.6\% LLM baseline (Section~\ref{sec:scm_fit}); the comparison is not claimed on physical grasps.
+    \item \textbf{A Mechanistic Structural Causal Model:} An SCM for grasp failure that is derived directly from system architecture, featuring four independently intervenable variables and four measurable intermediate variables.
+    \item \textbf{A Fully Controlled Factorial Testbed:} A complete simulation environment in MuJoCo~\cite{todorov2012mujoco} that directly implements Pearl's do-operator. It combines Contact-GraspNet~\cite{sundermeyer2021contactgraspnet}, varied object geometries and a floating-gripper test to eliminate confounders and isolate perceptual from geometric failures.
+    \item \textbf{Separation of Geometry from Perception:} Geometry driven invalid poses are shown to dominate failure without collision filtering. Once these poses are gated out, the testbed achieves a high clean-condition success rate (89\%, at a favourable viewpoint selected post-hoc)
+    \item \textbf{Quantification of Irreducible Multi-Causal Failures:} A counterfactual ground-truth study shows that, within the intervention magnitudes tested, 57.2\% of failures resist single-variable attribution, concentrated at overhead viewpoints. Whether this rate is a property of the failure modes themselves or of the intervention grid is taken up in Chapter~\ref{ch:discussion}.
+    \item \textbf{Counterfactual Evaluation Pipeline:} An end-to-end pipeline executes Pearl's counterfactual procedure to diagnose failures against simulated ground truth and, as a secondary contribution, compares this structured causal diagnosis against LLM-based attribution on identical cases.
 \end{enumerate}
 
 \section{Structure of this Thesis}
@@ -326,21 +316,19 @@ The core contributions of this thesis are:
 
 The remainder of this thesis is organised as follows.
 
-Chapter~\ref{ch:background} reviews the theoretical background needed to motivate the audit: prior work on robotic grasp failure and approaches to failure diagnosis, Structural Causal Models and Pearl's counterfactual hierarchy, depth sensor noise and the point-cloud representation, Contact-GraspNet as the perception backbone under study, and the use of large language models in robotics.
+Chapter~\ref{ch:background} reviews the theoretical background needed to motivate the audit: prior work on robotic grasp failure and approaches to failure diagnosis, Structural Causal Models and Pearl's counterfactual hierarchy, depth sensor noise, Contact-GraspNet as the perception backbone under study, and the use of large language models in robotics.
 
 Chapter~\ref{ch:formulation} formalises the problem. It specifies the pre-registered causal graph, the structural equations linking exogenous variables to the grasp outcome, the identifiability assumptions required for counterfactual inference, the conditions under which the SCM could be falsified, and the research hypotheses tested in later chapters.
 
-Chapter~\ref{ch:method} describes the experimental testbed: the per-trial pipeline from camera positioning to outcome evaluation, the factorial grid over $\sigma_d$, $\rho$, $\phi$, and $\theta$, and the data-collection protocol.
+Chapter~\ref{ch:method} details the proposed pipeline: the factorial testbed design, the floating-gripper success criterion, the two-arm collision-filtering protocol, and the counterfactual abduction--action--prediction procedure used for diagnosis.
 
-Chapter~\ref{ch:diagnosis} describes the diagnostic procedure: fitting the surrogate Structural Causal Model, Pearl's abduction--action--prediction attribution, the LLM baseline comparison, and the evaluation metrics.
+Chapter~\ref{ch:diagnosis} documents the engineering process, including the reconstruction of the simulation environment. It also describes the experimental design of the report: the full factorial grid over $\sigma_d$, $\rho$, $\phi$, and $\theta$, the object set and the protocol for the LLM baseline comparison.
 
-Chapter~\ref{ch:results} reports the confirmatory three-stage physical decomposition and the collision-filtering ceiling check. The SCM-fit, counterfactual ground-truth, and LLM numbers in that chapter are a method demonstration on the proximity pilot, including the quantification of multi-cause and irreducible failures.
+Chapter~\ref{ch:results} reports the descriptive, decomposition, and counterfactual findings, including the collision-filtering ceiling check and the quantification of irreducible multi-causal failures.
 
 Chapter~\ref{ch:discussion} interprets these results against the thesis's aim and objectives, and considers their implications and limitations.
 
 Chapter~\ref{ch:conclusion} summarises the contributions of the thesis and outlines directions for future work.
-
-Appendix~\ref{app:implementation} records the engineering process, including the reconstruction of the simulation environment, the iterative development of the control pipeline, and the significant bugs encountered and resolved along the way.
 
 
 % ============================================================
@@ -349,42 +337,42 @@ Appendix~\ref{app:implementation} records the engineering process, including the
 \chapter{Background and Related Work}
 \label{ch:background}
 
-This chapter reviews prior work only as far as it bears on the diagnostic gap identified in Section~\ref{sec:diagnostic_gap}: the absence of a method that both derives a structural model of failure from known architecture and checks that model's counterfactual predictions against ground truth. We first survey grasp failure and recovery (Section~\ref{sec:bg_grasp}) and the existing families of diagnosis approaches (Section~\ref{sec:bg_diagnosis}); the latter is the chapter's central argument and is organised around a single question for each family---what does it claim, what layer of the Pearl Causal Hierarchy can it answer a query at, and what can it not verify? Section~\ref{sec:bg_scm} then introduces the causal machinery the audit itself requires: Structural Causal Models, the do-operator, and Pearl's counterfactual procedure. Sections~\ref{sec:bg_depth} and~\ref{sec:bg_cgn} scope the pipeline quantities under audit---the depth-noise surrogate, the segmentation-fraction statistic $C_{pc}$, the point-cloud representation, and Contact-GraspNet---to exactly what the experimental design manipulates, rather than surveying sensing or grasping broadly. Section~\ref{sec:bg_llm} reviews LLMs in robotics and motivates their role here as a deliberately asymmetric baseline rather than a competing perception system.
+This chapter reviews background material relevant to this report. The scope of the grasping mechanism is restricted to the two finger parallel gripper.~The first survey covers grasp failure and recovery (Section~\ref{sec:bg_grasp}) and the existing families of diagnosis approaches (Section~\ref{sec:bg_diagnosis}).~Section~\ref{sec:bg_scm} then introduces the causal machinery: Structural Causal Models and Pearl's counterfactual procedure.~Sections~\ref{sec:bg_depth} and~\ref{sec:bg_cgn} treat depth noise surrogate, the point-cloud representation and Contact-GraspNet only as far as the experimental design manipulates them.~Section~\ref{sec:bg_llm} reviews LLMs in robotics and motivates their role in the investigation.
 
 \section{Robotic Grasp Failure and Recovery}
 \label{sec:bg_grasp}
 
-Grasp synthesis has moved from analytical methods based on force- and form-closure to data-driven models that learn proposals directly from sensor observations. Learned planners such as GraspNet-1Billion~\cite{fang2020graspnet} and Contact-GraspNet~\cite{sundermeyer2021contact} represent the current state of the art and achieve strong performance-but, as Section~\ref{sec:motivation} noted, under lab preconditions: clean sensing, a favourable viewpoint, and, as Section~\ref{sec:bg_cgn} details, a collision-filtering stage that is often left implicit. When the input point cloud is sparse, noisy, or incomplete, these models produce proposals that can be geometrically infeasible, and nothing in their design distinguishes a confidently wrong proposal from a confidently correct one.
+Grasp synthesis has moved from analytical methods based on force and form closure to data-driven models that learn proposals directly from sensor observations.~Learned planners such as Contact-GraspNet~\cite{sundermeyer2021contactgraspnet}, GraspNet-1Billion~\cite{fang2020graspnet} and AnyGrasp~\cite{fang2023anygrasp} represent the current state of the art and achieve strong performance but under lab conditions and a collision-filtering stage that is often left implicit (see Section~\ref{sec:bg_cgn}). Parallel to these learned planners, model based pipelines generate grasps from CAD in simulation. Ruiz et al.~\cite{ruiz2025physics} sample candidates and score them in MuJoCo using a movement-based metric, achieving 84\% real-robot accuracy on Egad! objects. Such systems address grasp generation, not failure attribution. When the input point cloud is noisy, these models produce proposals that are geometrically infeasible and nothing in their design can tell a confidently wrong proposal from a confidently correct one.
 
-Two mechanisms exist for handling failure once it occurs, and neither is diagnosis. Tactile feedback (e.g.\ GelSight-based systems~\cite{calandra2018more}) detects slippage \emph{during} execution, after contact is made; it cannot say why a vision-based proposal was wrong \emph{before} contact, which is where the failure modes studied in this thesis originate. Retry policies re-attempt the same or a perturbed grasp, implicitly treating failure as stochastic; if the true cause is systematic-a viewpoint that consistently fails to observe a critical surface, say-retrying reproduces the same failure at the same rate, because nothing about the violated precondition has changed. Neither mechanism asks, let alone answers, \emph{which} precondition of success was violated. Failures stay undecomposed.
+Two mechanisms exist for handling failure once it occurs: tactile feedback (e.g.\ GelSight-based systems~\cite{calandra2018more}) detects slippage \emph{during} execution after contact is made. It cannot say why a proposal was wrong \emph{before} contact, which is where the failure modes studied in this report originate. Retry policies make a perturbed grasp and implicitly treat failure as stochastic. Therefore if the true cause is systematic that means retrying reproduces the same failure at the same rate. Neither vets \emph{which} precondition of success was violated. 
 
-A related line of work seeks to raise success rates by adapting perception during execution, rather than attributing failure after the fact. Active perception methods such as ActiveVLA~\cite{liu2026activevla} adapt viewpoint and resolution to improve success. Completion-based methods such as PCF-Grasp~\cite{cheng2025pcfgrasp} make the same complementary move on geometry rather than on viewpoint: they convert coarse point-completion output into a shape feature for a Contact-GraspNet-style 6-DoF network, keep proposals on the original visible 2.5D points rather than grasping on the completed cloud, and reweight scores so that a high-ranking pose facing away from the arm is not selected. Single-image pipelines such as Triplane Grasping~\cite{li2025triplanegrasp} take a related upstream route: a hybrid Triplane--Gaussian reconstructor produces a partial point cloud from one RGB view, and Contact-GraspNet is then applied unchanged, treating reconstructed surface points as contact candidates and filtering proposals to the segmented target. This thesis instead treats viewpoint (and other perceptual degradations) as intervenable causes and asks whether failures can be diagnosed via a mechanistic SCM. The questions are complementary: ActiveVLA asks how to look better so that a policy succeeds; PCF-Grasp asks how to make a proposal succeed from an incomplete cloud; Triplane Grasping asks how to reconstruct a cloud good enough for CGN from RGB alone; this thesis asks, given that Contact-GraspNet already failed under a fixed viewpoint and sensing regime, which controlled factor was responsible.
+A related line of work seeks to raise success rates by adapting perception during execution, rather than attributing failure after the fact. Active perception methods such as ActiveVLA~\cite{liu2026activevla} adapt viewpoint and resolution to improve success; this thesis instead treats viewpoint (and other perceptual degradations) as intervenable causes and asks whether failures can be diagnosed via a mechanistic SCM. The two questions are complementary: ActiveVLA asks how to look better so that a policy succeeds; this thesis asks, given that a grasp already failed under a fixed viewpoint and sensing regime, which controlled factor was responsible.
 
 \section{Approaches to Grasp Failure Diagnosis}
 \label{sec:bg_diagnosis}
 
-Section~\ref{sec:diagnostic_gap} listed six families of response to grasp failure, each addressing part of the problem while stopping short of a full structural account. This section expands that list one family at a time, applying the same three questions to each: what does the method claim, what layer of the Pearl Causal Hierarchy (Figure~\ref{fig:diagnostic_gap}) can it answer a query at, and what can it not verify?
+Section~\ref{sec:diagnostic_gap} listed six families of response to grasp failure. Each addressed part of the problem but stopped short of full structural account. This section expands that list by applying these three questions to each: what does the method claim, what layer of the Pearl Causal Hierarchy (Figure~\ref{fig:diagnostic_gap}) can it answer a query at and what can it not verify?
 
-\textbf{Retry strategies.} Claim: repeating a grasp under fresh stochastic variation~\cite{hsiao2010contact} will eventually succeed if the original failure was due to chance. PCH layer: none, strictly---retry is not a model of the failure at all, only repeated sampling, and it implicitly assumes $\mathcal{L}_1$-exchangeability of outcomes across attempts. Cannot verify: whether the failure was in fact stochastic or systematic in the first place, which is exactly the discrimination this thesis needs to make and that retry assumes away.
+\textbf{Retry strategies.} Claim: repeating a grasp under fresh stochastic variation~\cite{hsiao2010contact} will eventually succeed if the original failure was due to chance. PCH layer: none. retry is not a model of the failure but only repeated sampling and it assumes $\mathcal{L}_1$ exchangeability of outcomes across attempts. This strategy cannot verify whether the failure was stochastic or systematic in the first place, which is the discrimination this report needs to make.
 
-\textbf{Anomaly detection.} Claim: a trial's force/torque or tactile signature is unusual relative to a learned reference distribution~\cite{park2018multimodal}. PCH layer: $\mathcal{L}_1$---it computes an associational judgement, $P(\text{anomalous} \mid \text{signal})$. Cannot verify: which upstream variable produced the anomaly, or what would have happened had that variable taken a different value; detecting that something is wrong is not the same as attributing why.
+\textbf{Anomaly detection.} Claim: a trial's force/torque or tactile signature is unusual relative to a learned reference distribution~\cite{park2018multimodal}. PCH layer: $\mathcal{L}_1$. It computes an associational judgement, $P(\text{anomalous} \mid \text{signal})$. Cannot verify which upstream variable produced the anomaly, or what would have happened had that variable taken a different value.
 
-\textbf{Reinforcement learning.} Claim: a policy trained on past failures~\cite{levine2018learning, kalashnikov2018scalable} reduces their future frequency. PCH layer: $\mathcal{L}_2$ at best---the policy's weights implicitly encode something like $P(Y \mid \doop(\text{action}))$, aggregated across training experience. Cannot verify: any explicit, human-checkable account of why one specific trial failed; the ``explanation'' is distributed across millions of parameters, and there is no single-trial counterfactual query that can be put to it.
+\textbf{Reinforcement learning.} Claim: a policy trained on past failures~\cite{levine2018learning, kalashnikov2018scalable} reduces future frequency of failure. PCH layer: $\mathcal{L}_2$ at best. The policy's weights encode something like $P(Y \mid \doop(\text{action}))$, aggregated across training experience. Cannot verify any explicit, human checkable account of why a trial failed. The ``explanation'' is distributed across millions of parameters and there is no single-trial counterfactual query that can be put to it.
 
-\textbf{Causal discovery.} Claim: a causal graph can be recovered from purely observational trial data by testing conditional independencies. PCH layer: in principle $\mathcal{L}_2$--$\mathcal{L}_3$, \emph{if} the discovered graph happens to be correct. Cannot verify: the correctness of the discovered graph itself, which depends on independence-test power, sample size, and the absence of unmeasured confounding---conditions robotics trial data rarely satisfy, and that need not be satisfied here at all, because the pipeline's dataflow (camera $\to$ point cloud $\to$ CGN $\to$ kinematics) is already known by construction. Statistically re-discovering an architecture that is already certain discards information rather than substituting for its absence.
+\textbf{Causal discovery.} Claim: a causal graph can be recovered from purely observational trial data by testing conditional independencies~\cite{glymour2019review}. Constraint based algorithms such as PC and FCI recover structure under causal Markov and faithfulness assumptions. The output is often a Markov equivalence class rather than a unique directed graph. Recent extensions combine observational and interventional data from multiple domains. For example, Li et al.'s S-FCI~\cite{li2023sfci} generalises FCI to diagrams with latent confounders, but still returns an equivalence class (an S-PAG) not a verified single graph. PCH layer: in principle $\mathcal{L}_2$--$\mathcal{L}_3$, \emph{if} the discovered graph happens to be correct. These cannot verify the correctness of the discovered graph because the pipeline's dataflow (camera $\to$ point cloud $\to$ CGN $\to$ kinematics) is already known by construction. Statistically rediscovering an architecture that is already certain discards information.
 
-\textbf{Causal robot-failure explanation.} This is the closest prior work to the present thesis in query type, so the contrast is worth stating precisely rather than in general terms. Diehl and Ramirez-Amaro~\cite{diehl2022whydidifail} learn a causal Bayesian network from simulation data and generate contrastive explanations by searching for the nearest counterfactual state that would have succeeded---a genuinely $\mathcal{L}_3$-style query, sharing this thesis's goal of structural causal explanation. Three differences separate the two approaches. First, their graph is \emph{learned} by structure search, ours is \emph{pre-registered} from the pipeline's known computational architecture (Section~\ref{sec:approach}), so ours carries none of the discovery risk raised in the previous paragraph. Second, their target is a manipulation \emph{policy} on tasks such as block-stacking, evaluated on task-level success, whereas ours audits a fixed, pre-trained perception-to-planning \emph{pipeline}, evaluated on the validity of a single upstream grasp proposal. Third, their counterfactual is produced by a contrastive nearest-state search over the learned model itself, ours by Pearl's explicit abduction--action--prediction procedure (Section~\ref{sec:counterfactual_diagnosis}), checked against re-simulated ground truth obtained by actually rewinding the trial via the do-operator, rather than against the model's own self-consistency. What their setting cannot verify, and ours can: that the nearest contrastive state found by the search is also the \emph{true} counterfactual, since there is no simulated do-operator ground truth available to check it against. CausalWorld~\cite{ahmed2021causalworld} similarly exposes intervenable causal variables in a manipulation simulator and could in principle supply such ground truth, but is built for transfer learning and policy generalisation; it answers ``how do these variables affect training performance'' rather than ``which variable caused this specific trial's failure.''
+\textbf{Causal robot-failure explanation.} This is the closest prior work to this report in query type.~Diehl and Ramirez-Amaro~\cite{diehl2022whydidifail} learn a causal Bayesian network from simulation data and generate contrastive explanations by searching for the nearest counterfactual state that would have succeeded. Three differences separate our approach from theirs. First, their graph is \emph{learned} by structure search, ours is \emph{pre-registered} from the pipeline's known computational architecture (Section~\ref{sec:approach}), so ours carries none of the discovery risk raised previously. Second, their target is a manipulation \emph{policy} on a block stacking task, evaluated on task level success, whereas ours audits a fixed, pre-trained \emph{model}, evaluated on the validity of an upstream grasp proposal. Third, their counterfactual is produced by a contrastive nearest-state search over the learned model itself, ours by Pearl's abduction-action-prediction procedure (Section~\ref{sec:counterfactual_diagnosis}), checked against re-simulated ground truth obtained by rewinding the trial via the do-operator. Their setting cannot verify whether the nearest contrastive state found by the search is also the \emph{true} counterfactual, since there is no simulated do-operator ground truth available to check it against. CausalWorld~\cite{ahmed2021causalworld} similarly exposes intervenable causal variables in a manipulation simulator and could in principle supply such ground truth, but is built for transfer learning and policy generalisation; it answers ``how do these variables affect training performance'' rather than ``which variable caused this specific trial's failure.''
 
-\textbf{Vision-language models.} Claim: an LLM or VLM prompted with a description of a failure proposes a plausible cause in natural language~\cite{ahn2022saycan, driess2023palm}. PCH layer: $\mathcal{L}_1$ only---the model was trained on associations between descriptions and outcomes, and its explanation is a language-model completion conditioned on text, not a computation over a structural model. Cannot verify: the causal correctness of its own explanation; by construction, an $\mathcal{L}_1$ model cannot answer an $\mathcal{L}_3$ query no matter how fluent it sounds (Cartwright's ``no causes in, no causes out''~\cite{cartwright1989}; Figure~\ref{fig:diagnostic_gap}). Section~\ref{sec:bg_llm} reviews the broader use of LLMs in robotics and motivates their specific role here as a baseline that makes this asymmetry visible, not as a competing perception system.
+\textbf{Vision-language models.} Claim: an LLM or VLM prompted with a description of a failure proposes a plausible cause in natural language~\cite{ahn2022saycan, driess2023palm}. PCH layer: $\mathcal{L}_1$ only since the model was trained on associations between descriptions and outcomes and its explanation is a language-model completion conditioned on text not computation. These cannot verify the causal correctness of own explanation. By construction, an $\mathcal{L}_1$ model cannot answer an $\mathcal{L}_3$ query no matter how fluent it sounds (Cartwright's ``no causes in, no causes out''~\cite{cartwright1989}; Figure~\ref{fig:diagnostic_gap}). Section~\ref{sec:bg_llm} reviews the broader use of LLMs in robotics and motivates their role here.
 
-Across all six families, the same two ingredients are missing together, and no method reviewed above supplies both: (a)~a structural model derived from the pipeline's own known architecture, rather than discovered from data or foregone entirely, and (b)~validation of that model's counterfactual predictions against ground truth obtained by actually rewinding and re-executing the trial, rather than against the model's own predictions. Figure~\ref{fig:diagnostic_gap} places these six families on the Pearl Causal Hierarchy; the point the reviewed literature does not reach is the one this thesis occupies. Supplying (a) and (b) together is the task of the remainder of this chapter and of Chapter~\ref{ch:formulation}.
+Across all six families, the same two ingredients are missing together, and no method reviewed above supplies both: (a)~a structural model derived from the pipeline's own known architecture, and (b)~validation of that model's counterfactual predictions against ground truth obtained by rewinding and re-executing the trial. Figure~\ref{fig:diagnostic_gap} places these six families on the Pearl Causal Hierarchy. Supplying (a) and (b) together is the task of the remainder of this chapter and of Chapter~\ref{ch:formulation}.
 
 \section{Structural Causal Models and Counterfactuals}
 \label{sec:bg_scm}
 
 Section~\ref{sec:bg_diagnosis} argued that no reviewed method combines a pre-registered structural model with counterfactual validation against ground truth. This section introduces the formal apparatus needed to build and validate one: the SCM formalism, the do-operator, the Pearl Causal Hierarchy, and Pearl's three-step counterfactual procedure.
 
-Structural Causal Models, developed by Pearl~\cite{pearl2009causality}, provide a rigorous mathematical foundation for reasoning about cause and effect. The causal structure is represented as a \emph{directed acyclic graph} (DAG), where each node corresponds to a variable and each directed edge $V_i \to V_j$ indicates that $V_i$ is a direct cause of $V_j$ in the model. An SCM assigns a structural equation to each node, formalising the mechanism by which a variable is produced from its graph-theoretic parents.
+Structural Causal Models, developed by Pearl~\cite{pearl2009causality}, provide a rigorous mathematical foundation for reasoning about cause and effect. The causal structure is represented as a \emph{directed acyclic graph} (DAG), where each node corresponds to a variable and each directed edge $V_i \to V_j$ indicates that $V_i$ is a direct cause of $V_j$ in the model. An SCM assigns a structural equation to each node, formalising the mechanism by which a variable is produced from its graph parents.
 
 \begin{definition}[Structural Causal Model]
 A Structural Causal Model is a triple $\SCM = (\mathbf{U}, \mathbf{V}, \mathbf{F})$ where:
@@ -395,15 +383,14 @@ A Structural Causal Model is a triple $\SCM = (\mathbf{U}, \mathbf{V}, \mathbf{F
 \end{itemize}
 \end{definition}
 
-\paragraph{The do-operator and interventional reasoning.}
-Causal effects are formalised via the \emph{do-operator}: the expression $\doop(X = x)$ denotes an intervention that sets variable $X$ to value $x$ by removing all incoming edges to $X$ in the causal graph and fixing its value, regardless of what its structural equation would normally produce~\cite{pearl2009causality}. The distinction between the do-operator and ordinary conditioning is fundamental. The conditional probability $P(Y \mid X = x)$ reflects both causal and non-causal (e.g., confounded) associations between $X$ and $Y$. The interventional distribution $P(Y \mid \doop(X = x))$ reflects only the causal effect of $X$ on $Y$, because the intervention removes the influence of confounders that act through $X$'s parents.
+\paragraph{The do-operator and interventional reasoning.}~Causal effects are formalised via the \emph{do-operator}. The expression $\doop(X = x)$ denotes an intervention that sets variable $X$ to value $x$ by removing all incoming edges to $X$ in the causal graph and fixing its value, regardless of what its structural equation would normally produce~\cite{pearl2009causality}. The distinction between the do-operator and ordinary conditioning is fundamental. The conditional probability $P(Y \mid X = x)$ reflects both causal and non-causal (e.g., confounded) associations between $X$ and $Y$. The interventional distribution $P(Y \mid \doop(X = x))$ reflects only the causal effect of $X$ on $Y$, because the intervention removes the influence of confounders that act through $X$'s parents.
 
 \paragraph{The Pearl Causal Hierarchy.}
-These three modes of reasoning---observational, interventional, and counterfactual---correspond to the three layers of the \emph{Pearl Causal Hierarchy} (PCH)~\cite{pearl2009causality}: $\mathcal{L}_1$ (seeing: $P(Y \mid X)$), $\mathcal{L}_2$ (doing: $P(Y \mid \doop(X))$), and $\mathcal{L}_3$ (imagining: $P(Y_x \mid x')$). Yang and Bareinboim~\cite{yang2025hierarchy} formalise this hierarchy through a corresponding sequence of graphical model classes---Bayesian Networks, Causal Bayesian Networks, and Counterfactual Bayesian Networks---and prove that each level encodes strictly stronger constraints than those below, with a commensurate reduction in empirical falsifiability. This thesis operates at $\mathcal{L}_3$: the counterfactual queries in Chapter~\ref{ch:formulation} ask what \emph{would} have happened to a specific observed trial under a hypothetical change to conditions, which requires the full expressive power of the SCM. Every family reviewed in Section~\ref{sec:bg_diagnosis} either lacked the structural assumptions to license an $\mathcal{L}_3$ query (retry, anomaly detection, RL, VLMs) or lacked a pre-registered, architecture-derived graph even where it reached $\mathcal{L}_3$ in principle (causal discovery, learned causal explanation); this is precisely why $\mathcal{L}_3$ diagnosis needs structural assumptions stated in advance, not inferred from the same data the diagnosis is meant to explain.
+These three modes of reasoning - observational, interventional, and counterfactual - correspond to the three layers of the \emph{Pearl Causal Hierarchy} (PCH)~\cite{pearl2009causality}: $\mathcal{L}_1$ (seeing: $P(Y \mid X)$), $\mathcal{L}_2$ (doing: $P(Y \mid \doop(X))$), and $\mathcal{L}_3$ (imagining: $P(Y_x \mid x')$). Yang and Bareinboim~\cite{yang2025hierarchy} formalise this hierarchy through a corresponding sequence of graphical model classes (Bayesian Networks, Causal Bayesian Networks, and Counterfactual Bayesian Networks) and prove that each level encodes strictly stronger constraints than those below, with a commensurate reduction in empirical falsifiability. This thesis operates at $\mathcal{L}_3$: the counterfactual queries in Chapter~\ref{ch:formulation} ask what \emph{would} have happened to a specific observed trial under a hypothetical change to conditions, which requires the full expressive power of the SCM. Every family reviewed in Section~\ref{sec:bg_diagnosis} either lacked the structural assumptions to license an $\mathcal{L}_3$ query (retry, anomaly detection, RL, VLMs) or lacked a pre-registered, architecture-derived graph even where it reached $\mathcal{L}_3$ in principle (causal discovery, learned causal explanation). This is why $\mathcal{L}_3$ diagnosis needs structural assumptions stated in advance.
 
-\paragraph{Pre-registered versus discovered graphs.} Section~\ref{sec:bg_diagnosis} distinguished two ways a graph can be obtained: discovered from data---by statistical causal discovery, or by structure search as in Diehl and Ramirez-Amaro~\cite{diehl2022whydidifail}---or pre-registered from known architecture. This thesis takes the second path throughout: Chapter~\ref{ch:formulation} states the graph of Figure~\ref{fig:causal_dag} before any diagnostic use is made of it, and Section~\ref{sec:falsification} reports the pre-specified tests that could have, and in two instances did, contradict it. Pre-registration does not make the graph immune from being wrong; it makes being wrong a testable event rather than an unfalsifiable modelling choice.
+\paragraph{Pre-registered versus discovered graphs.} Section~\ref{sec:bg_diagnosis} distinguished two ways a graph can be obtained: discovered from data - by statistical causal discovery, or by structure search as in Diehl and Ramirez-Amaro~\cite{diehl2022whydidifail} - or pre-registered from known architecture. This thesis takes the second path throughout: Chapter~\ref{ch:formulation} states the graph of Figure~\ref{fig:causal_dag} before any diagnostic use is made of it, and Section~\ref{sec:falsification} reports the pre-specified tests that could have, and in two instances did, contradict it. Pre-registration does not make the graph immune from being wrong; it makes being wrong a testable event rather than an unfalsifiable modelling choice.
 
-\paragraph{Parametric versus non-parametric SCMs, and what this thesis commits to.} Vonk et al.~\cite{vonk2023disentangling} distinguish SCMs specified \emph{non-parametrically}, where each $f_i$ is left as an arbitrary function, from SCMs specified \emph{parametrically}, where a functional form is fixed in advance. This thesis separates two decisions that are often bundled. The \emph{graph} $\mathcal{G}$ is pre-registered from the pipeline's known architecture; it is not discovered. The \emph{mechanisms} $f_i$ (Section~\ref{sec:structural_equations}) are fitted parametrically, as linear-in-parameters regressions with a logistic link for the gate. That cost is stated in Section~\ref{sec:structural_equations}: any true non-linearity not captured by the chosen basis will surface as misspecification rather than as noise. Each equation's prediction is therefore checked against a model-free stratified estimate on the factorial grid (Appendix~\ref{app:nonparametric}), and divergences---including the $q_{\text{grasp}} \to e_{\text{pose}}$ term, which is not a mediation edge---are reported rather than smoothed into the residual. The hurdle on $n_{\text{grasps}}$ follows from the same honesty: a linear-Gaussian equation cannot represent the point mass at zero.
+\paragraph{Parametric versus non-parametric SCMs, and what this thesis commits to.} Vonk et al.~\cite{vonk2023disentangling} distinguish SCMs specified \emph{non-parametrically}, where each $f_i$ is left as an arbitrary function, from SCMs specified \emph{parametrically}, where a functional form is fixed in advance. This thesis separates two decisions that are often bundled. The \emph{graph} $\mathcal{G}$ is pre-registered from the pipeline's known architecture; it is not discovered. The \emph{mechanisms} $f_i$ (Section~\ref{sec:structural_equations}) are fitted parametrically, as linear-in-parameters regressions with a logistic link for the gate. That cost is stated in Section~\ref{sec:structural_equations}: any true non-linearity not captured by the chosen basis will surface as misspecification rather than as noise. Each equation's prediction is therefore checked against a model-free stratified estimate on the factorial grid (Appendix~\ref{app:nonparametric}), and divergences - including the $q_{\text{grasp}} \to e_{\text{pose}}$ term, which is not a mediation edge - are reported rather than smoothed into the residual. The hurdle on $n_{\text{grasps}}$ follows from the same honesty: a linear-Gaussian equation cannot represent the point mass at zero.
 
 \subsection{Pearl's Three-Step Counterfactual Procedure}
 
@@ -427,18 +414,16 @@ The counterfactual outcome $Y_{X=x'}$ is the value that $Y$ \emph{would have tak
 \section{Depth Sensing and Point Clouds}
 \label{sec:bg_depth}
 
-\noindent A depth buffer is a 2D array in which each element stores the perpendicular distance (in metres) from the camera's focal point to the nearest surface visible at that pixel. Real depth sensors experience complex, stochastic noise that scales with distance and angle of incidence.~Khoshelham and Elberink~\cite{khoshelham2011accuracy} report standard deviations of approximately 2--3\,mm at 1\,m that rise to about 40\,mm at 5\,m for a triangulation sensor. They further show through error propagation that the accompanying lateral ($X$, $Y$) components grow by the same quadratic law~\cite{khoshelham2011accuracy}. Sweeney et al.~\cite{sweeney2019supervised} demonstrate that the dominant noise artefact in light depth cameras is spatially correlated, scene-dependent dropout (NDP). This project however uses independent additive Gaussian noise~\cite{border2024see} (Equation~\ref{eq:noise_injection}), which sacrifices realism for experimental control. Because each pixel's noise is drawn i.i.d., $\sigma_d$ is the sole free parameter, making the intervention causally clean and independently manipulable from $\rho$, $\phi$ and $\theta$. \\
+\noindent A depth buffer is a 2D array in which each element stores the perpendicular distance (in metres) from the camera's focal point to the nearest surface visible at that pixel. Real depth sensors experience complex, stochastic noise that scales with distance and angle of incidence.~Khoshelham and Elberink~\cite{khoshelham2011accuracy} report standard deviations of approximately 2-3\,mm at 1\,m that rise to about 40\,mm at 5\,m for a triangulation sensor. They further show through error propagation that the accompanying lateral ($X$, $Y$) components grow by the same quadratic law~\cite{khoshelham2011accuracy}. Sweeney et al.~\cite{sweeney2019supervised}~demonstrate that the dominant noise artifact in light depth cameras is spatially correlated, scene-dependent dropout (NDP). This project however uses independent additive Gaussian noise (Equation~\ref{eq:noise_injection}), which sacrifices realism for experimental control. Because each pixel's noise is drawn i.i.d., $\sigma_d$ is the sole free parameter, making the intervention causally clean and independently manipulable from $\rho$, $\phi$ and $\theta$. \\
 
-Registered to the same pixels as the depth buffer is a second image-plane array, the \emph{segmentation buffer} $M$. Each element of $M$ stores an integer object identifier rather than a distance. In simulation this identifier is exact: the renderer knows which geometry produced the pixel. The \emph{segmentation fraction} $C_{pc}$ is the proportion of those pixels whose identifier is the target object,
+\noindent Registered to the same pixels as the depth buffer is a second image plane array, the \emph{segmentation buffer} $M$.~Each element of $M$ stores an integer object identifier.~In simulation the renderer knows which geometry produced the pixel. The \emph{segmentation fraction} $C_{pc}$ is the proportion of those pixels whose identifier is the target object,
 \begin{equation}
   C_{pc} = \frac{\lvert\{p : M_p = \mathrm{target}\}\rvert}{H \times W}.
   \label{eq:cpc_def}
 \end{equation}
-A low $C_{pc}$ means the object occupies few pixels of the image---because it is small in the frame, partly off-screen, or seen from a viewpoint that presents little projected area. It does \emph{not} mean that the object's three-dimensional surface is sparsely sampled. The name, inherited from the codebase, is therefore a slight misnomer: $C_{pc}$ is a 2-D mask statistic, computed from $M$ \emph{before} the depth buffer is back-projected, so it is a property of camera pose and silhouette, not of the subsequent point cloud.
+A low $C_{pc}$ means the object occupies few pixels of the image.~$C_{pc}$ is a 2D mask statistic, computed from $M$ \emph{before} the depth buffer is back-projected, so it is a property of camera pose and silhouette, not of the subsequent point cloud. Elevation and azimuth change how large the object is on the image plane, so they change $C_{pc}$. Additive noise and downsampling act on depth values after $C_{pc}$ has already been read, so they are properties not properties of the mask.\\
 
-That distinction is what $C_{pc}$ can and cannot stand in for. Elevation and azimuth change how large the object is on the image plane, so they change $C_{pc}$. Additive noise and downsampling act on depth values and on the 3-D points derived from them, after $C_{pc}$ has already been read, so they are properties of the depth buffer and of the point cloud, not of the mask. The graph that follows from this dataflow, and the tests of the edges into $C_{pc}$, belong in Chapter~\ref{ch:formulation}.
-
-A \emph{point cloud} is the geometric object obtained by back-projecting a depth buffer through the pinhole camera model, and it is the primary input to Contact-GraspNet (Figure~\ref{fig:oxford_deer} illustrates the correspondence between a physical object and its point cloud representation). It is this object whose quality the four causal variables $(\sigma_d,\, \rho,\, \phi,\, \theta)$ degrade.
+\noindent A \emph{point cloud} is the geometric object obtained by back-projecting a depth buffer through the pinhole camera model, and it is the primary input to Contact-GraspNet. (Figure~\ref{fig:oxford_deer} illustrates the correspondence between a physical object and its point cloud representation). It is this object whose quality the four causal variables $(\sigma_d,\, \rho,\, \phi,\, \theta)$ degrade.
 
 \begin{figure}[htbp]
   \centering
@@ -455,9 +440,9 @@ A \emph{point cloud} is the geometric object obtained by back-projecting a depth
     \caption{The reconstructed 3D point cloud of the same statue: a finite set of metric surface samples $\mathcal{P} = \{\mathbf{p}_i \in \mathbb{R}^3\}$ produced by the sensor.}
     \label{fig:oxford_deer_pc}
   \end{subfigure}
-  \caption{A physical object and its point cloud representation, illustrating what a depth sensor actually produces. The raw scene (left) is converted into an unordered set of 3D surface coordinates (right); the point cloud retains only surfaces visible from the sensor's viewpoint and discards all topological structure. Adapted from Border and Gammell~\cite{border2024see}: photograph from Fig.~1 (p.~1507); point cloud from Fig.~15 (p.~1523).}
+  \caption{A physical object and its point cloud representation, illustrating what a depth sensor produces. The raw scene (left) is converted into an unordered set of 3D surface coordinates (right). The point cloud retains only surfaces visible from the sensor's viewpoint and discards all topological structure. Adapted from Border and Gammell~\cite{border2024see}: photograph from Fig.~1 (p.~1507) and point cloud from Fig.~15 (p.~1523).}
   \label{fig:oxford_deer}
-\end{figure}
+\end{figure}\\
 
 \begin{definition}[Point Cloud]
 \label{def:pointcloud}
@@ -472,27 +457,24 @@ three-dimensional Cartesian coordinates of a single surface sample, and $N$ is
 the total number of samples.
 \end{definition}
 
-Several properties of this definition deserve emphasis.  First, the point cloud
-has no inherent topological structure: there are no edges, faces, or connectivity
-relations between the points.  Each point is an independent geometric measurement.
+\noindent Several properties of this definition deserve emphasis.  First, the point cloud
+has no inherent topological structure, in that it has no edges or connectivity
+relations between the points.~Each point is an independent geometric measurement.
 Second, the set is unordered: permuting the indices $i$ yields the same point cloud.
 This distinguishes a point cloud from an image, where pixel $(u,v)$ has a fixed
-neighbourhood.  Third, the point cloud is \emph{partial}: it contains only those
-surface locations that are visible from the camera's viewpoint and within the
-sensor's measurement range.  Points on occluded or distant surfaces are absent.
+neighbourhood.  Third, the point cloud only contains surface locations that are visible from the camera's viewpoint.  Points on occluded or distant surfaces are absent. \\
 
-This last property is not a deficiency but a physically accurate representation
-of what a depth sensor observes from a single viewpoint.  Real-world depth sensors
+\noindent Real world depth sensors
 such as the Intel RealSense D400 series and the Microsoft Kinect produce exactly
 this structure: a set of metric surface samples from the sensor's perspective.
-The point cloud formalises this. A retained fraction $\rho$ of these points is written $\mathcal{P}_\rho$; the sampling rule is specified in Chapter~\ref{ch:method}.
-
-Grasp poses predicted from a point cloud are typically expressed in the OpenCV camera convention ($+Z$ forward, $+Y$ down); MuJoCo's cameras follow OpenGL ($+Z$ backward, $+Y$ up). Conversion between the two is an implementation detail of Chapter~\ref{ch:method}.
+The point cloud formalises this. A retained fraction $\rho$ of these points is written $\mathcal{P}_\rho$. The sampling rule is specified in Chapter~\ref{ch:method}.~Grasp poses predicted from a point cloud are typically expressed in the OpenCV camera convention ($+Z$ forward, $+Y$ down). In MuJoCo, cameras follow OpenGL ($+Z$ backward, $+Y$ up) and conversion between the two is an implementation detail of Chapter~\ref{ch:method}.
 
 \section{Contact-GraspNet}
 \label{sec:bg_cgn}
 
-Contact-GraspNet (CGN)~\cite{sundermeyer2021contact} is a neural network for 6-DoF grasp generation from point-cloud observations: given a partial point cloud $\mathcal{P}$, it outputs a set of grasp proposals, each a $4\times4$ pose together with a scalar confidence, by predicting per-point contact probability rather than regressing poses from global point cloud features. Its architecture processes each point $\mathbf{p}_i$ through a PointNet++-style encoder~\cite{qi2017pointnetpp} that aggregates local geometric features by grouping neighbouring points in 3D space. For each point, the network then predicts whether it is a valid contact point for a parallel-jaw gripper and, if so, what the associated grasp pose should be. This contact-centric formulation is architecturally anchored to the point cloud: the network's prediction heads are defined \emph{per point in $\mathcal{P}$}, not per image pixel or per voxel. Providing the raw depth image or a mesh instead would require a fundamentally different model. Using the point cloud is therefore not a design choice made in this thesis but a prerequisite of using CGN. The grasp pose itself is parameterised by a surface contact $c$, baseline and approach directions $(\vec{b},\vec{a})$, width $w$, and a fixed finger-base offset $d$, as illustrated in Figure~\ref{fig:cgn_grasp_representation}. Rather than regressing a free 6-DoF transform in SE(3), CGN predicts local grasp parameters around a point that is already in the observed cloud. Because each proposal is tied to a visible surface sample, CGN's behaviour depends directly on point-cloud quality: when $\sigma_d$, $\rho$, $\phi$, or $\theta$ degrade perception, the effect is not merely added noise on an otherwise fixed pose, but a change in which contact points are available and how reliable they are. That coupling is what makes CGN a suitable fixed mechanism for this audit---its inputs are perturbed and its outputs measured, without modifying the network itself. The same contact-point parameterisation is reused downstream rather than reimplemented; Triplane Grasping~\cite{li2025triplanegrasp}, for example, leaves CGN unchanged as a second stage on a single-view reconstructed cloud.
+Contact-GraspNet (CGN)~\cite{sundermeyer2021contactgraspnet} is a neural network that does grasp generation for 6-DoF from point-cloud observations. Given a point cloud $\mathcal{P}$, it outputs a set of grasp proposals, each a $4\times4$ pose together with a scalar confidence, by predicting contact probability. Its architecture processes each point $\mathbf{p}_i$ through a PointNet++ style encoder~\cite{qi2017pointnetpp} that aggregates local geometric features by grouping neighbouring points in 3D space. For each point, the network then predicts whether it is a valid contact point for a parallel-jaw gripper and if so, what the associated grasp pose should be. This formulation is anchored to the point cloud and providing the raw depth image instead would require a different model. Using the point cloud is therefore a prerequisite when using CGN as we are in this report.\\
+
+\noindent The grasp pose is itself parametrised by a surface contact $c$, approach directions $(\vec{b},\vec{a})$, width $w$ and a fixed finger base offset $d$, as illustrated in Figure~\ref{fig:cgn_grasp_representation}. CGN predicts local grasp parameters around a point that is already in the observed cloud. Since each proposal is tied to a visible surface sample, CGN's behaviour depends directly on point cloud quality. When $\sigma_d$, $\rho$, $\phi$ or $\theta$ degrade perception, there is also a change in which contact points are available and how reliable they are. That coupling means CGN's inputs can be perturbed and its outputs measured without modifying the network. Triplane Grasping~\cite{li2025triplanegrasp}, for example, leaves CGN unchanged as a second stage on a single-view reconstructed cloud and applies the same contact point parametrisation end to end.
 
 \begin{figure}[htbp]
   \centering
@@ -501,11 +483,11 @@ Contact-GraspNet (CGN)~\cite{sundermeyer2021contact} is a neural network for 6-D
   \label{fig:cgn_grasp_representation}
 \end{figure}
 
-CGN was trained on partial point clouds generated from single-viewpoint depth renders of ShapeNet objects~\cite{sundermeyer2021contact}---precisely the same modality as the perception pipeline in this thesis---under clean sensing conditions (no depth noise, no extreme viewpoint). A full mesh or a CAD model of the target object would be \emph{out of distribution} for CGN: the network has never been trained to process complete, noise-free geometric representations. Using the partial, viewpoint-dependent point cloud produced by back-projection faithfully reproduces the input distribution on which CGN was trained, which is essential for the validity of any degradation study. A degradation that pushes the input away from the training distribution for a reason unrelated to the variable under study would confound the causal analysis. CGN's headline accuracy-over 90\% on unseen objects in structured clutter-is reported downstream of a collision-aware selection stage that filters candidate grasps before execution.
+\noindent CGN was trained on partial point clouds generated from single-viewpoint depth renders of ShapeNet objects~\cite{sundermeyer2021contactgraspnet} under clean sensing conditions (no depth noise, no extreme viewpoint). A CAD model of the target object would be \emph{out of distribution} for CGN as the network has never been trained to process complete geometric representations. Using the partial point cloud produced by back-projection reproduces the input distribution on which CGN was trained. A degradation that pushes the input away from the training distribution for a reason unrelated to the variable under study would confound the causal analysis.\\
 
-That filtering stage is frequently left implicit in how such numbers are quoted, yet it is itself a precondition of success rather than a detail: without it, poses that are in collision with the object or support surface are counted alongside geometrically valid ones, and success rates collapse for reasons that have nothing to do with perception. Recent execution-oriented pipelines such as GILP~3.0~\cite{gambino2026gilp} make the same point explicitly: Contact-GraspNet-style predictors typically filter collisions after generation, whereas grasp success in clutter is often dominated by scene-level feasibility rather than the raw proposal score. Li et al.~\cite{li2025triplanegrasp} likewise separate raw CGN output from execution feasibility through \emph{grasp contact filtering}, retaining only proposals whose contact points lie on the segmented target object. They further report that most of their end-to-end latency is spent on single-view reconstruction rather than on grasp inference, underscoring that CGN's apparent performance is often gated by upstream cloud quality---a dependency this thesis makes explicit through $(\sigma_d,\rho,\phi,\theta)$ rather than through a learned reconstructor. This observation motivates the two-arm experimental design of Chapter~\ref{ch:method} (Section~\ref{sec:approach}), which separates an unfiltered arm (raw geometric validity under top-1 execution; this is the confirmatory grid, on which perceptual degradations are studied) from a filtered arm (top-$k$ collision rejection as a gate intervention) precisely so that this often-implicit precondition is measured rather than assumed away.
+\noindent The filtering stage is frequently left implicit in how such numbers are quoted, yet it is needed for a successful grasp.~Without it, poses that are in collision with the object are counted as geometrically valid. Recent execution oriented pipelines such as GILP~3.0~\cite{gambino2026gilp} show explicitly that Contact-GraspNet style predictors filter collisions after generation. This is in contrast to grasp success in clutter, often dominated by scene level feasibility not the raw proposal score. This motivates the experimental design of Chapter~\ref{ch:method} (Section~\ref{sec:approach}), which separates an unfiltered arm (raw geometric validity under top-1 execution) from a filtered arm (top-$k$ collision rejection as a gate intervention) so that this often-implicit precondition is measured explicitly.\\
 
-For this thesis, CGN is treated strictly as a fixed black-box backbone: its architecture is not modified or retrained, and the object of study is how its outputs-confidence $q_{\text{grasp}}$, candidate count $n_{\text{grasps}}$, and pose error $e_{\text{pose}}$-respond to controlled perturbation of its inputs, namely segmentation fraction $C_{pc}$ (via viewpoint) and depth noise $\sigma_d$ (via the surrogate of Section~\ref{sec:bg_depth}). Framed this way, CGN's opacity as a deep network is not the diagnostic problem this thesis solves: the SCM does not need to open CGN up, only to model its input-output behaviour as a mechanism with measurable intermediate variables, which is the surrogate-model move formalised in Section~\ref{sec:scm_fitting}. What CGN's opacity does foreclose is any diagnosis that depends on inspecting its internals directly-attention maps or learned features offered as an explanation-and that route is deliberately not taken here.
+\noindent For this report, CGN is treated as a fixed black-box: its architecture is not modified or retrained. The object of study is how its outputs (confidence $q_{\text{grasp}}$, candidate count $n_{\text{grasps}}$ and pose error $e_{\text{pose}}$) respond to controlled perturbation of its inputs, namely segmentation fraction $C_{pc}$ and depth noise $\sigma_d$.~This way, CGN's opacity as a deep network is not the problem this thesis solves and thus the SCM does not need to open CGN up. It only needs to model its input-output behaviour as a mechanism with measurable intermediate variables, formalised in Section~\ref{sec:scm_fitting}. What CGN's opacity does foreclose is any diagnosis that depends on inspecting its internals directly such as attention maps or learned features offered as an explanation and that direction is not taken here.
 
 \section{Large Language Models in Robotics}
 \label{sec:bg_llm}
@@ -525,7 +507,7 @@ This chapter formalises grasp failure diagnosis as a causal inference problem. W
 \section{Variables}
 \label{sec:variables}
 
-Four \emph{exogenous} variables <$\sigma_d$, $\rho$, $\phi$, $\theta$> are set by the experimenter in each trial.  <$\sigma_d$, $\rho$> describe the quality of the depth measurement: $\sigma_d$ is the per-pixel standard deviation (metres) of Gaussian noise applied to the rendered depth image after clipping negative values to zero while $\rho$ is the fraction of 3D points retained after that noisy depth is back projected to a point cloud. <$\phi$, $\theta$> describe where the observation is made from, where $\phi$ is the camera elevation above the horizontal and $\theta$ its azimuth, both on a fixed radius sphere centred on the object (Figure~\ref{fig:viewing_sphere}). Together these exogenous variables quantify sensor degradation and partial observability. A trial with large $\sigma_d$ and small $\rho$ gives CGN a corrupted and sparse point cloud, whereas one at steep $\phi$ presents a clean cloud that conceals the object's vertical surfaces. The four variables are mutually independent by construction and graphically <$\sigma_d,\rho,\phi,\theta$> have no parents in the DAG (hence the name exogenous).
+Four \emph{exogenous} variables <$\sigma_d$, $\rho$, $\phi$, $\theta$> are set by the experimenter in each trial.  <$\sigma_d$, $\rho$> describe the quality of the depth measurement: $\sigma_d$ is the per-pixel standard deviation (metres) of Gaussian noise applied to the rendered depth image after clipping negative values to zero while $\rho$ is the fraction of 3D points retained after that noisy depth is back projected to a point cloud. <$\phi$, $\theta$> describe where the observation is made from, where $\phi$ is the camera elevation above the horizontal and $\theta$ its azimuth, both on a fixed radius sphere centred on the object. Together these exogenous variables quantify sensor degradation and partial observability. A trial with large $\sigma_d$ and small $\rho$ gives CGN a corrupted and sparse point cloud, whereas one at steep $\phi$ presents a clean cloud that conceals the object's vertical surfaces. The four variables are mutually independent by construction and graphically <$\sigma_d,\rho,\phi,\theta$> have no parents in the DAG (hence the name exogenous) \\
 
 \begin{figure}[htbp]
   \centering
@@ -534,9 +516,9 @@ Four \emph{exogenous} variables <$\sigma_d$, $\rho$, $\phi$, $\theta$> are set b
   \label{fig:viewing_sphere}
 \end{figure}
 
-\noindent Five \emph{endogenous} variables <$C_{pc}$, $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$, $\text{has\_grasps}$> are measured within each trial. Segmentation fraction $C_{pc}$ is the 2-D mask statistic of Section~\ref{sec:bg_depth} (Equation~\eqref{eq:cpc_def}): the fraction of image pixels belonging to the target object. A low $C_{pc}$ means the object is poorly resolved on the image plane. Because it is read from the segmentation buffer before the point cloud is formed, depth noise and downsampling have no causal path into it (Section~\ref{sec:falsification}). The remaining variables characterise CGN's output. The gate $\text{has\_grasps} \in \{0,1\}$ records whether CGN returns any candidate grasp at all; $n_{\text{grasps}}$ is the number of grasps returned; $q_{\text{grasp}}$ is the confidence score assigned to the top-ranked candidate grasps; and $e_{\text{pose}}$ is the Euclidean distance in the horizontal plane between that candidate's gripper $(x,y)$ and the true object centroid, so a large $e_{\text{pose}}$ means a grasp was proposed far from the object it should hold.~The outcome $Y \in \{0,1\}$ is binary grasp success or failure.~The gate is treated separately because when $\text{has\_grasps}=0$ there is no pose to execute and $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$ are undefined for that trial. \\
+\noindent Five \emph{endogenous} variables <$C_{pc}$, $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$, $\text{has\_grasps}$> are measured within each trial. Segmentation fraction $C_{pc}$ is the fraction of image pixels belonging to the target object, computed from the simulator's segmentation buffer - a low $C_{pc}$ means the object is poorly resolved. The remaining variables characterise CGN's output. The gate $\text{has\_grasps} \in \{0,1\}$ records whether CGN returns any candidate grasp at all; $n_{\text{grasps}}$ is the number of grasps returned; $q_{\text{grasp}}$ is the confidence score assigned to the top-ranked candidate grasps; and $e_{\text{pose}}$ is the Euclidean distance between that candidate's gripper position and the true object centroid, so a large $e_{\text{pose}}$ means a grasp was proposed far away from the object it should hold.~The outcome $Y \in \{0,1\}$ is binary grasp success or failure.~The gate is treated separately because when $\text{has\_grasps}=0$ there is no pose to execute and $n_{\text{grasps}}$, $q_{\text{grasp}}$, $e_{\text{pose}}$ are undefined for that trial. \\
 
-\noindent Each structural equation carries its own exogenous \emph{noise term} $U_i$ ($U_C, U_q, U_n, U_e$) representing unmodelled factors internal to that mechanism such as segmentation noise, CGN's internal stochasticity or pose regression error. The independence of these noise terms determines whether the model is Markovian in the sense required by Section~\ref{sec:counterfactual_diagnosis}. This thesis uses ``exogenous'' in two related but distinct senses. In the graphical sense, $\sigma_d$, $\rho$, $\phi$, $\theta$ are exogenous because they have no parents in the DAG. Separately, each structural equation carries its own exogenous noise term $U_i$. It is the independence properties of these noise terms, not of the four controlled variables, that determine whether the model is Markovian in the sense required by the counterfactual identification argument of Section~\ref{sec:counterfactual_diagnosis}.
+\noindent Each structural equation carries its own exogenous \emph{noise term} $U_i$ ($U_C, U_q, U_n, U_e$) representing unmodelled factors internal to that mechanism such as segmentation noise, CGN's internal stochasticity or pose regression error. The independence of these noise terms determines whether the model is Markovian in the sense required by Section~\ref{sec:counterfactual_diagnosis}.
 
 \section{Causal Graph}
 \label{sec:causal_graph}
@@ -565,7 +547,8 @@ The causal relationships are encoded in the DAG of Figure~\ref{fig:causal_dag}. 
 \section{Structural Equations}
 \label{sec:structural_equations}
 
-The mechanisms presented below are parametrised as a small set of regression models chosen for interpretability, not to represent the true mechanism exactly (they are not claims about the true functional form). Only the graph of Section~\ref{sec:causal_graph} carries the falsifiable commitment that this report's diagnostic claims depend on (Section~\ref{sec:bg_scm}). . Two specification choices follow from the graph. First, $n_{\text{grasps}}$ has a point mass at zero---CGN returns no candidate at all on 141 of 432 trials---so it is modelled as a two-part hurdle-a gate, and a count conditional on the gate---rather than one continuous equation that would blur the distinction of Assumption 2. Second, $q_{\text{grasp}}$ and $e_{\text{pose}}$ are specified as siblings, so neither equation contains the other as a regressor.
+The mechanisms presented below are parametrised as a small set of regression models chosen for interpretability, not to represent the true mechanism exactly (they are not claims about the true functional form). Only the graph of Section~\ref{sec:causal_graph} carries the falsifiable commitment that this report's diagnostic claims depend on (Section~\ref{sec:bg_scm}). Two specification choices follow from the graph. First, $n_{\text{grasps}}$ has a point mass at zero, so it is modelled as a two-part hurdle-a gate, and a count conditional on the gate rather than one continuous equation that would blur the distinction of Assumption 2. Second, $q_{\text{grasp}}$ and $e_{\text{pose}}$ are specified as siblings, so neither equation contains the other as a regressor.
+
 
 \begin{align}
   C_{pc} &= \beta_0 + \beta_1\phi + \beta_2\theta + U_C \label{eq:cpc}\\[2pt]
@@ -612,7 +595,7 @@ Three of the seven pre-specified tests came back against the pre-registered grap
 
 The third, the $q_{\text{grasp}} \to e_{\text{pose}}$ edge, cannot be settled statistically. Conditioning on $\{\sigma_d,\rho,\phi,\theta,\log n_{\text{grasps}}\}$ still leaves a significant residual coefficient ($n=285$; coefficient $-0.184$, $p=0.015$), which is what a confounded sibling pair would both produce, since a chain and a fork with a shared parent are indistinguishable from conditioning alone. What settles the direction is the code: the function returning the pose never reads the score, and both are read from the same $\arg\max$ index. The residual correlation is confirmed, but as evidence \emph{for} the sibling reading. Separately, the fitted equations' predictions of $P(Y \mid \doop(v))$ are checked against stratified, model-free estimates computed with no line fitted to them; the divergence at $\phi=30°$, where CGN exhibits a systematic pose bias that a single global slope cannot represent, is reported directly rather than smoothed over. Together these conditions fix in advance what would count against the model, and record that some of it did, so the SCM's later agreement with ground truth (Chapter~\ref{ch:results}) is not circular.
 
-\paragraph{(b) Held-out interventional predictions.} Beyond conditional-independence tests on the graph's structure, the fitted structural equations make quantitative predictions about $P(Y \mid \doop(v))$ that can be checked against a statistic computed independently of the OLS/logistic fit itself: the stratified, model-free total-effect and path-decomposition estimates reported in Appendix~\ref{app:nonparametric} (means and Wilson-score proportions computed directly from the factorial grid, with no line fitted to them). Where a structural equation's linear-in-parameters prediction diverges from this model-free estimate---as it does for the CGN pose bias at $\phi=30°$ discussed in Section~\ref{sec:structural_equations}---this divergence is reported as a specific, located failure of the parametric surrogate rather than smoothed over.
+\paragraph{(b) Held-out interventional predictions.} Beyond conditional-independence tests on the graph's structure, the fitted structural equations make quantitative predictions about $P(Y \mid \doop(v))$ that can be checked against a statistic computed independently of the OLS/logistic fit itself: the stratified, model-free total-effect and path-decomposition estimates reported in Appendix~\ref{app:nonparametric} (means and Wilson-score proportions computed directly from the factorial grid, with no line fitted to them). Where a structural equation's linear-in-parameters prediction diverges from this model-free estimate - as it does for the CGN pose bias at $\phi=30°$ discussed in Section~\ref{sec:structural_equations} - this divergence is reported as a specific, located failure of the parametric surrogate rather than smoothed over.
 
 \section{Single-Cause, Multi-Cause, and Irreducible Failure}
 \label{sec:single_cause_def}
@@ -646,16 +629,16 @@ These three hypotheses are evaluated on the 432-trial proximity pilot (Section~\
 % ============================================================
 %  CHAPTER 4: EXPERIMENTAL TESTBED
 % ============================================================
-\chapter{Experimental Testbed}
+\chapter{Experimental Setup}
 \label{ch:method}
 \label{ch:testbed}
 
-This chapter describes the experimental setup. Perception is shared across both experiments: the camera is placed at $(\phi,\theta)$, a depth buffer is rendered, additive Gaussian noise of scale $\sigma_d$ is applied to that buffer (the identity map when $\sigma_d=0$), the noisy depth is back-projected and downsampled to a point cloud $\mathcal{P}_\rho$, and that cloud---not the depth image---is the input to Contact-GraspNet. Contact-GraspNet is queried only when the target is visible ($C_{pc}>0$). The 432-trial experiment used random rather than strided downsampling; that is the only documented perception-stage difference. The early tabletop scene used a primitive reconstruction of the Panda, on the assumption that the original Menagerie mesh would make contact resolution unstable. The original mesh was later restored once it could be loaded without a material loss of contact stability (Section~\ref{sec:sim_env}). Execution was redesigned in a strictly sequential chain, documented in Appendix~\ref{app:implementation}: a first full-arm inverse-kinematics stack failed to lift; a 432-trial experiment then scored success with a proximity threshold on $e_{\text{pose}}$; a 7{,}560-trial experiment used a floating-gripper physical hold/lift on a factorial grid. A later full-arm pass (Section~\ref{sec:ik_controller}) showed that reach can be solved and that a lift exists only under listed contact compromises; that stack was not the execution used in the 7{,}560-trial experiment. No two execution protocols were run as a designed comparison; each was set aside only after a located failure mode.
+This chapter describes the experimental setup. In all runs, the camera is placed at $(\phi,\theta)$, a depth buffer is rendered, additive Gaussian noise $\sigma_d$ is applied to the buffer (the identity map when $\sigma_d=0$), the noisy depth is back-projected and downsampled to a point cloud $\mathcal{P}_\rho$, then that cloud becomes the input to Contact-GraspNet. Contact-GraspNet is queried only when the target is visible ($C_{pc}>0$). The early tabletop scene used a primitive reconstruction of the Panda, on the assumption that the original Menagerie mesh would make the contact resolution unstable. The original mesh was later restored once it could be loaded without a loss of stability (Section~\ref{sec:sim_env}). Appendix~\ref{app:implementation} documents the stages of experimental design and the rationale behind each design. The first tabletop setup used a full-arm inverse-kinematics stack that failed to lift. a proximity threshold on $e_{\text{pose}}$ was used only as a 432-trial pilot; the confirmatory bed is a floating-gripper physical hold/lift test on a 7{,}560-trial factorial grid. A later full-arm due-diligence pass (Section~\ref{sec:ik_controller}) showed that reach can be solved and that a lift exists only under listed contact compromises; it was not adopted as the main outcome because it involved a lot of compromises. 
 
 \section{Pipeline Overview}
 \label{sec:pipeline_overview}
 
-Each trial in the 7{,}560-trial experiment follows Algorithm~\ref{alg:pipeline}. Perception follows the same sequence as the 432-trial experiment, except for the downsampling rule noted above; execution uses the floating-gripper protocol of Section~\ref{sec:grasp_execution}. The two early exits implement the $\text{has\_grasps}$ gate of Section~\ref{sec:causal_graph}: an empty segmentation or a zero candidate count sets $Y=0$ without execution. The remainder of this chapter expands the camera, depth, point-cloud, transform, and execution steps in the same order. Figure~\ref{fig:trial_anatomy} locates where each exogenous variable enters that sequence.
+Each trial follows Algorithm~\ref{alg:pipeline}. Perception is shared with the 432-trial pilot; execution uses the floating-gripper protocol of Section~\ref{sec:grasp_execution}. The two early exits implement the $\text{has\_grasps}$ gate of Section~\ref{sec:causal_graph}: an empty segmentation or a zero candidate count sets $Y=0$ without execution. The remainder of this chapter expands the camera, depth, point-cloud, transform, and execution steps in the same order. Figure~\ref{fig:trial_anatomy} locates where each exogenous variable enters that sequence.
 
 \begin{figure}[htbp]
   \centering
@@ -665,7 +648,7 @@ Each trial in the 7{,}560-trial experiment follows Algorithm~\ref{alg:pipeline}.
 \end{figure}
 
 \begin{algorithm}[hbt!]
-\caption{Floating-Gripper Trial Simulation Pipeline}
+\caption{Experiment Pipeline}
 \label{alg:pipeline}
 \begin{algorithmic}[1]
 \Require Object scene $S$, exogenous settings $(\sigma_d, \rho, \phi, \theta)$, seed
@@ -749,7 +732,7 @@ where the $\max$ operation ensures that depth values remain non-negative. The no
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{figures/fig_depth_degradation_rgb.png}
+  \includegraphics[width=\textwidth]{figures/fig_depth_degradation_rgb.pdf}
   \caption{Perception-camera view of the cylinder as additive Gaussian noise is increased across the confirmatory $\sigma_d$ grid. Left: clean ($\sigma_d=0$). Right: $\sigma_d=0.04$\,m. Intermediate panels are the grid levels $0.005$, $0.01$, and $0.02$\,m. Noise is injected on the depth buffer (Equation~\eqref{eq:noise_injection}); the RGB sequence visualises the same schedule.}
   \label{fig:depth_degradation}
 \end{figure}
@@ -1610,45 +1593,41 @@ The 57.2\% (167/292) irreducible-failure rate is a ground-truth re-simulation on
 \section{Assumptions and Limitations}
 \label{sec:limitations}
 
-\begin{enumerate}
-  \item \textbf{Expert-specified graph, missing the gate.} The DAG is pre-registered from dataflow, not discovered. Yang and Bareinboim~\cite{yang2025hierarchy} show that $\mathcal{L}_3$ queries require assumptions no $\mathcal{L}_1$ or $\mathcal{L}_2$ dataset can fully falsify. The confirmatory grid adds a further misspecification: the open-hand collision gate is a mediator on the path to physical $Y$ and is not a node in Figure~\ref{fig:causal_dag}.
+\textbf{Expert-specified graph, missing the gate.} The DAG is specified from dataflow knowledge, not discovered from data. Yang and Bareinboim~\cite{yang2025hierarchy} show that $\mathcal{L}_3$ queries require assumptions no $\mathcal{L}_1$ or $\mathcal{L}_2$ dataset can fully falsify. The confirmatory grid adds a further misspecification: the open-hand collision gate is a mediator on the path to physical $Y$ and is not a node in Figure~\ref{fig:causal_dag}.
 
-  \item \textbf{Floating-gripper idealisation.} The test assumes the end-effector can be held at any commanded pose. Unreachable or self-colliding proposals for the full manipulator are not penalised. Success rates are not full-system pick rates. Open-hand teleport to the final pose is an ACRONYM-style validity check and may be slightly pessimistic relative to an approach along the grasp axis. Full-arm due diligence later showed that reach can be solved (25/25 at one clean cell) while frictional lift on those Contact-GraspNet poses remains 0/25 unless forearm collisions are ghosted, geometry is thinned, friction is raised, and---for a held lift---a weld is latched (Appendix~\ref{sec:arm_v4}).
+\textbf{Floating-gripper idealisation.} The test assumes the end-effector can be held at any commanded pose. Unreachable or self-colliding proposals for the full manipulator are not penalised. Success rates are not full-system pick rates. Open-hand teleport to the final pose is an ACRONYM-style validity check and may be slightly pessimistic relative to an approach along the grasp axis. Full-arm due diligence showed that reach can be solved (25/25 at one clean cell) while frictional lift on those Contact-GraspNet poses remains 0/25 unless forearm collisions are ghosted, geometry is thinned, friction is raised, and a weld is latched (Appendix~\ref{sec:arm_v4}).
 
-  \item \textbf{Fixed disturbance and contact parameters.} Lift height, jitter, the 40\%-of-lift threshold, the $\pm$70\,N per-finger cap, and friction-5.0 pads were chosen once on physical grounds, not swept. Quoted rates are conditional on that profile. The pads are elevated relative to rubber-on-plastic to compensate for box-fingertip area.
+\textbf{Fixed disturbance and contact parameters.} Lift height, jitter, the 40\%-of-lift threshold, the $\pm$70\,N per-finger cap, and friction-5.0 pads were chosen once on physical grounds, not swept. Quoted rates are conditional on that profile. The pads are elevated relative to rubber-on-plastic to compensate for box-fingertip area.
 
-  \item \textbf{Two scoring rules on the filtered arm.} The 89\% cell uses clamp-and-lift; the 7{,}560-trial grid uses shake. They are not interchangeable.
+\textbf{Two scoring rules on the filtered arm.} The 89\% cell uses clamp-and-lift; the 7{,}560-trial grid uses shake. They are not interchangeable.
 
-  \item \textbf{Gaussian noise.} Additive i.i.d.\ depth noise omits structured Kinect-class artefacts (IR dropout, discontinuity bias, multipath).
+\textbf{Gaussian noise simplification.} The i.i.d.\ Gaussian noise model is a simplification for causal cleanliness. Real depth cameras exhibit spatially correlated and scene-dependent NDP patterns~\cite{sweeney2019supervised}; for example, dropouts cluster at occlusion boundaries. Replacing the i.i.d.\ noise with a CNN-predicted NDP mask is a natural extension.
 
-  \item \textbf{Simulation only; diagnosis only.} No sim-to-real claim. Recovery actions are out of scope.
+\textbf{Simulation only; diagnosis only.} No sim-to-real claim is made. Recovery actions are out of scope.
 
-  \item \textbf{Pilot outcome for parametric SCM and LLM.} Fit statistics, LLM accuracy, and the 57.2\% irreducibility figure use $Y = \mathbf{1}\{e_{\text{pose}} < D_\tau\}$. Under that rule $Y$ and $e_{\text{pose}}$ are nearly the same quantity. Six WinError rows (1.4\%) affect only that sample.
+\textbf{Proximity-based outcome for parametric SCM and LLM.} Fit statistics, LLM accuracy, and the 57.2\% irreducibility figure use $Y = \mathbf{1}\{e_{\text{pose}} < D_\tau\}$. Under that rule $Y$ and $e_{\text{pose}}$ are nearly the same quantity. Six WinError rows (1.4\%) affect only that sample.
 
-  \item \textbf{Intervention magnitude (pilot).} Every counterfactual reset is a full return to the clean baseline, not a partial correction, and $\phi_{\text{nom}} = 45°$ is itself a choice. The 57.2\% rate is irreducibility within that operationalisation. Scoring Algorithm~\ref{alg:diagnosis} against the same ground truth yields 44.2\% on single-cause trials: a pre-registered miss of the 50\% bar, concentrated on viewpoint variables, consistent with the $\phi = 30°$ CGN bias being amplified by abduction.
+\textbf{Intervention magnitude.} Every counterfactual reset is a full return to the clean baseline, not a partial correction, and $\phi_{\text{nom}} = 45°$ is itself a choice. The 57.2\% rate is irreducibility within that operationalisation. Algorithm~\ref{alg:diagnosis} scored against the same ground truth yields 44.2\% on single-cause trials, missing the 50\% target. The miss concentrates on viewpoint variables, consistent with the $\phi = 30°$ CGN bias being amplified by abduction.
 
-  \item \textbf{Attribution vs.\ actual causation.} Algorithm~\ref{alg:diagnosis} uses $\arg\max_v \Delta_v$. Halpern--Pearl minimality~\cite{halpern2005causes} is not checked.
-\end{enumerate}
+\textbf{Attribution vs.\ actual causation.} Algorithm~\ref{alg:diagnosis} uses $\arg\max_v \Delta_v$. Halpern--Pearl minimality~\cite{halpern2005causes} is not checked.
+
 
 \section{Future Work}
 \label{sec:future_work}
 
-\begin{itemize}
-  \item \textbf{Re-fit the SCM on the floating-gripper grid, with the gate.} Add $G$ as a mediator, condition execution-channel equations on $G=1$, and only then score Algorithm~\ref{alg:diagnosis} against paired counterfactuals under physical $Y$. The proximity-pilot scoring in Section~\ref{sec:scm_fit} does not close this.
+\textbf{Re-fit the SCM on the floating-gripper grid, with the gate.} Adding $G$ as a mediator, conditioning execution-channel equations on $G=1$, and scoring Algorithm~\ref{alg:diagnosis} against paired counterfactuals under physical $Y$ is the immediate next step. The proximity-study scoring in Section~\ref{sec:scm_fit} does not close this.
 
-  \item \textbf{Intervention-magnitude sensitivity.} Repeat the paired resets at intermediate values (e.g.\ $\sigma_d \in \{0, 0.01, 0.02\}$), on physical $Y$, to test whether irreducibility is robust or an artefact of full clean-baseline resets.
+\textbf{Intervention-magnitude sensitivity.} Repeating the paired resets at intermediate values (e.g.\ $\sigma_d \in \{0, 0.01, 0.02\}$) on physical $Y$ would test whether irreducibility is robust or an artefact of full clean-baseline resets.
 
-  \item \textbf{Partial-observability abduction.} Hide $(\sigma_d, \rho, \phi, \theta)$ from the diagnostician and infer them from intermediates, so abduction is not bookkeeping.
+\textbf{Partial-observability abduction.} Hiding $(\sigma_d, \rho, \phi, \theta)$ from the diagnostician and inferring them from intermediates would make abduction a genuine inference problem rather than bookkeeping.
 
-  \item \textbf{VLM baseline with images, and Tiers T2--T3.} The present LLM is text-only by design (T1). Completing T2/T3 and supplying the rendered view would test whether structural knowledge still adds anything once the baseline can see the scene.
+\textbf{VLM baseline with images, and Tiers T2--T3.} The present LLM is text-only by design (T1). Completing T2/T3 and supplying the rendered view would test whether structural knowledge still adds value once the baseline can see the scene.
 
-  \item \textbf{Non-linear equations for the $\phi = 30°$ CGN bias.} Splines or a small network; the residual-correlation check of Section~\ref{sec:scm_fit} is now done and does not need repeating as future work.
+\textbf{Non-linear equations for the $\phi = 30°$ CGN bias.} Splines or a small network could address the residual viewpoint misspecification. The residual-correlation check of Section~\ref{sec:scm_fit} is complete and does not need repeating.
 
-  \item \textbf{Contact-parameter sweep.} A one-cell friction sweep would test whether box 1.5\% post-gate success is a contact-parameter artefact.
+\textbf{Contact-parameter sweep.} A one-cell friction sweep would determine whether the box 1.5\% post-gate success rate is a contact-parameter artefact.
 
-  \item \textbf{Real-robot validation and closed-loop recovery.} Controlled physical perturbations; use the diagnosis to choose a camera move or a filter rather than stopping at attribution.
-\end{itemize}
-
+\textbf{Real-robot validation and closed-loop recovery.} Controlled physical perturbations and using the diagnosis output to choose a camera move or a filter, rather than stopping at attribution, would close the loop between diagnosis and action.
 
 % ============================================================
 %  CHAPTER 8: CONCLUSION
@@ -1656,11 +1635,11 @@ The 57.2\% (167/292) irreducible-failure rate is a ground-truth re-simulation on
 \chapter{Conclusion}
 \label{ch:conclusion}
 
-This thesis asked whether a pre-registered mechanistic SCM, built from the known dataflow of a grasp pipeline, can audit why a grasp failed when the experimenter controls the perturbation. The confirmatory experimental bed is a weld-constrained floating-gripper hold/lift test on 7{,}560 factorial trials across three objects. Physical success is 5.0\%. Most of that loss is the open-hand collision gate (72.8\%), not a missing Contact-GraspNet proposal (5.4\%). Depth noise raises gate-pass while destroying post-gate hold, so the marginal rate is non-monotone. Object geometry dominates execution. Filtering collisions at one clean viewpoint lifts clamp-and-lift success to 89\%, which shows that the unfiltered 5.0\% is a pose-selection figure, not a proof that the gripper cannot lift.
+This report asked whether a mechanistic SCM, built from the known dataflow of a grasp pipeline, can diagnose why a grasp failed when the experimenter controls the perturbation. The confirmatory experimental bed is a weld-constrained floating-gripper hold/lift test on 7{,}560 factorial trials across three objects. Physical success is 5.0\%. Most of that loss is the open-hand collision gate (72.8\%), not a missing Contact-GraspNet proposal (5.4\%). Depth noise raises gate-pass while destroying post-gate hold, so the marginal rate is non-monotone. Object geometry dominates execution. Filtering collisions at one clean viewpoint lifts clamp-and-lift success to 89\%, confirming the unfiltered 5.0\% is a pose-selection figure, not evidence that the gripper cannot lift.
 
-Two earlier stacks are reported because they were run, not because they are the result. Full-arm inverse kinematics reached the commanded position on the first attempt and still failed to lift; a later 6-DoF pass reached Contact-GraspNet poses in 25/25 clean trials with 0/25 frictional lifts, and produced a held lift only under the contact compromises of Appendix~\ref{sec:arm_v4}. The 432-trial proximity study then scored $Y$ as a threshold on $e_{\text{pose}}$: useful as a pilot---it showed a strong noise gradient (71.0\% to 0.0\% under that rule) and hosted the SCM fit, the paired counterfactual ground truth (57.2\% irreducible under full resets), and a scored SCM-versus-LLM comparison (44.2\% vs.\ 31.6\% on 95 single-cause trials; Hypothesis~\ref{hyp:accuracy} missed its 50\% bar)---but circular as a physical-grasp outcome. Counterfactual attribution on the SCM was scored against that ground truth; it was not re-fit on physical $Y$.
+Two earlier stacks are reported because they were run, not because they are the result. Full-arm inverse kinematics reached the commanded position on the first attempt and still failed to lift; a later 6-DoF pass reached Contact-GraspNet poses in 25/25 clean trials with 0/25 frictional lifts, and produced a held lift only under the contact compromises of Appendix~\ref{sec:arm_v4}. The 432-trial proximity study scored $Y$ as a threshold on $e_{\text{pose}}$: it showed a strong noise gradient (71.0\% to 0.0\% under that rule), hosted the SCM fit, the paired counterfactual ground truth (57.2\% irreducible under full resets), and a scored SCM-versus-LLM comparison (44.2\% vs.\ 31.6\% on 95 single-cause trials; Hypothesis~\ref{hyp:accuracy} missed its 50\% bar), but is circular as a physical-grasp outcome. Counterfactual attribution on the SCM was scored against that ground truth; it was not re-fit on physical $Y$.
 
-The engineering path (first IK, then proximity, then mocap, then a weld-constrained floating hand, with a later full-arm due-diligence return) is a sequential debugging chain, documented in Appendix~\ref{app:implementation}. The causal argument does not depend on Contact-GraspNet specifically: any grasp model and any simulator that yields depth, a pose, and an independent physical outcome can host the same audit, provided the outcome is not a function of a mediator already in the graph.
+The engineering path (first IK, then proximity, then mocap, then a weld-constrained floating hand, with a later full-arm due-diligence return) is a sequential debugging chain, documented in Appendix~\ref{app:implementation}. The causal argument does not depend on Contact-GraspNet specifically: any grasp model and any simulator that yields depth, a pose, and an independent physical outcome can host the same procedure, provided the outcome is not a function of a mediator already in the graph.
 
 
 % ============================================================
@@ -1668,77 +1647,63 @@ The engineering path (first IK, then proximity, then mocap, then a weld-constrai
 % ============================================================
 \begin{thebibliography}{99}
 
-\bibitem{bohg2014data}
-J.~Bohg, A.~Morales, T.~Asfour, and D.~Kragic,
-``Data-Driven Grasp Synthesis---A Survey,''
-\emph{IEEE Trans.\ Robot.}, vol.~30, no.~2, pp.~289--309, 2014.
-
-\bibitem{sundermeyer2021contact}
-M.~Sundermeyer et al., ``Contact-GraspNet: Efficient 6-DoF Grasp
-Generation in Cluttered Scenes,'' \emph{IEEE ICRA}, 2021,
-pp.~13438--13444.
-
-\bibitem{gambino2026gilp}
-G.~Gambino, S.~Tolomei, F.~Angelini, and M.~Garabini,
-``Grasp It Like a Pro 3.0: An Expert-Based Data-Driven Algorithm
-for Grasping Unknown Objects in Cluttered Environments,''
-\emph{IEEE Trans.\ Autom.\ Sci.\ Eng.}, vol.~23,
-pp.~6579--6590, 2026.
+\bibitem{sundermeyer2021contactgraspnet}
+M.~Sundermeyer, A.~Mousavian, R.~Triebel, and D.~Fox,
+``Contact-GraspNet: Efficient 6-DoF Grasp Generation in Cluttered Scenes,''
+arXiv preprint arXiv:2103.14127, 2021. [Online]. Available: https://arxiv.org/abs/2103.14127
+[Accessed: 26 May 2026].
 
 \bibitem{fang2020graspnet}
-H.-S.~Fang et al., ``GraspNet-1Billion: A Large-Scale Benchmark for
-General Object Grasping,'' \emph{IEEE/CVF CVPR}, 2020,
-pp.~11444--11453.
+H.-S.~Fang, C.~Wang, M.~Gou, and C.~Lu,
+``GraspNet-1Billion: A Large-Scale Benchmark for General Object Grasping,''
+\emph{2020 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pp.~11441--11450, 2020,
+doi: \href{https://doi.org/10.1109/CVPR42600.2020.01146}{10.1109/CVPR42600.2020.01146}.
 
-\bibitem{khoshelham2011accuracy}
-K.~Khoshelham and S.~O.~Elberink,
-``Accuracy and Resolution of Kinect Depth Data for Indoor Mapping
-Applications,''
-\emph{Sensors}, vol.~12, no.~2, pp.~1437--1454, 2012.
+\bibitem{fang2023anygrasp}
+H.-S.~Fang, C.~Wang, H.~Fang, M.~Gou, J.~Liu, H.~Yan, W.~Liu, Y.~Xie, and C.~Lu,
+``AnyGrasp: Robust and Efficient Grasp Perception in Spatial and Temporal Domains,''
+\emph{IEEE Transactions on Robotics}, vol.~39, no.~5, pp.~3929--3945, 2023,
+doi: \href{https://doi.org/10.1109/TRO.2023.3281153}{10.1109/TRO.2023.3281153}.
 
-\bibitem{border2024see}
-R.~Border and J.~D.~Gammell,
-``The Surface Edge Explorer (SEE): A Measurement-Direct Approach to Next
-Best View Planning,''
-\emph{The International Journal of Robotics Research},
-vol.~43, no.~11, p.~1507, Sep.~2024.
+\bibitem{ruiz2025physics}
+J.~A.~Ruiz, A.~Iriondo, E.~Lazkano, A.~Ansuategi, and I.~Maurtua,
+``Physics-Based Self-Supervised Grasp Pose Detection,''
+\emph{Machines}, vol.~13, no.~1, p.~12, 2025,
+doi: \href{https://doi.org/10.3390/machines13010012}{10.3390/machines13010012}.
 
-\bibitem{sweeney2019supervised}
-C.~Sweeney, G.~Izatt, and R.~Tedrake,
-``A Supervised Approach to Predicting Noise in Depth Images,''
-\emph{IEEE International Conference on Robotics and Automation (ICRA)},
-May 2019, doi:~10.1109/ICRA.2019.8793820.
+\bibitem{pearl2009causality}
+J.~Pearl,
+\emph{Causality: Models, Reasoning, and Inference}, 2nd~ed.
+Cambridge: Cambridge University Press, 2009.
 
-\bibitem{nguyen2012modeling}
-C.~V.~Nguyen, S.~Izadi, and D.~Lovell,
-``Modeling Kinect Sensor Noise for Improved 3D Reconstruction and
-Tracking,'' \emph{IEEE 3DIM/3DPVT}, 2012, pp.~524--530.
+\bibitem{pearl2018book}
+J.~Pearl and D.~Mackenzie,
+\emph{The Book of Why: The New Science of Cause and Effect}.
+New York: Basic Books, 2018.
 
-\bibitem{murali2020grasp}
-A.~Murali et al., ``6-DOF Grasping for Target-Driven Object
-Manipulation in Clutter,'' \emph{IEEE ICRA}, 2020, pp.~6232--6238.
+\bibitem{calandra2018more}
+R.~Calandra, A.~Owens, D.~Jayaraman, J.~Lin, W.~Yuan, J.~Malik, and S.~Levine,
+``More Than a Feeling: Learning to Grasp and Regrasp Using Vision and Touch,''
+\emph{IEEE Robotics and Automation Letters}, vol.~3, pp.~3300--3307, 2018,
+doi: \href{https://doi.org/10.1109/LRA.2018.2852779}{10.1109/LRA.2018.2852779}.
+
+\bibitem{liu2026activevla}
+Z.~Liu, Y.~Gu, Y.~Wang, X.~Xue, and Y.~Fu,
+``ActiveVLA: Injecting Active Perception into Vision-Language-Action Models for Precise 3D Robotic Manipulation,''
+arXiv preprint arXiv:2601.08325, 2026.
+[Online]. Available: \url{https://doi.org/10.48550/arXiv.2601.08325}
 
 \bibitem{hsiao2010contact}
-K.~Hsiao et al., ``Contact-Reactive Grasping of Objects with Partial
-Shape Information,'' \emph{IEEE/RSJ IROS}, 2010, pp.~1228--1235.
+K.~Hsiao, S.~Chitta, M.~Ciocarlie, and E.~G.~Jones,
+``Contact-reactive grasping of objects with partial shape information,''
+\emph{2010 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}, pp.~1228--1235, 2010,
+doi: \href{https://doi.org/10.1109/IROS.2010.5649494}{10.1109/IROS.2010.5649494}.
 
 \bibitem{park2018multimodal}
 D.~Park et al., ``Multimodal Anomaly Detection for Object-Level
 Failure Identification in Manipulation Tasks,''
 \emph{IEEE Robot.\ Automat.\ Lett.}, vol.~3, no.~3,
 pp.~1991--1998, 2018.
-
-\bibitem{diehl2022whydidifail}
-M.~Diehl and K.~Ramirez-Amaro, ``Why Did I Fail? A Causal-Based
-Method to Find Explanations for Robot Failures,''
-\emph{IEEE Robot.\ Automat.\ Lett.}, vol.~7, no.~4,
-pp.~8925--8932, 2022.
-
-\bibitem{ahmed2021causalworld}
-O.~Ahmed, F.~Tr\"{a}uble, A.~Goyal, A.~Neitz, M.~W\"{u}thrich,
-Y.~Bengio, B.~Sch\"{o}lkopf, and S.~Bauer, ``CausalWorld: A Robotic
-Manipulation Benchmark for Causal Structure and Transfer Learning,''
-\emph{Int.\ Conf.\ Learn.\ Represent.\ (ICLR)}, 2021.
 
 \bibitem{levine2018learning}
 S.~Levine et al., ``Learning Hand-Eye Coordination for Robotic
@@ -1751,49 +1716,105 @@ D.~Kalashnikov et al., ``Scalable Deep Reinforcement Learning for
 Vision-Based Robotic Manipulation,'' \emph{CoRL}, 2018,
 pp.~651--673.
 
+\bibitem{glymour2019review}
+C.~Glymour, K.~Zhang, and P.~Spirtes,
+``Review of Causal Discovery Methods Based on Graphical Models,''
+\emph{Frontiers in Genetics}, vol.~10, p.~524, 2019,
+doi: \href{https://doi.org/10.3389/fgene.2019.00524}{10.3389/fgene.2019.00524}.
+
+\bibitem{li2023sfci}
+A.~Li, A.~Jaber, and E.~Bareinboim,
+``Causal Discovery from Observational and Interventional Data across Multiple Environments,''
+in \emph{Adv.\ Neural Inf.\ Process.\ Syst.\ (NeurIPS)}, vol.~36, 2023.
+
+\bibitem{diehl2022whydidifail}
+M.~Diehl and K.~Ram\'irez-Amaro,
+``Why Did I Fail? A Causal-Based Method to Find Explanations for Robot Failures,''
+\emph{IEEE Robotics and Automation Letters}, vol.~7, no.~4, pp.~8925--8932, 2022,
+doi: \href{https://doi.org/10.1109/LRA.2022.3188902}{10.1109/LRA.2022.3188902}.
+
+\bibitem{ahmed2021causalworld}
+O.~Ahmed, F.~Tr\"auble, A.~Goyal, A.~Neitz, M.~W\"uthrich, Y.~Bengio, B.~Sch\"olkopf, and S.~Bauer,
+``CausalWorld: A Robotic Manipulation Benchmark for Causal Structure and Transfer Learning,''
+\emph{9th International Conference on Learning Representations (ICLR)}, 2021.
+[Online]. Available: \url{https://openreview.net/pdf?id=SK7A5pdrgov}
+
 \bibitem{ahn2022saycan}
-M.~Ahn et al., ``Do As I Can, Not As I Say: Grounding Language in
-Robotic Affordances,'' \emph{arXiv:2204.01691}, 2022.
+M.~Ahn, A.~Brohan, N.~Brown, \emph{et al.},
+``Do As I Can, Not As I Say: Grounding Language in Robotic Affordances,''
+\emph{Conference on Robot Learning (CoRL)}, 2022.
 
 \bibitem{driess2023palm}
-D.~Driess et al., ``PaLM-E: An Embodied Multimodal Language Model,''
-\emph{arXiv:2303.03378}, 2023.
+D.~Driess, F.~Xia, M.~S.~M.~Sajjadi, \emph{et al.},
+``PaLM-E: An Embodied Multimodal Language Model,''
+\emph{International Conference on Machine Learning (ICML)}, 2023.
 
-\bibitem{pearl2009causality}
-J.~Pearl, \emph{Causality: Models, Reasoning, and Inference},
-2nd~ed.\ Cambridge Univ.\ Press, 2009.
+\bibitem{cartwright1989}
+N.~Cartwright,
+\emph{Nature's Capacities and Their Measurement},
+Clarendon Press, Oxford, 1989.
 
-\bibitem{pearl2018book}
-J.~Pearl and D.~Mackenzie, \emph{The Book of Why: The New Science
-of Cause and Effect}. Basic Books, 2018.
+\bibitem{yang2025hierarchy}
+H.~Yang and E.~Bareinboim,
+``A Hierarchy of Graphical Models for Counterfactual Inferences,''
+\emph{Advances in Neural Information Processing Systems}, vol.~38, pp.~130941--130988, 2025.
+[Online]. Available: \url{https://proceedings.neurips.cc/paper_files/paper/2025/file/bdcefa38404c6b6d2076a3699f9bc12a-Paper-Conference.pdf}
+
+
+\bibitem{sweeney2019supervised}
+C.~Sweeney, G.~Izatt, and R.~Tedrake,
+``A Supervised Approach to Predicting Noise in Depth Images,''
+\emph{2019 International Conference on Robotics and Automation (ICRA)}, May 2019,
+doi: \href{https://doi.org/10.1109/ICRA.2019.8793820}{10.1109/ICRA.2019.8793820}.
+
+\bibitem{bohg2014data}
+J.~Bohg, A.~Morales, T.~Asfour, and D.~Kragic,
+``Data-Driven Grasp Synthesis---A Survey,''
+\emph{IEEE Trans.\ Robot.}, vol.~30, no.~2, pp.~289--309, 2014.
+
+\bibitem{khoshelham2011accuracy}
+K.~Khoshelham and S.~O.~Elberink,
+``Accuracy and Resolution of Kinect Depth Data for Indoor Mapping Applications,''
+\emph{Sensors}, vol.~12, no.~2, pp.~1437--1454, 2012,
+doi: \href{https://doi.org/10.3390/s120201437}{10.3390/s120201437}.
+
+\bibitem{border2024see}
+R.~Border and J.~D.~Gammell,
+``The surface edge explorer (SEE): A measurement-direct approach to next best view planning,''
+\emph{The International Journal of Robotics Research}, vol.~43, no.~10, pp.~1506--1532, 2024,
+doi: \href{https://doi.org/10.1177/02783649241230098}{10.1177/02783649241230098}.
+
+\bibitem{gambino2026gilp}
+G.~Gambino, S.~Tolomei, F.~Angelini, and M.~Garabini,
+``Grasp It Like a Pro 3.0: An Expert-Based Data-Driven Algorithm for Grasping Unknown Objects in Cluttered Environments,''
+\emph{IEEE Transactions on Automation Science and Engineering}, vol.~23, pp.~6579--6590, 2026,
+doi: \href{https://doi.org/10.1109/TASE.2026.3674643}{10.1109/TASE.2026.3674643}.
+
+\bibitem{qi2017pointnetpp}
+C.~R.~Qi, L.~Yi, H.~Su, and L.~J.~Guibas,
+``PointNet++: Deep Hierarchical Feature Learning on Point Sets in a Metric Space,''
+\emph{Advances in Neural Information Processing Systems}, vol.~30, pp.~5099--5108, 2017.
+[Online]. Available: \url{https://proceedings.neurips.cc/paper_files/paper/2017/hash/d8bf84be3800d12f74d8b05e9b89836f-Abstract.html}
+
+\bibitem{li2025triplanegrasp}
+Y.~Li, H.~Ren, J.~Deng, and X.~Xie,
+``Triplane Grasping: Efficient 6-DoF Grasping with Single RGB Images,''
+\emph{IEEE International Conference on Advanced Robotics and Mechatronics (ICARM)}, 2025,
+doi: \href{https://doi.org/10.1109/ICARM65671.2025.11293550}{10.1109/ICARM65671.2025.11293550}.
+
+\bibitem{nguyen2012modeling}
+C.~V.~Nguyen, S.~Izadi, and D.~Lovell,
+``Modeling Kinect Sensor Noise for Improved 3D Reconstruction and
+Tracking,'' \emph{IEEE 3DIM/3DPVT}, 2012, pp.~524--530.
+
+\bibitem{murali2020grasp}
+A.~Murali et al., ``6-DOF Grasping for Target-Driven Object
+Manipulation in Clutter,'' \emph{IEEE ICRA}, 2020, pp.~6232--6238.
 
 \bibitem{todorov2012mujoco}
 E.~Todorov, T.~Erez, and Y.~Tassa,
 ``MuJoCo: A Physics Engine for Model-Based Control,''
 \emph{IEEE/RSJ IROS}, 2012, pp.~5026--5033.
-
-\bibitem{calandra2018more}
-R.~Calandra et al., ``More Than a Feeling: Learning to Grasp and
-Regrasp Using Vision and Touch,''
-\emph{IEEE Robot.\ Automat.\ Lett.}, vol.~3, no.~4,
-pp.~3300--3307, 2018.
-
-\bibitem{liu2026activevla}
-Z.~Liu, Y.~Gu, Y.~Wang, X.~Xue, and Y.~Fu,
-``ActiveVLA: Injecting Active Perception into Vision-Language-Action
-Models for Precise 3D Robotic Manipulation,''
-\emph{IEEE/CVF Conf.\ Comput.\ Vis.\ Pattern Recognit.\ (CVPR)}, 2026.
-
-\bibitem{cheng2025pcfgrasp}
-Y.~Cheng, F.~Zha, W.~Guo, P.~Wang, C.~Zeng, L.~Sun, and C.~Yang,
-``PCF-Grasp: Converting Point Completion to Geometry Feature to Enhance
-6-DoF Grasp,'' arXiv:2504.16320, 2025.
-
-\bibitem{li2025triplanegrasp}
-Y.~Li, H.~Ren, J.~Deng, and X.~Xie,
-``Triplane Grasping: Efficient 6-DoF Grasping with Single RGB Images,''
-\emph{IEEE Int.\ Conf.\ Advanced Robotics and Mechatronics (ICARM)}, 2025,
-doi:~10.1109/ICARM65671.2025.11293550.
 
 \bibitem{liang2023code}
 J.~Liang et al., ``Code as Policies: Language Model Programs for
@@ -1827,23 +1848,6 @@ S.~Chiaverini, ``Singularity-Robust Task-Priority Redundancy Resolution
 for Real-Time Kinematic Control of Robot Manipulators,''
 \emph{IEEE Trans.\ Robot.\ Automat.}, vol.~13, no.~3,
 pp.~398--410, 1997.
-
-\bibitem{qi2017pointnetpp}
-C.~R.~Qi, L.~Yi, H.~Su, and L.~J.~Guibas,
-``PointNet++: Deep Hierarchical Feature Learning on Point Sets in a
-Metric Space,''
-\emph{Advances in Neural Information Processing Systems (NeurIPS)},
-vol.~30, 2017.
-
-\bibitem{yang2025hierarchy}
-H.~Yang and E.~Bareinboim,
-``A Hierarchy of Graphical Models for Counterfactual Inferences,''
-\emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2025.
-
-\bibitem{cartwright1989}
-N.~Cartwright,
-\emph{Nature's Capacities and Their Measurement},
-Clarendon Press, Oxford, 1989.
 
 \bibitem{halpern2005causes}
 J.~Y.~Halpern and J.~Pearl,
@@ -2115,43 +2119,6 @@ The perception pipeline transforms the MuJoCo scene into the input format expect
   \item \textbf{CGN inference.} The (possibly downsampled) point cloud is passed to CGN's \texttt{predict\_scene\_grasps}, which returns grasp poses, scores, and contact points.
 \end{enumerate}
 
-The following code snippet shows the core perception function:
-
-\begin{lstlisting}[caption={Depth rendering with noise injection and segmentation.},label={lst:render}]
-def render_depth_seg(model, data, sigma_d=0.0, rng=None):
-    renderer = mujoco.Renderer(model,
-                   height=IMG_H, width=IMG_W)
-    renderer.enable_depth_rendering()
-    renderer.update_scene(data, camera=CAM_NAME)
-    depth_raw = renderer.render().copy()
-    renderer.disable_depth_rendering()
-
-    renderer.enable_segmentation_rendering()
-    renderer.update_scene(data, camera=CAM_NAME)
-    seg = renderer.render()
-    renderer.close()
-
-    # Binary segmentation: target object = 1
-    tgt_bid = mujoco.mj_name2id(model,
-        mujoco.mjtObj.mjOBJ_BODY, TARGET_BODY)
-    gid_img = seg[:, :, 0]
-    seg_map = np.zeros(gid_img.shape, dtype=np.int32)
-    for gid in range(model.ngeom):
-        if model.geom_bodyid[gid] == tgt_bid:
-            seg_map[gid_img == gid] = 1
-
-    # Noise injection (causal variable sigma_d)
-    if sigma_d > 0.:
-        depth_noisy = np.clip(
-            depth_raw + rng.normal(0., sigma_d,
-                                   depth_raw.shape),
-            0., None).astype(np.float32)
-    else:
-        depth_noisy = depth_raw.copy()
-
-    return depth_noisy, build_K(model), seg_map
-\end{lstlisting}
-
 \section{Software Architecture}
 \label{sec:software_architecture}
 
@@ -2180,158 +2147,6 @@ The codebase is organised into several Python modules:
 \end{itemize}
 
 
-\chapter{MuJoCo Scene XML}
-\label{app:scene_xml}
-
-The complete scene definition file \texttt{grasp\_scene\_v2.xml} is reproduced below. This file contains the full Panda arm model with primitive-shape geometry, the target object, the perception camera, all actuators and tendons, and the home keyframe.
-
-\begin{lstlisting}[style=xml,caption={Complete scene definition: \texttt{grasp\_scene\_v2.xml}.},label={lst:full_scene}]
-<mujoco model="panda_grasp_scene">
-  <compiler angle="radian" autolimits="true"
-    balanceinertia="true"/>
-  <option gravity="0 0 -9.81" timestep="0.002"
-    integrator="implicitfast"/>
-
-  <default>
-    <geom solref="0.004 1" solimp="0.98 0.99 0.001"/>
-  </default>
-
-  <default>
-    <default class="panda">
-      <joint armature="0.1" damping="1" axis="0 0 1"
-        range="-2.8973 2.8973"/>
-      <general dyntype="none" biastype="affine"
-        ctrlrange="-2.8973 2.8973"
-        forcerange="-87 87"/>
-      <default class="finger">
-        <joint axis="0 1 0" type="slide"
-          range="0 0.04"/>
-      </default>
-    </default>
-  </default>
-
-  <worldbody>
-    <light pos="0 0 2.5" dir="0 0 -1"
-      directional="true"/>
-    <geom name="floor" type="plane" size="2 2 0.05"
-      rgba="0.85 0.85 0.85 1"/>
-
-    <!-- Table -->
-    <body name="table" pos="0.5 0 0.2">
-      <geom type="box" size="0.3 0.4 0.2"
-        rgba="0.6 0.4 0.2 1"/>
-    </body>
-
-    <!-- Target object -->
-    <body name="target_object" pos="0.5 0 0.455">
-      <freejoint/>
-      <inertial pos="0 0 0" mass="0.15"
-        diaginertia="0.0002 0.0002 0.0001"/>
-      <geom name="cup" type="cylinder"
-        size="0.036 0.055"
-        rgba="0.1 0.5 0.8 1" mass="0.05"
-        condim="4" friction="2.5 0.01 0.0001"/>
-    </body>
-
-    <!-- Panda arm: link0 through hand -->
-    <!-- (7 revolute joints + 2 finger joints) -->
-    <!-- ... (body hierarchy as in main text) ... -->
-
-    <!-- Perception camera -->
-    <body name="perception_camera_body"
-          pos="0.5 -0.7 0.9">
-      <camera name="perception_camera" pos="0 0 0"
-        fovy="45"/>
-      <geom type="box" size="0.02 0.03 0.02"
-        rgba="0.2 0.8 0.2 1"
-        contype="0" conaffinity="0"/>
-    </body>
-  </worldbody>
-
-  <tendon>
-    <fixed name="split">
-      <joint joint="finger_joint1" coef="0.5"/>
-      <joint joint="finger_joint2" coef="0.5"/>
-    </fixed>
-  </tendon>
-
-  <equality>
-    <joint joint1="finger_joint1"
-      joint2="finger_joint2"
-      solimp="0.95 0.99 0.001" solref="0.005 1"/>
-  </equality>
-
-  <actuator>
-    <general class="panda" name="actuator1"
-      joint="joint1"
-      gainprm="4500" biasprm="0 -4500 -450"/>
-    <!-- ... actuators 2-7 ... -->
-    <general class="panda" name="actuator8"
-      tendon="split"
-      forcerange="-100 100" ctrlrange="0 255"
-      gainprm="0.01568627451 0 0"
-      biasprm="0 -100 -10"/>
-  </actuator>
-
-  <keyframe>
-    <key name="home"
-      qpos="0.5 0 0.455 1 0 0 0
-        0 0 0 -1.57079 0 1.57079 -0.7853
-        0.04 0.04"
-      ctrl="0 0 0 -1.57079 0 1.57079
-        -0.7853 255"/>
-  </keyframe>
-</mujoco>
-\end{lstlisting}
-
-\chapter{IK Controller Implementation}
-\label{app:ik_code}
-
-The complete inverse kinematics controller implementation from \texttt{run\_experiments.py}:
-
-\begin{lstlisting}[caption={Damped Least Squares IK controller.},label={lst:ik_full}]
-def ik_move_to(model, data, target_pos,
-               max_steps=2000, tol=0.010, lam=0.01):
-    """
-    Jacobian DLS IK for the 7 Panda arm joints.
-
-    qpos layout (nq=16):
-      [0:7]   freejoint of target_object
-      [7:14]  arm joints 1-7
-      [14:16] finger joints 1-2
-
-    nv layout (nv=15):
-      [0:6]   freejoint velocity DOFs
-      [6:13]  arm joint velocities 1-7
-      [13:15] finger joint velocities
-    """
-    site_id    = mujoco.mj_name2id(
-        model, mujoco.mjtObj.mjOBJ_SITE, EE_SITE)
-    jacp       = np.zeros((3, model.nv))
-    ARM_QPOS   = slice(7, 14)
-    ARM_VEL    = slice(6, 13)
-    arm_ranges = model.jnt_range[1:8]
-
-    for _ in range(max_steps):
-        mujoco.mj_forward(model, data)
-        err = target_pos - data.site_xpos[site_id]
-        if np.linalg.norm(err) < tol:
-            return True
-        mujoco.mj_jacSite(model, data, jacp,
-                          None, site_id)
-        J  = jacp[:, ARM_VEL]   # (3, 7)
-        dq = J.T @ np.linalg.solve(
-            J @ J.T + lam * np.eye(3), err)
-        sc = min(0.5,
-                 0.1 / (np.linalg.norm(dq) + 1e-8))
-        data.qpos[ARM_QPOS] += dq * sc
-        np.clip(data.qpos[ARM_QPOS],
-                arm_ranges[:, 0], arm_ranges[:, 1],
-                out=data.qpos[ARM_QPOS])
-        data.ctrl[:7] = data.qpos[ARM_QPOS]
-        mujoco.mj_step(model, data)
-    return False
-\end{lstlisting}
 
 \section{Damped Least Squares (abandoned full-arm stack)}
 \label{app:dls}
